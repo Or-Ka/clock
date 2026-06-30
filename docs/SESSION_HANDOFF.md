@@ -43,7 +43,7 @@
 - דמו חי: `apps/demo/src/live-clock/`.
 - scripts: `npm.cmd run dev` בשורש וב-`@clock/demo`.
 - בדיקות: 7 test files, 54 tests.
-- בדיקת דפדפן: SVG יחיד, Start/Stop/Refresh, Fixed, Simulated, timezone, responsive ב-1200px/760px/390px, ללא console errors/warnings.
+- בדיקת דפדפן: SVG יחיד, Start/Stop/Refresh, Fixed, Simulated כולל התקדמות אוטומטית ב-120x, timezone, responsive ב-1200px/760px/390px, ללא console errors/warnings מהאפליקציה.
 
 ## עובדות שחשוב לשמר
 

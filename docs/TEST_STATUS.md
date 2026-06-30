@@ -44,7 +44,7 @@ PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo,
 - Stop ולאחר מכן Refresh עבדו כשהשעון עצור.
 - Fixed Time הציג `12:30` ב-`Asia/Jerusalem` עבור fixed UTC של `09:30`.
 - שינוי timezone ל-`UTC` עדכן את השעון ל-`09:30`.
-- Simulated Time עם מהירות `120x` התרענן ידנית ונשאר עם SVG יחיד.
+- Simulated Time עם מהירות `120x` התקדם אוטומטית מ-`18:39` ל-`18:43` בתוך 1.6 שניות ונשאר עם SVG יחיד.
 - console errors/warnings מהאפליקציה: אין.
 
 ## בדיקות Phase 1

@@ -155,7 +155,8 @@ Phase 2 מוכן לביקורת. אין להתחיל Phase 3 לפני ביקור
 - מספר ה-SVGים נשאר קבוע בעדכונים ובדמו.
 - דמו Phase 2 נמצא תחת `apps/demo/src/live-clock/`.
 - `npm.cmd run dev` מפעיל את הדמו.
-- בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings.
+- בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings מהאפליקציה.
+- בדיקת דפדפן אימתה ש-Simulated Time במהירות `120x` מתקדם אוטומטית תוך שניות ושומר על SVG יחיד.
 - `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` ו-`npm.cmd run build --workspace @clock/clock` עברו.
 
 ## החלטות מרכזיות בתוקף

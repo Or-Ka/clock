@@ -1,7 +1,9 @@
 import { Temporal } from "@js-temporal/polyfill";
 import {
+  type ClockScheduler,
   createLiveAnalogClock,
   FixedTimeSource,
+  millisecondsUntilNextMinute,
   projectInstantToStaticClockTime,
   SimulatedTimeSource,
   SystemTimeSource,
@@ -19,6 +21,85 @@ class DelegatingTimeSource implements TimeSource {
 
   setSource(source: TimeSource): void {
     this.activeSource = source;
+  }
+}
+
+class DemoClockScheduler implements ClockScheduler {
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  private callback: (() => void) | undefined;
+  private running = false;
+  private destroyed = false;
+
+  constructor(
+    private readonly getMode: () => TimeSourceMode,
+    private readonly source: TimeSource,
+    private readonly simulatedSource: SimulatedTimeSource,
+    private readonly afterRefresh: () => void
+  ) {}
+
+  start(callback: () => void): void {
+    if (this.destroyed) {
+      throw new Error("Cannot start a destroyed demo scheduler.");
+    }
+
+    this.callback = callback;
+    if (this.running) {
+      return;
+    }
+
+    this.running = true;
+    this.refresh();
+    this.scheduleNextTick();
+  }
+
+  stop(): void {
+    this.clearTimer();
+    this.running = false;
+  }
+
+  destroy(): void {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.stop();
+    this.callback = undefined;
+    this.destroyed = true;
+  }
+
+  private refresh(): void {
+    this.callback?.();
+    this.afterRefresh();
+  }
+
+  private scheduleNextTick(): void {
+    if (!this.running || this.destroyed) {
+      return;
+    }
+
+    this.clearTimer();
+    this.timer = setTimeout(() => {
+      this.refresh();
+      this.scheduleNextTick();
+    }, this.nextDelayMilliseconds());
+  }
+
+  private nextDelayMilliseconds(): number {
+    if (this.getMode() === "simulated" && this.simulatedSource.isRunning() && this.simulatedSource.getSpeed() > 0) {
+      const simulatedDelay = millisecondsUntilNextMinute(this.source.now().epochMilliseconds);
+      return Math.max(250, Math.ceil(simulatedDelay / this.simulatedSource.getSpeed()));
+    }
+
+    return millisecondsUntilNextMinute(Date.now());
+  }
+
+  private clearTimer(): void {
+    if (this.timer === undefined) {
+      return;
+    }
+
+    clearTimeout(this.timer);
+    this.timer = undefined;
   }
 }
 
@@ -40,14 +121,18 @@ const simulatedSource = new SimulatedTimeSource({
 const source = new DelegatingTimeSource(systemSource);
 
 let currentMode: TimeSourceMode = "system";
+let clockStarted = false;
+const scheduler = new DemoClockScheduler(() => currentMode, source, simulatedSource, syncStatus);
 
 const clock = createLiveAnalogClock({
   container: mount,
   timeSource: source,
-  timeZone: timezoneSelect.value
+  timeZone: timezoneSelect.value,
+  scheduler
 });
 
 clock.start();
+clockStarted = true;
 syncStatus();
 
 timezoneSelect.addEventListener("change", () => {
@@ -60,11 +145,13 @@ startButton.addEventListener("click", () => {
     simulatedSource.resume();
   }
   clock.start();
+  clockStarted = true;
   syncStatus();
 });
 
 stopButton.addEventListener("click", () => {
   clock.stop();
+  clockStarted = false;
   if (currentMode === "simulated") {
     simulatedSource.pause();
   }
@@ -87,8 +174,7 @@ fixedTimeInput.addEventListener("change", () => {
 speedSelect.addEventListener("change", () => {
   simulatedSource.setSpeed(Number(speedSelect.value));
   if (currentMode === "simulated") {
-    clock.refresh();
-    syncStatus();
+    refreshAndReschedule();
   }
 });
 
@@ -114,6 +200,16 @@ function setMode(mode: TimeSourceMode): void {
   } else {
     simulatedSource.resume();
     source.setSource(simulatedSource);
+  }
+
+  refreshAndReschedule();
+}
+
+function refreshAndReschedule(): void {
+  if (clockStarted) {
+    clock.stop();
+    clock.start();
+    return;
   }
 
   clock.refresh();
