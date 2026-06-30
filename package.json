@@ -1,0 +1,23 @@
+{
+  "name": "clock-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.12.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.json && npm run build --workspace @clock/demo",
+    "dev:svg-spike": "npm run dev:svg-spike --workspace @clock/demo",
+    "test": "vitest run",
+    "typecheck": "tsc -b tsconfig.json --pretty false",
+    "docs:check": "node scripts/check-docs.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
