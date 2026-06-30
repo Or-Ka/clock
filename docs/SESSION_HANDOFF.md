@@ -17,6 +17,7 @@
 - SVG Spike הושלם ונבדק.
 - Phase 1 אושר ומוגבל לשעון SVG סטטי מוצרי.
 - Phase 1 הושלם ועבר Gate.
+- ביקורת Phase 1 חיזקה lifecycle וצמצמה API ציבורי כך שחישובי הזווית נשארים פנימיים.
 
 ## המשך מומלץ
 
@@ -31,6 +32,7 @@
 - חישובי זווית: `packages/clock/src/time/clock-angles.ts`.
 - דמו מוצרי: `apps/demo/src/product-static-clock/`.
 - בדיקת דפדפן: שלושה SVGים, 12 סימוני שעות בכל שעון, זוויות 15:45/00:00/06:30 תקינות, responsive ב-1200px/760px/390px, ללא console errors/warnings.
+- ביקורת קוד: `destroy()` idempotent, `setTime()` לאחר destroy או detach זורק, מופע שני באותו container נדחה, וכשל setup משחזר את תוכן ה-container.
 
 ## עובדות שחשוב לשמר
 

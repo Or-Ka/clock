@@ -26,9 +26,15 @@ describe("clock angle mapping", () => {
     { hour: -1, minute: 0 },
     { hour: 24, minute: 0 },
     { hour: 1.5, minute: 0 },
+    { hour: Number.NaN, minute: 0 },
+    { hour: Number.POSITIVE_INFINITY, minute: 0 },
+    { hour: Number.NEGATIVE_INFINITY, minute: 0 },
     { hour: 10, minute: -1 },
     { hour: 10, minute: 60 },
-    { hour: 10, minute: 1.25 }
+    { hour: 10, minute: 1.25 },
+    { hour: 10, minute: Number.NaN },
+    { hour: 10, minute: Number.POSITIVE_INFINITY },
+    { hour: 10, minute: Number.NEGATIVE_INFINITY }
   ])("rejects invalid time %o", (time) => {
     expect(() => clockHandAngles(time)).toThrow(RangeError);
   });

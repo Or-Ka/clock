@@ -2,6 +2,7 @@ import { clockHandAngles } from "../time/clock-angles.js";
 import { assertValidStaticClockTime, type StaticClockTime } from "../time/static-clock-time.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+const activeClockContainers = new WeakMap<HTMLElement, SVGSVGElement>();
 
 export interface StaticAnalogClockOptions {
   readonly container: HTMLElement;
@@ -22,25 +23,40 @@ interface ClockDom {
 export function createStaticAnalogClock(options: StaticAnalogClockOptions): StaticAnalogClock {
   assertValidStaticClockTime(options.time);
 
+  if (activeClockContainers.has(options.container)) {
+    throw new Error("A static analog clock already exists in this container. Destroy it before creating another.");
+  }
+
   const dom = createClockDom();
+  const previousChildren = Array.from(options.container.childNodes);
   let resizeObserver: ResizeObserver | undefined;
   let destroyed = false;
 
-  options.container.replaceChildren(dom.svg);
-  applyTime(dom, options.time);
-
-  const updateSizeState = () => {
+  const updateSizeState = (): void => {
+    ensureAttached(options.container, dom.svg);
     const { width, height } = options.container.getBoundingClientRect();
     dom.svg.dataset.clockWidth = String(Math.round(width));
     dom.svg.dataset.clockHeight = String(Math.round(height));
   };
 
-  if (typeof ResizeObserver !== "undefined") {
-    resizeObserver = new ResizeObserver(updateSizeState);
-    resizeObserver.observe(options.container);
-  }
+  try {
+    options.container.replaceChildren(dom.svg);
+    applyTime(dom, options.time);
 
-  updateSizeState();
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(updateSizeState);
+      resizeObserver.observe(options.container);
+    }
+
+    updateSizeState();
+    activeClockContainers.set(options.container, dom.svg);
+  } catch (error) {
+    resizeObserver?.disconnect();
+    if (dom.svg.parentElement === options.container) {
+      options.container.replaceChildren(...previousChildren);
+    }
+    throw error;
+  }
 
   return {
     setTime(time: StaticClockTime) {
@@ -49,6 +65,7 @@ export function createStaticAnalogClock(options: StaticAnalogClockOptions): Stat
       }
 
       assertValidStaticClockTime(time);
+      ensureAttached(options.container, dom.svg);
       applyTime(dom, time);
     },
     destroy() {
@@ -57,10 +74,21 @@ export function createStaticAnalogClock(options: StaticAnalogClockOptions): Stat
       }
 
       resizeObserver?.disconnect();
-      options.container.replaceChildren();
+      if (dom.svg.parentElement === options.container) {
+        dom.svg.remove();
+      }
+      if (activeClockContainers.get(options.container) === dom.svg) {
+        activeClockContainers.delete(options.container);
+      }
       destroyed = true;
     }
   };
+}
+
+function ensureAttached(container: HTMLElement, svg: SVGSVGElement): void {
+  if (svg.parentElement !== container) {
+    throw new Error("Cannot update a static analog clock after its SVG has been detached.");
+  }
 }
 
 function createClockDom(): ClockDom {

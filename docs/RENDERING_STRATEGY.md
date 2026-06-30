@@ -72,6 +72,9 @@ Phase 1 מוסיף renderer מוצרי בסיסי תחת `packages/clock/src/ren
 - אינו מפעיל timer או scheduler.
 - אינו מציג events או markers.
 - משתמש ב-`ResizeObserver` כדי לעקוב אחר גודל ה-container ולנתק אותו ב-`destroy()`.
+- מחליף את תוכן ה-container בזמן יצירה.
+- מאפשר מופע פעיל אחד בלבד לכל container.
+- מגן מפני עדכון SVG שנותק חיצונית.
 
 הדמו המוצרי נמצא תחת:
 

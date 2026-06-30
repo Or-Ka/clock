@@ -16,7 +16,7 @@ npm.cmd run typecheck
 PASS: tsc -b tsconfig.json --pretty false
 
 npm.cmd test
-PASS: 3 test files, 20 tests
+PASS: 3 test files, 31 tests
 
 npm.cmd run build
 PASS: tsc -b tsconfig.json, Vite build for SVG Spike, and Vite build for product static clock demo
@@ -27,7 +27,8 @@ PASS: tsc -b tsconfig.json, Vite build for SVG Spike, and Vite build for product
 נוספו בדיקות:
 
 - `packages/clock/src/time/clock-angles.test.ts`: מיפוי זמנים לזוויות עבור `00:00`, `03:00`, `06:30`, `11:59`, `12:00`, `15:45` וקלט לא תקין.
-- `packages/clock/src/rendering/static-analog-clock.test.ts`: יצירת SVG, 12 סימוני שעות, `setTime`, קלט לא תקין, `ResizeObserver`, ו-`destroy`.
+- `packages/clock/src/time/clock-angles.test.ts`: כולל שעה שלילית, שעה מעל 23, דקה שלילית, דקה מעל 59, ערכים עשרוניים, `NaN`, `Infinity` ו-`-Infinity`.
+- `packages/clock/src/rendering/static-analog-clock.test.ts`: יצירת SVG, 12 סימוני שעות, `setTime`, קלט לא תקין, `ResizeObserver`, `destroy`, `destroy` כפול, SVG שנותק, יותר ממופע אחד באותו document, דחיית מופע שני באותו container ושחזור תוכן container כאשר יצירה נכשלת.
 
 ## בדיקת דפדפן ל-Phase 1
 

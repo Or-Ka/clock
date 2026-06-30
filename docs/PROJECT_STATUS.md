@@ -122,11 +122,15 @@ fatal: not a git repository (or any of the parent directories): .git
 
 - השעון המוצרי נמצא תחת `packages/clock`.
 - API ציבורי: `createStaticAnalogClock`, `StaticClockTime`, `StaticAnalogClockOptions`, `StaticAnalogClock`.
+- פונקציות חישוב הזווית נשארות פנימיות ואינן API ציבורי.
 - ניתן להעביר שעה ודקה מפורשות.
 - אין שימוש בשעת המערכת, timers, scheduler, events או providers.
 - מחוג השעות כולל את השפעת הדקות.
 - `setTime()` מעדכן את המחוגים בלי ליצור SVG חדש.
 - `destroy()` מנקה `ResizeObserver` ואת ה-container.
+- `destroy()` בטוח לקריאה חוזרת.
+- `setTime()` לאחר `destroy()` או לאחר ניתוק SVG זורק שגיאה.
+- מופע פעיל נוסף באותו container נדחה בשגיאה.
 - responsive נבדק בדפדפן ב-1200px, 760px ו-390px.
 - בדיקות unit ו-DOM קיימות מעבר לבדיקת העשן.
 - `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test` ו-`npm.cmd run build` עברו.

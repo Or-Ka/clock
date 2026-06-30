@@ -16,3 +16,4 @@
 - נוסף API `createStaticAnalogClock` לשעון SVG סטטי מוצרי.
 - נוספו פונקציות זווית טהורות ובדיקות עבור מיפוי זמן לזווית.
 - נוסף demo מוצרי נפרד מה-Spike תחת `apps/demo/src/product-static-clock/`.
+- בוצעה ביקורת Phase 1: API הזוויות נשאר פנימי, lifecycle חוזק, ונוספו בדיקות לקלט מיוחד ולמקרי cleanup.
