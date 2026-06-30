@@ -61,3 +61,46 @@ function createStaticAnalogClock(options: StaticAnalogClockOptions): StaticAnalo
 - `setTime()` לאחר שה-SVG נותק חיצונית מה-container זורק שגיאה.
 
 פונקציות חישוב הזווית של Phase 1 הן API פנימי של החבילה ואינן מיוצאות דרך `packages/clock/src/index.ts`.
+
+## Phase 2 API: Live Analog Clock
+
+Phase 2 מוסיף API חי מינימלי:
+
+```ts
+interface TimeSource {
+  now(): Temporal.Instant;
+}
+
+interface ClockScheduler {
+  start(callback: () => void): void;
+  stop(): void;
+  destroy(): void;
+}
+
+interface LiveAnalogClockOptions {
+  readonly container: HTMLElement;
+  readonly timeSource: TimeSource;
+  readonly timeZone: string;
+  readonly scheduler?: ClockScheduler;
+}
+
+interface LiveAnalogClock {
+  start(): void;
+  stop(): void;
+  refresh(): void;
+  setTimeZone(timeZone: string): void;
+  destroy(): void;
+}
+
+function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnalogClock;
+```
+
+מימושים ציבוריים נוספים:
+
+- `SystemTimeSource`
+- `FixedTimeSource`
+- `SimulatedTimeSource`
+- `MinuteBoundaryClockScheduler`
+- `projectInstantToStaticClockTime`
+
+יצירת `LiveAnalogClock` מרנדרת מצב ראשוני, אך אינה מתחילה timer אוטומטי. יש לקרוא ל-`start()` במפורש. `refresh()` עובד גם כשהשעון עצור. `setTimeZone()` לאחר `destroy()` זורק שגיאה. `destroy()` בטוח לקריאה חוזרת ומנקה את ה-scheduler ואת השעון הסטטי.

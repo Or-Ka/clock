@@ -8,7 +8,7 @@
 
 ## למה זו המשימה הפעילה
 
-T001-T025 הושלמו ואושרו. Phase 1 אושר, מומש, נבדק ועבר Gate. אין להתחיל Phase 2.
+Phase 2 הושלם בענף `feat/phase-2-live-clock` ועבר את Gate הבדיקות והדפדפן. אין להתחיל Phase 3 לפני ביקורת ומיזוג מאושרים.
 
 ```text
 fatal: not a git repository (or any of the parent directories): .git
@@ -29,10 +29,10 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## פעולות המשך מוצעות
 
-1. לבצע ביקורת ל-Phase 1.
-2. להחליט האם למזג את הענף.
-3. רק לאחר אישור מפורש לפתוח Phase 2.
+1. לבצע ביקורת ל-Phase 2.
+2. להחליט האם למזג את הענף ל-`main`.
+3. לא להתחיל Phase 3 לפני אישור מפורש.
 
 ## כלל חשוב
 
-אין להוסיף TimeSource, scheduler, timers, events, providers, React adapter או Web Component במסגרת Phase 1.
+ב-Phase 2 אין להוסיף אירועים, markers, ranges, anchors, derived events, providers, זריחה/שקיעה, location, API חיצוני, React adapter, Web Component, מחוג שניות, Desktop או EXE.

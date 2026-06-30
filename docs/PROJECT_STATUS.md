@@ -8,7 +8,9 @@
 
 Phase 1 אושר ומתבצע בענף `feat/phase-1-static-clock`. תחום העבודה המאושר הוא שעון SVG סטטי מוצרי בלבד, ללא TimeSource, scheduler, events, providers או adapters.
 
-Phase 1 הושלם ברמת מימוש ו-Gate בענף `feat/phase-1-static-clock`. אין להתחיל Phase 2 לפני ביקורת ומיזוג מאושרים.
+Phase 1 הושלם, עבר Gate ומוזג ל-`main` בקומיט `45973c2`.
+
+Phase 2 נפתח והושלם בענף `feat/phase-2-live-clock`. תחום העבודה הוא שעון חי ומקורות זמן בלבד: `TimeSource`, `ClockScheduler`, projection לפי timezone, controller חי ודמו מתאים. לא נוספו אירועים, markers, providers, זריחה או שקיעה.
 
 המידע הראשוני נשמר בקובצי Markdown תחת `docs/`, כדי שהמשך העבודה לא יסתמך על שיחת המקור.
 
@@ -79,7 +81,7 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## המשימה הבאה
 
-אין להתחיל Phase 2. הפרויקט מוכן לביקורת Phase 1.
+Phase 2 מוכן לביקורת. אין להתחיל Phase 3 לפני ביקורת ומיזוג מאושרים.
 
 ## שערים
 
@@ -134,6 +136,27 @@ fatal: not a git repository (or any of the parent directories): .git
 - responsive נבדק בדפדפן ב-1200px, 760px ו-390px.
 - בדיקות unit ו-DOM קיימות מעבר לבדיקת העשן.
 - `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test` ו-`npm.cmd run build` עברו.
+
+### Gate Phase 2
+
+סטטוס: הושלם.
+
+תוצאות:
+
+- API ציבורי חדש: `SystemTimeSource`, `FixedTimeSource`, `SimulatedTimeSource`, `MinuteBoundaryClockScheduler`, `projectInstantToStaticClockTime`, `createLiveAnalogClock`.
+- `LiveAnalogClock` משתמש ב-`createStaticAnalogClock` ואינו משכפל SVG.
+- יצירת live clock אינה מתחילה timer אוטומטית; הדמו קורא `start()` במפורש.
+- `start()`, `stop()`, `refresh()` ו-`setTimeZone()` עובדים.
+- `refresh()` עובד גם כשהשעון עצור.
+- `destroy()` ו-`stop()` בטוחים לקריאה חוזרת.
+- `setTimeZone()` לאחר `destroy()` זורק שגיאה.
+- אין timer כפול לפי בדיקות scheduler.
+- timers מנוקים ב-`stop()` וב-`destroy()`.
+- מספר ה-SVGים נשאר קבוע בעדכונים ובדמו.
+- דמו Phase 2 נמצא תחת `apps/demo/src/live-clock/`.
+- `npm.cmd run dev` מפעיל את הדמו.
+- בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings.
+- `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` ו-`npm.cmd run build --workspace @clock/clock` עברו.
 
 ## החלטות מרכזיות בתוקף
 

@@ -17,3 +17,10 @@
 - נוספו פונקציות זווית טהורות ובדיקות עבור מיפוי זמן לזווית.
 - נוסף demo מוצרי נפרד מה-Spike תחת `apps/demo/src/product-static-clock/`.
 - בוצעה ביקורת Phase 1: API הזוויות נשאר פנימי, lifecycle חוזק, ונוספו בדיקות לקלט מיוחד ולמקרי cleanup.
+- החל Phase 2 בענף `feat/phase-2-live-clock`.
+- נוספו `SystemTimeSource`, `FixedTimeSource` ו-`SimulatedTimeSource`.
+- נוסף `MinuteBoundaryClockScheduler` שמרענן מיד ומסתנכרן לגבול הדקה.
+- נוספה projection טהורה מ-`Temporal.Instant` ו-IANA timezone אל `StaticClockTime`.
+- נוסף API `createLiveAnalogClock` מעל `createStaticAnalogClock`.
+- נוסף דמו שעון חי תחת `apps/demo/src/live-clock/` עם Start, Stop, Refresh, timezone, System, Fixed ו-Simulated.
+- נוסף script `dev` בשורש וב-`@clock/demo`.

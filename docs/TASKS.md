@@ -148,3 +148,42 @@ Phase 1 ייחשב הושלם רק אם:
 - הדמו נבדק בדפדפן.
 - התיעוד תואם למצב הקוד.
 - working tree נקי לאחר commit.
+
+## Phase 2: שעון חי ומקורות זמן
+
+- `[x]` T040: לעדכן תיעוד פתיחה ותכנון משימות עבור Phase 2.
+- `[x]` T041: לממש `TimeSource` עבור זמן מערכת, זמן קבוע וזמן מדומה.
+- `[x]` T042: לממש `ClockScheduler` שמרענן מיד, מסתנכרן לגבול הדקה ומנקה timers.
+- `[x]` T043: לממש projection טהור מ-`Temporal.Instant` ו-IANA timezone אל `StaticClockTime`.
+- `[x]` T044: לממש `createLiveAnalogClock` מעל `createStaticAnalogClock` ללא שכפול SVG.
+- `[x]` T045: להוסיף בדיקות יחידה ודום עבור מקורות זמן, scheduler, timezone ו-lifecycle.
+- `[x]` T046: ליצור דמו שעון חי עם Start, Stop, Refresh, timezone ומצבי זמן.
+- `[x]` T047: להוסיף scripts של `dev` בשורש ובדמו ולתעד הפעלה.
+- `[x]` T048: להריץ בדיקות, typecheck, build ובדיקת דפדפן בגדלים הנדרשים.
+- `[x]` T049: לעדכן תיעוד סיום Phase 2, Gate ותוצאות בדיקות.
+
+## Gate של Phase 2
+
+Phase 2 ייחשב הושלם רק אם:
+
+- Phase 1 ממשיך לעבוד ללא breaking changes.
+- השעון מציג זמן מערכת ומתעדכן.
+- Fixed Time עובד.
+- Simulated Time עובד, כולל pause/resume ושינוי מהירות.
+- Start, Stop ו-Refresh עובדים.
+- שינוי timezone עובד ומשתמש ב-IANA timezone, לא ב-offset קבוע.
+- אין timer כפול.
+- אין timer פעיל אחרי `destroy()`.
+- אין יצירת SVG חדש בכל עדכון.
+- `npm.cmd run dev` מפעיל את הדמו.
+- הדמו עובד בגדלי חלון 1200, 760 ו-390.
+- אין שגיאות או warnings בקונסול.
+- `npm.cmd run docs:check` עובר.
+- `npm.cmd run typecheck` עובר.
+- `npm.cmd test` עובר.
+- `npm.cmd run build` עובר.
+- `npm.cmd run build --workspace @clock/clock` עובר.
+- התיעוד מעודכן.
+- working tree נקי לאחר commits.
+
+סטטוס: הושלם בענף `feat/phase-2-live-clock`.

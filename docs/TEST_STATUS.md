@@ -4,7 +4,7 @@
 
 ## מצב נוכחי
 
-קיים test runner בסיסי: Vitest.
+קיים test runner בסיסי: Vitest. Phase 2 מוסיף בדיקות דטרמיניסטיות למקורות זמן, scheduler, projection לפי timezone ו-live clock.
 
 ## ריצות אחרונות
 
@@ -16,11 +16,36 @@ npm.cmd run typecheck
 PASS: tsc -b tsconfig.json --pretty false
 
 npm.cmd test
-PASS: 3 test files, 31 tests
+PASS: 7 test files, 54 tests
 
 npm.cmd run build
-PASS: tsc -b tsconfig.json, Vite build for SVG Spike, and Vite build for product static clock demo
+PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo, and live clock demo
 ```
+
+## בדיקות Phase 2
+
+נוספו בדיקות:
+
+- `packages/clock/src/time/time-source.test.ts`: `SystemTimeSource`, `FixedTimeSource`, `SimulatedTimeSource`, pause/resume ושינוי מהירות.
+- `packages/clock/src/time/clock-scheduler.test.ts`: start מיידי, חישוב גבול דקה, start כפול, stop כפול, start לאחר stop, destroy כפול וניקוי timers.
+- `packages/clock/src/time/timezone-projection.test.ts`: timezone תקין ולא תקין, כולל מעבר לחצות וליום אחר.
+- `packages/clock/src/rendering/live-analog-clock.test.ts`: יצירה ללא start אוטומטי, start/stop/refresh, שינוי timezone, setTimeZone אחרי destroy, destroy כפול, ושמירה על SVG יחיד.
+
+## בדיקת דפדפן ל-Phase 2
+
+בוצעה מול `http://127.0.0.1:5174/`.
+
+תוצאות:
+
+- `npm.cmd run dev` הפעיל את דמו השעון החי. פורט 5173 היה תפוס ולכן Vite עבר ל-5174.
+- ב-1200px: SVG יחיד, גודל שעון 520px, ללא overflow.
+- ב-760px: SVG יחיד, גודל שעון 520px, ללא overflow.
+- ב-390px: SVG יחיד, גודל שעון 300px, ללא overflow.
+- Stop ולאחר מכן Refresh עבדו כשהשעון עצור.
+- Fixed Time הציג `12:30` ב-`Asia/Jerusalem` עבור fixed UTC של `09:30`.
+- שינוי timezone ל-`UTC` עדכן את השעון ל-`09:30`.
+- Simulated Time עם מהירות `120x` התרענן ידנית ונשאר עם SVG יחיד.
+- console errors/warnings מהאפליקציה: אין.
 
 ## בדיקות Phase 1
 
@@ -62,6 +87,5 @@ PASS: tsc -b tsconfig.json, Vite build for SVG Spike, and Vite build for product
 
 ## מגבלות
 
-- עדיין אין בדיקות renderer מוצרי.
 - עדיין אין בדיקות event resolver.
 - עדיין אין בדיקות browser אוטומטיות ל-SVG Spike; בדיקת הדפדפן שבוצעה הייתה ידנית/כלית.

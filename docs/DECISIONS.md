@@ -25,6 +25,10 @@
 - Phase 1 אינו מוסיף TimeSource, scheduler, timers, events, providers, React adapter או Web Component.
 - פונקציות חישוב זווית (`hourAngle`, `minuteAngle`, `clockHandAngles`) נשארות API פנימי ואינן מיוצאות לצרכנים חיצוניים ב-Phase 1.
 - Phase 1 מאפשר מופע פעיל אחד בלבד לכל container; יצירת מופע נוסף לפני `destroy()` זורקת שגיאה.
+- Phase 2 מוסיף שעון חי מעל `createStaticAnalogClock` הקיים ואינו משכפל את renderer ה-SVG.
+- Phase 2 מפריד בין `TimeSource`, `ClockScheduler` ו-projection לפי timezone.
+- `MinuteBoundaryClockScheduler` הוא scheduler ברירת המחדל של השעון החי והוא מסתנכרן לגבול הדקה הבאה.
+- Phase 2 אינו מוסיף אירועים, markers, ranges, anchors, derived events, providers, זריחה/שקיעה, location, API חיצוני, React adapter, Web Component, מחוג שניות, Desktop או EXE.
 
 ## החלטות Git
 
