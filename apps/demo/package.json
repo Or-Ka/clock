@@ -1,0 +1,17 @@
+{
+  "name": "@clock/demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit && vite build src/spikes/svg-clock --outDir ../../../dist/spikes/svg-clock --emptyOutDir",
+    "dev:svg-spike": "vite src/spikes/svg-clock --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@clock/clock": "0.0.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.6"
+  }
+}

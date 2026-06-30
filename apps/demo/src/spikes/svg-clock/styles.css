@@ -1,0 +1,197 @@
+:root {
+  color: #17202a;
+  background: #f7f8fb;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.spike-shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0;
+}
+
+.spike-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 20px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.status {
+  min-width: 9rem;
+  color: #355070;
+  font-size: 0.95rem;
+  text-align: end;
+}
+
+.clock-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(220px, 1fr) minmax(300px, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.clock-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d7dde8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.clock-panel h2 {
+  color: #29415f;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.clock-mount {
+  width: 100%;
+  aspect-ratio: 1;
+  min-width: 0;
+}
+
+.clock-panel--small {
+  max-width: 210px;
+}
+
+.clock-panel--medium {
+  max-width: 320px;
+}
+
+.clock-panel--large {
+  max-width: 460px;
+}
+
+.clock-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: #1c2d3f;
+}
+
+.clock-face {
+  fill: #fbfcfe;
+  stroke: #607d8b;
+  stroke-width: 2;
+}
+
+.hour-tick {
+  stroke: #29415f;
+  stroke-linecap: round;
+  stroke-width: 2.8;
+}
+
+.minute-tick {
+  stroke: #9aa9b5;
+  stroke-linecap: round;
+  stroke-width: 1.2;
+}
+
+.clock-hand {
+  stroke-linecap: round;
+  transform-origin: 100px 100px;
+}
+
+.hour-hand {
+  stroke: #17202a;
+  stroke-width: 6;
+}
+
+.minute-hand {
+  stroke: #c44536;
+  stroke-width: 4;
+}
+
+.center-pin {
+  fill: #17202a;
+}
+
+.event-marker {
+  cursor: pointer;
+  outline: none;
+}
+
+.marker-focus-ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 3;
+}
+
+.marker-dot {
+  fill: #2a9d8f;
+  stroke: #ffffff;
+  stroke-width: 2;
+  transition:
+    fill 140ms ease,
+    transform 140ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.marker-label {
+  fill: #355070;
+  font-size: 0.72rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.event-marker:hover .marker-dot,
+.event-marker--selected .marker-dot {
+  fill: #e76f51;
+  transform: scale(1.18);
+}
+
+.event-marker:focus-visible .marker-focus-ring {
+  stroke: #7b2cbf;
+}
+
+@media (max-width: 780px) {
+  .spike-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .status {
+    text-align: start;
+  }
+
+  .clock-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clock-panel,
+  .clock-panel--small,
+  .clock-panel--medium,
+  .clock-panel--large {
+    max-width: 420px;
+  }
+}
