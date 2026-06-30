@@ -6,7 +6,9 @@
 
 הפרויקט השלים את רצף המשימות המאושרות עד SVG Spike. תיקיית הפרויקט קיימת, Git repository אותחל, npm workspace הוגדר, TypeScript strict/Vitest/build בסיסי עובדים, כל מסמכי מקור האמת קיימים עם תוכן ראשוני, וה-SVG Spike מומש ונבדק.
 
-Phase 1 טרם אושר. אין להתחיל מימוש מוצרי נוסף לפני ביקורת ואישור מפורש.
+Phase 1 אושר ומתבצע בענף `feat/phase-1-static-clock`. תחום העבודה המאושר הוא שעון SVG סטטי מוצרי בלבד, ללא TimeSource, scheduler, events, providers או adapters.
+
+Phase 1 הושלם ברמת מימוש ו-Gate בענף `feat/phase-1-static-clock`. אין להתחיל Phase 2 לפני ביקורת ומיזוג מאושרים.
 
 המידע הראשוני נשמר בקובצי Markdown תחת `docs/`, כדי שהמשך העבודה לא יסתמך על שיחת המקור.
 
@@ -77,7 +79,7 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## המשימה הבאה
 
-אין משימה מאושרת נוספת במסמך המשימות הנוכחי. הפרויקט ממתין לביקורת לפני Phase 1 ולהחלטה מפורשת מה עובר למימוש מוצרי ב-`packages/clock`.
+אין להתחיל Phase 2. הפרויקט מוכן לביקורת Phase 1.
 
 ## שערים
 
@@ -111,6 +113,23 @@ fatal: not a git repository (or any of the parent directories): .git
 - ResizeObserver מעדכן state לפי רוחב mount.
 - `destroy()` מנתק ResizeObserver, מסיר listeners ומנקה DOM.
 - קוד ה-Spike נשמר תחת `apps/demo/src/spikes/svg-clock/`.
+
+### Gate Phase 1
+
+סטטוס: הושלם.
+
+תוצאות:
+
+- השעון המוצרי נמצא תחת `packages/clock`.
+- API ציבורי: `createStaticAnalogClock`, `StaticClockTime`, `StaticAnalogClockOptions`, `StaticAnalogClock`.
+- ניתן להעביר שעה ודקה מפורשות.
+- אין שימוש בשעת המערכת, timers, scheduler, events או providers.
+- מחוג השעות כולל את השפעת הדקות.
+- `setTime()` מעדכן את המחוגים בלי ליצור SVG חדש.
+- `destroy()` מנקה `ResizeObserver` ואת ה-container.
+- responsive נבדק בדפדפן ב-1200px, 760px ו-390px.
+- בדיקות unit ו-DOM קיימות מעבר לבדיקת העשן.
+- `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test` ו-`npm.cmd run build` עברו.
 
 ## החלטות מרכזיות בתוקף
 

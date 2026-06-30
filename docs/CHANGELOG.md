@@ -12,3 +12,7 @@
 - נוספה תלות `@js-temporal/polyfill` עבור טיפוסי Temporal.
 - מומש SVG Spike תחת `apps/demo/src/spikes/svg-clock/`.
 - נבדקו responsive, click, keyboard focus, focus ring, RTL ו-build של ה-Spike.
+- החל Phase 1 בענף `feat/phase-1-static-clock`.
+- נוסף API `createStaticAnalogClock` לשעון SVG סטטי מוצרי.
+- נוספו פונקציות זווית טהורות ובדיקות עבור מיפוי זמן לזווית.
+- נוסף demo מוצרי נפרד מה-Spike תחת `apps/demo/src/product-static-clock/`.

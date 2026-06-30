@@ -22,3 +22,27 @@
 - האם renderer צריך לקבל זמנים מקומיים מחושבים מראש או רק זוויות.
 - איך לחשב anchors כמו זריחה ושקיעה בלי להכניס provider לליבה.
 
+## Phase 1: זמן סטטי
+
+Phase 1 מוסיף מודל זמן סטטי שאינו קורא את שעת המערכת:
+
+```ts
+interface StaticClockTime {
+  readonly hour: number;
+  readonly minute: number;
+}
+```
+
+הקלט התקין הוא:
+
+- `hour`: מספר שלם בין `0` ל-`23`.
+- `minute`: מספר שלם בין `0` ל-`59`.
+
+קלט לא תקין זורק `RangeError`. אין normalization אוטומטי ב-Phase 1, כדי שבאגים בקלט יתגלו מוקדם.
+
+נוסחאות:
+
+```text
+minuteAngle = minute × 6
+hourAngle = (hour % 12) × 30 + minute × 0.5
+```
