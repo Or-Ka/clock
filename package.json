@@ -11,12 +11,14 @@
   "scripts": {
     "build": "tsc -b tsconfig.json && npm run build --workspace @clock/demo",
     "dev:svg-spike": "npm run dev:svg-spike --workspace @clock/demo",
+    "dev:static-clock": "npm --workspace @clock/demo run dev:static-clock --",
     "test": "vitest run",
     "typecheck": "tsc -b tsconfig.json --pretty false",
     "docs:check": "node scripts/check-docs.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "jsdom": "^29.1.1",
     "typescript": "^5.8.0",
     "vitest": "^3.2.0"
   }

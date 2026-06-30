@@ -20,6 +20,11 @@
 - תצוגת MVP היא מחזור 12 השעות הנוכחי.
 - אירועים מחוץ לחצי היממה הנוכחי אינם מוצגים על החוגה ב-MVP.
 - Phase 1 לא מתחיל לפני ביקורת ואישור מפורש לאחר SVG Spike.
+- Phase 1 משתמש ב-`StaticClockTime` עם `hour` בטווח `0..23` ו-`minute` בטווח `0..59`.
+- קלט זמן סטטי לא תקין זורק `RangeError`; אין normalization אוטומטי ב-Phase 1.
+- Phase 1 אינו מוסיף TimeSource, scheduler, timers, events, providers, React adapter או Web Component.
+- פונקציות חישוב זווית (`hourAngle`, `minuteAngle`, `clockHandAngles`) נשארות API פנימי ואינן מיוצאות לצרכנים חיצוניים ב-Phase 1.
+- Phase 1 מאפשר מופע פעיל אחד בלבד לכל container; יצירת מופע נוסף לפני `destroy()` זורקת שגיאה.
 
 ## החלטות Git
 

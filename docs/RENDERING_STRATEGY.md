@@ -36,7 +36,7 @@ apps/demo/src/spikes/svg-clock/
 
 סטטוס: הושלם ב-2026-06-30.
 
-Phase 1 טרם אושר. תוצאות ה-Spike ממתינות לביקורת לפני העברה אפשרית לקוד מוצרי.
+Phase 1 אושר לאחר ביקורת ה-Spike. תוצאות ה-Spike שימשו ללמידה בלבד; קוד המוצר נבנה בנפרד תחת `packages/clock`.
 
 מיקום:
 
@@ -56,3 +56,46 @@ apps/demo/src/spikes/svg-clock/
 - `dir="rtl"` פעיל.
 - responsive נבדק ב-1200px, 760px ו-390px.
 - `ResizeObserver` ו-listeners מנוקים דרך `destroy()`.
+
+## Phase 1: Static SVG Clock
+
+Phase 1 מוסיף renderer מוצרי בסיסי תחת `packages/clock/src/rendering/static-analog-clock.ts`.
+
+ה-renderer:
+
+- יוצר SVG עם `viewBox="0 0 200 200"`.
+- מצייר לוח שעון.
+- מצייר 12 סימוני שעות.
+- מצייר מחוג שעות ומחוג דקות.
+- מקבל שעה ודקה מפורשות בלבד.
+- אינו קורא את שעת המערכת.
+- אינו מפעיל timer או scheduler.
+- אינו מציג events או markers.
+- משתמש ב-`ResizeObserver` כדי לעקוב אחר גודל ה-container ולנתק אותו ב-`destroy()`.
+- מחליף את תוכן ה-container בזמן יצירה.
+- מאפשר מופע פעיל אחד בלבד לכל container.
+- מגן מפני עדכון SVG שנותק חיצונית.
+
+הדמו המוצרי נמצא תחת:
+
+```text
+apps/demo/src/product-static-clock/
+```
+
+הדמו נפרד מה-Spike ואינו משתמש בקוד ה-Spike.
+
+### תוצאות בדיקת דפדפן Phase 1
+
+הדמו נבדק מול `http://127.0.0.1:5174/`.
+
+תוצאות:
+
+- שלושה SVGים נטענו.
+- לכל SVG קיימים 12 סימוני שעות.
+- לכל SVG קיים מחוג שעות ומחוג דקות.
+- הזמן ההתחלתי `15:45` הניב `hourAngle=112.5` ו-`minuteAngle=270`.
+- כפתור `00:00` עדכן את כל השעונים ל-`hourAngle=0` ו-`minuteAngle=0`.
+- כפתור `06:30` עדכן את כל השעונים ל-`hourAngle=195` ו-`minuteAngle=180`.
+- מספר ה-SVGים נשאר 3 אחרי עדכון זמן.
+- responsive נבדק ב-1200px, 760px ו-390px.
+- console errors/warnings: אין.
