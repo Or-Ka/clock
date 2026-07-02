@@ -10,7 +10,18 @@ export {
 } from "./time/time-source.js";
 export { projectInstantToStaticClockTime } from "./time/timezone-projection.js";
 export { type StaticClockTime } from "./time/static-clock-time.js";
-export type { EventDefinition, ResolvedClockItem } from "./events/event-model.js";
+export {
+  dualRingAngle,
+  resolveInstantEvents,
+  ringForTime,
+  type ClockRing,
+  type EventDefinition,
+  type InstantEventDefinition,
+  type InstantEventKind,
+  type InstantEventStatus,
+  type ResolvedClockItem,
+  type ResolvedInstantEvent
+} from "./events/event-model.js";
 export {
   createLiveAnalogClock,
   type LiveAnalogClock,

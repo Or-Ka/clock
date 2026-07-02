@@ -2,6 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { ResolvedInstantEvent } from "../events/event-model.js";
 import { createStaticAnalogClock } from "./static-analog-clock.js";
 
 class TestResizeObserver {
@@ -35,6 +36,8 @@ describe("createStaticAnalogClock", () => {
     expect(svg).not.toBeNull();
     expect(svg?.getAttribute("viewBox")).toBe("0 0 200 200");
     expect(container.querySelectorAll('[data-clock-part="hour-tick"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="outer"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="inner"]')).toHaveLength(12);
     expect(svg?.dataset.clockHourAngle).toBe("195");
     expect(svg?.dataset.clockMinuteAngle).toBe("180");
   });
@@ -54,6 +57,29 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-clock-part="hour-hand"]')).toBe(hourHand);
     expect(svg?.dataset.clockHourAngle).toBe("112.5");
     expect(svg?.dataset.clockMinuteAngle).toBe("270");
+  });
+
+  it("renders events in their resolved rings and updates them without replacing the SVG", () => {
+    const container = document.createElement("div");
+    const clock = createStaticAnalogClock({
+      container,
+      time: { hour: 7, minute: 0 },
+      events: [resolvedEvent("sunrise", "sunrise", "outer", 20, "next")]
+    });
+    const svg = container.querySelector("svg");
+
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(1);
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-clock-ring")).toBe("outer");
+
+    clock.setEvents([
+      resolvedEvent("night", "custom", "inner", 180, "future"),
+      resolvedEvent("sunset", "sunset", "outer", 355, "future")
+    ]);
+
+    expect(container.querySelector("svg")).toBe(svg);
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(2);
+    expect(svg?.dataset.clockEventCount).toBe("2");
+    expect(container.querySelector('[data-event-id="night"]')?.getAttribute("data-clock-ring")).toBe("inner");
   });
 
   it("rejects invalid initial and update times", () => {
@@ -117,6 +143,18 @@ describe("createStaticAnalogClock", () => {
     clock.destroy();
 
     expect(() => clock.setTime({ hour: 1, minute: 0 })).toThrow("destroyed");
+  });
+
+  it("does not allow setEvents after destroy", () => {
+    const container = document.createElement("div");
+    const clock = createStaticAnalogClock({
+      container,
+      time: { hour: 0, minute: 0 }
+    });
+
+    clock.destroy();
+
+    expect(() => clock.setEvents([])).toThrow("destroyed");
   });
 
   it("does not allow setTime after the SVG is detached externally", () => {
@@ -206,3 +244,23 @@ describe("createStaticAnalogClock", () => {
     ).not.toThrow();
   });
 });
+
+function resolvedEvent(
+  id: string,
+  kind: ResolvedInstantEvent["kind"],
+  ring: ResolvedInstantEvent["ring"],
+  angle: number,
+  status: ResolvedInstantEvent["status"]
+): ResolvedInstantEvent {
+  return {
+    id,
+    type: "instant",
+    kind,
+    title: id,
+    hour: 6,
+    minute: 0,
+    ring,
+    angle,
+    status
+  };
+}

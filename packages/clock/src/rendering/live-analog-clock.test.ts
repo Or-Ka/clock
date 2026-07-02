@@ -57,6 +57,73 @@ describe("createLiveAnalogClock", () => {
     expect(svg?.dataset.clockMinuteAngle).toBe("180");
   });
 
+  it("renders initial events and updates them without replacing the SVG", () => {
+    const container = document.createElement("div");
+    const source = createMutableTimeSource("2026-06-30T08:00:00Z");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: source,
+      timeZone: "UTC",
+      scheduler: createManualScheduler(),
+      events: [
+        { id: "sunrise", type: "instant", kind: "sunrise", title: "Sunrise", hour: 5, minute: 40 },
+        { id: "meeting", type: "instant", kind: "custom", title: "Meeting", hour: 9, minute: 0 }
+      ]
+    });
+    const svg = container.querySelector("svg");
+
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-clock-ring")).toBe("inner");
+    expect(container.querySelector('[data-event-id="meeting"]')?.getAttribute("data-event-status")).toBe("next");
+
+    clock.setEvents([{ id: "sunset", type: "instant", kind: "sunset", title: "Sunset", hour: 18, minute: 40 }]);
+
+    expect(container.querySelector("svg")).toBe(svg);
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(1);
+    expect(container.querySelector('[data-event-id="sunset"]')?.getAttribute("data-clock-ring")).toBe("inner");
+  });
+
+  it("rejects invalid setEvents input without changing the rendered events", () => {
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-06-30T08:00:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler(),
+      events: [{ id: "kept", type: "instant", kind: "custom", title: "Kept", hour: 10, minute: 0 }]
+    });
+
+    expect(() =>
+      clock.setEvents([
+        { id: "dup", type: "instant", kind: "custom", title: "One", hour: 10, minute: 0 },
+        { id: "dup", type: "instant", kind: "custom", title: "Two", hour: 11, minute: 0 }
+      ])
+    ).toThrow("Duplicate");
+
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(1);
+    expect(container.querySelector('[data-event-id="kept"]')).not.toBeNull();
+  });
+
+  it("recomputes event statuses when timezone changes", () => {
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-06-30T19:30:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler(),
+      events: [
+        { id: "evening", type: "instant", kind: "custom", title: "Evening", hour: 20, minute: 0 },
+        { id: "late", type: "instant", kind: "custom", title: "Late", hour: 23, minute: 0 }
+      ]
+    });
+
+    expect(container.querySelector('[data-event-id="evening"]')?.getAttribute("data-event-status")).toBe("next");
+
+    clock.setTimeZone("Asia/Jerusalem");
+
+    expect(container.querySelector('[data-event-id="evening"]')?.getAttribute("data-event-status")).toBe("past");
+    expect(container.querySelector('[data-event-id="late"]')?.getAttribute("data-event-status")).toBe("next");
+  });
+
   it("changes timezone and rejects invalid time zones without changing the previous one", () => {
     const container = document.createElement("div");
     const source = createMutableTimeSource("2026-06-30T12:00:00Z");
@@ -106,6 +173,19 @@ describe("createLiveAnalogClock", () => {
     clock.destroy();
 
     expect(() => clock.setTimeZone("UTC")).toThrow("destroyed");
+  });
+
+  it("rejects setEvents after destroy", () => {
+    const clock = createLiveAnalogClock({
+      container: document.createElement("div"),
+      timeSource: createMutableTimeSource("2026-06-30T10:00:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler()
+    });
+
+    clock.destroy();
+
+    expect(() => clock.setEvents([])).toThrow("destroyed");
   });
 });
 
