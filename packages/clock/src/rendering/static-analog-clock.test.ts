@@ -203,6 +203,9 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-clock-part="weekday-label"]')?.textContent).toBe("חמישי");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toBe("י״ז בתמוז תשפ״ו");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.textContent).toBe("2 ביולי 2026");
+    expect(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(Number(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("y"))).toBeLessThan(100);
     expect(Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))).toBeGreaterThan(100);
   });

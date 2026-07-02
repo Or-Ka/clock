@@ -8,7 +8,12 @@ export {
   type SimulatedTimeSourceOptions,
   type TimeSource
 } from "./time/time-source.js";
-export { projectInstantToStaticClockTime } from "./time/timezone-projection.js";
+export {
+  projectInstantToStaticClockTime,
+  type ClockDateBoundary,
+  type ClockDateBoundaryTime,
+  type StaticClockProjectionOptions
+} from "./time/timezone-projection.js";
 export { type ClockDateDisplay, type StaticClockTime } from "./time/static-clock-time.js";
 export {
   dualRingAngle,

@@ -3,7 +3,11 @@ import type { ClockScheduler } from "../time/clock-scheduler.js";
 import { MinuteBoundaryClockScheduler } from "../time/clock-scheduler.js";
 import type { StaticClockTime } from "../time/static-clock-time.js";
 import type { TimeSource } from "../time/time-source.js";
-import { projectInstantToStaticClockTime } from "../time/timezone-projection.js";
+import {
+  type ClockDateBoundary,
+  type ClockDateBoundaryTime,
+  projectInstantToStaticClockTime
+} from "../time/timezone-projection.js";
 import { createStaticAnalogClock, type StaticAnalogClock, type ZmanitTick } from "./static-analog-clock.js";
 
 export interface LiveAnalogClockOptions {
@@ -34,7 +38,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
   let destroyed = false;
   let secondTimer: ReturnType<typeof setInterval> | undefined;
   const scheduler = options.scheduler ?? new MinuteBoundaryClockScheduler();
-  const initialTime = projectInstantToStaticClockTime(options.timeSource.now(), timeZone);
+  const initialTime = projectCurrentTime(options.timeSource, timeZone, eventLayers);
   const staticClock = createStaticAnalogClock({
     container: options.container,
     time: initialTime,
@@ -50,7 +54,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
 
   const refresh = (): void => {
     ensureActive("refresh");
-    applyCurrentState(projectInstantToStaticClockTime(options.timeSource.now(), timeZone), staticClock, eventLayers);
+    applyCurrentState(projectCurrentTime(options.timeSource, timeZone, eventLayers), staticClock, eventLayers);
   };
 
   const startSecondTimer = (): void => {
@@ -87,23 +91,26 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
     refresh,
     setTimeZone(nextTimeZone: string) {
       ensureActive("set timezone on");
-      const nextTime = projectInstantToStaticClockTime(options.timeSource.now(), nextTimeZone);
+      const nextTime = projectCurrentTime(options.timeSource, nextTimeZone, eventLayers);
       timeZone = nextTimeZone;
       applyCurrentState(nextTime, staticClock, eventLayers);
     },
     setEvents(nextEvents: readonly InstantEventDefinition[]) {
       ensureActive("set events on");
-      const currentTime = projectInstantToStaticClockTime(options.timeSource.now(), timeZone);
       const nextLayers = eventsToDefaultLayer(nextEvents);
+      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
       const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
       eventLayers = nextLayers;
+      staticClock.setTime(currentTime);
       staticClock.setEvents(resolvedEvents);
     },
     setEventLayers(nextEventLayers: readonly EventLayerDefinition[]) {
       ensureActive("set event layers on");
-      const currentTime = projectInstantToStaticClockTime(options.timeSource.now(), timeZone);
-      const resolvedEvents = resolveEventLayers(nextEventLayers, currentTime);
-      eventLayers = cloneEventLayers(nextEventLayers);
+      const nextLayers = cloneEventLayers(nextEventLayers);
+      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
+      const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
+      eventLayers = nextLayers;
+      staticClock.setTime(currentTime);
       staticClock.setEvents(resolvedEvents);
     },
     setZmanitTicks(nextTicks: readonly ZmanitTick[]) {
@@ -122,6 +129,40 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
       destroyed = true;
     }
   };
+}
+
+function projectCurrentTime(
+  timeSource: TimeSource,
+  timeZone: string,
+  eventLayers: readonly EventLayerDefinition[]
+): StaticClockTime {
+  const dateBoundary = dateBoundaryFromEventLayers(eventLayers);
+  return dateBoundary === undefined
+    ? projectInstantToStaticClockTime(timeSource.now(), timeZone)
+    : projectInstantToStaticClockTime(timeSource.now(), timeZone, { dateBoundary });
+}
+
+function dateBoundaryFromEventLayers(eventLayers: readonly EventLayerDefinition[]): ClockDateBoundary | undefined {
+  const events = eventLayers.flatMap((layer) => layer.events);
+  const sunrise = events.find((event) => event.kind === "sunrise");
+  const sunset = events.find((event) => event.kind === "sunset");
+
+  if (sunrise === undefined && sunset === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...(sunrise === undefined ? {} : { sunrise: clockDateBoundaryTimeFromEvent(sunrise) }),
+    ...(sunset === undefined ? {} : { sunset: clockDateBoundaryTimeFromEvent(sunset) })
+  };
+}
+
+function clockDateBoundaryTimeFromEvent(event: InstantEventDefinition): ClockDateBoundaryTime {
+  if (event.second === undefined) {
+    return { hour: event.hour, minute: event.minute };
+  }
+
+  return { hour: event.hour, minute: event.minute, second: event.second };
 }
 
 function applyCurrentState(
