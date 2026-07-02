@@ -46,3 +46,32 @@ interface StaticClockTime {
 minuteAngle = minute × 6
 hourAngle = (hour % 12) × 30 + minute × 0.5
 ```
+
+## Phase 2: מקורות זמן חיים
+
+Phase 2 מממש את חוזה `TimeSource`:
+
+```ts
+interface TimeSource {
+  now(): Temporal.Instant;
+}
+```
+
+המימושים:
+
+- `SystemTimeSource`: מחזיר את זמן המערכת הנוכחי כ-`Temporal.Instant`.
+- `FixedTimeSource`: מחזיר instant קבוע, ומתאים לבדיקות ודמו.
+- `SimulatedTimeSource`: מתחיל מ-instant נתון ומתקדם לפי מהירות ניתנת לשינוי.
+
+`SimulatedTimeSource` תומך ב-`pause()`, `resume()`, `setSpeed()`, `getSpeed()` ו-`isRunning()`. מהירות שלילית או לא סופית זורקת `RangeError`.
+
+Projection ל-timezone מתבצע בפונקציה טהורה:
+
+```ts
+projectInstantToStaticClockTime(
+  instant: Temporal.Instant,
+  timeZone: string
+): StaticClockTime;
+```
+
+הפונקציה משתמשת ב-IANA timezone דרך Temporal ואינה משתמשת ב-offset קבוע.

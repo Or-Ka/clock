@@ -1,6 +1,6 @@
 # Known Issues
 
-עודכן: 2026-06-30
+עודכן: 2026-07-02
 
 ## בעיות ידועות פתוחות
 
@@ -10,12 +10,17 @@
 
 אין בעיות ידועות פתוחות לאחר ביקורת Phase 1.
 
+אין בעיות ידועות פתוחות לאחר מימוש Phase 2.
+
+אין בעיות ידועות פתוחות לאחר מימוש Phase 3.
+
+אין בעיות ידועות פתוחות לאחר סבב תיקוני התצוגה של Phase 3.
+
 ## מגבלות ועבודת המשך שאינן בעיות פתוחות
 
-- אין עדיין resolver אירועים מוצרי; זה מחוץ להיקף Phase 1.
 - אין עדיין browser tests אוטומטיים ל-SVG; בוצעה בדיקת דפדפן ידנית/כלית ל-Spike.
 - יש לבדוק בהמשך bundle size ותאימות של `@js-temporal/polyfill`.
-- Phase 1 אינו כולל themes מלאים, events, providers, scheduler או adapters.
+- Phase 3 אינו כולל provider אמיתי לזריחה/שקיעה, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE.
 
 ## נפתרו
 

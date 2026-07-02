@@ -1,0 +1,322 @@
+:root {
+  color: #1f2933;
+  background: #f4f6f7;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.phase3-demo {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 22px 0;
+}
+
+.demo-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 16px;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.demo-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-block-start: 8px;
+  font-size: 0.9rem;
+}
+
+.demo-links a {
+  color: #315f72;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.demo-links a[aria-current="page"] {
+  color: #8a4d20;
+  font-weight: 700;
+}
+
+#clock-status {
+  color: #2f6f60;
+  direction: rtl;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(290px, 360px);
+  gap: 22px;
+  align-items: start;
+}
+
+.clock-panel {
+  display: grid;
+  place-items: center;
+  min-height: min(68vh, 650px);
+  border-block: 1px solid #d5dee6;
+}
+
+.clock-mount {
+  width: min(620px, 82vw);
+  aspect-ratio: 1;
+  color: #243746;
+}
+
+.event-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.control-group {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.event-form {
+  display: grid;
+  gap: 12px;
+  padding-block: 14px;
+  border-block: 1px solid #d5dee6;
+}
+
+.layer-controls {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid #d5dee6;
+  border-radius: 6px;
+  padding: 10px 12px 12px;
+}
+
+.layer-controls legend {
+  padding-inline: 4px;
+  color: #53616f;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.layer-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2933;
+}
+
+.layer-controls input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: #2f7f72;
+}
+
+.time-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+label {
+  color: #53616f;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+select,
+input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #9cadbc;
+  border-radius: 6px;
+  padding: 7px 9px;
+  color: #1f2933;
+  background: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="number"] {
+  direction: ltr;
+  text-align: start;
+}
+
+button {
+  min-height: 40px;
+  border: 1px solid #778899;
+  border-radius: 6px;
+  padding: 7px 11px;
+  color: #1f2933;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+button:hover,
+select:hover,
+input:hover {
+  border-color: #2f6f60;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 3px solid #2a9d8f;
+  outline-offset: 2px;
+}
+
+.event-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event-list li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 42px;
+  border-block-end: 1px solid #d5dee6;
+  padding-block: 6px;
+}
+
+.event-list li[data-event-status="next"] {
+  background: #fff7e8;
+}
+
+.form-error {
+  min-height: 1.2em;
+  color: #9f2d20;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.event-kind {
+  min-width: 64px;
+  border-radius: 999px;
+  padding: 3px 7px;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.event-kind-sunrise {
+  background: #c65a3a;
+}
+
+.event-kind-sunset {
+  background: #55519b;
+}
+
+.event-kind-custom {
+  background: #2f7f72;
+}
+
+.event-layer {
+  min-width: 58px;
+  border: 1px solid #9cadbc;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #334155;
+  background: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.event-details {
+  direction: rtl;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-list button {
+  min-height: 34px;
+  padding-inline: 9px;
+}
+
+@media (max-width: 880px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .event-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .event-list,
+  .event-form {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .phase3-demo {
+    width: min(100vw - 20px, 1180px);
+    padding: 16px 0;
+  }
+
+  .demo-header {
+    flex-direction: column;
+  }
+
+  #clock-status {
+    text-align: start;
+  }
+
+  .clock-panel {
+    min-height: 330px;
+  }
+
+  .clock-mount {
+    width: min(310px, 88vw);
+  }
+
+  .event-panel,
+  .time-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .event-list li {
+    grid-template-columns: 1fr;
+  }
+}

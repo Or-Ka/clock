@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Analog Clock Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="live-demo">
+      <header class="demo-header">
+        <h1>Live Analog Clock</h1>
+        <p id="clock-status" aria-live="polite">--:--</p>
+      </header>
+
+      <section class="clock-stage" aria-label="שעון חי">
+        <div class="clock-mount" id="live-clock"></div>
+      </section>
+
+      <section class="control-grid" aria-label="בקרת שעון חי">
+        <div class="control-group">
+          <label for="timezone">Timezone</label>
+          <select id="timezone">
+            <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+            <option value="UTC">UTC</option>
+            <option value="America/New_York">America/New_York</option>
+            <option value="Europe/London">Europe/London</option>
+          </select>
+        </div>
+
+        <div class="button-row" aria-label="פקדי רענון">
+          <button type="button" id="start-clock">Start</button>
+          <button type="button" id="stop-clock">Stop</button>
+          <button type="button" id="refresh-clock">Refresh</button>
+        </div>
+
+        <fieldset class="control-group mode-group">
+          <legend>Time Source</legend>
+          <label>
+            <input type="radio" name="time-source" value="system" checked />
+            System Time
+          </label>
+          <label>
+            <input type="radio" name="time-source" value="fixed" />
+            Fixed Time
+          </label>
+          <label>
+            <input type="radio" name="time-source" value="simulated" />
+            Simulated Time
+          </label>
+        </fieldset>
+
+        <div class="control-group">
+          <label for="fixed-time">Fixed UTC</label>
+          <input id="fixed-time" type="datetime-local" value="2026-06-30T09:30" />
+        </div>
+
+        <div class="control-group">
+          <label for="simulated-speed">Simulated Speed</label>
+          <select id="simulated-speed">
+            <option value="1">1x</option>
+            <option value="10">10x</option>
+            <option value="60" selected>60x</option>
+            <option value="120">120x</option>
+          </select>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
