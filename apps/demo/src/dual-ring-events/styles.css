@@ -241,14 +241,18 @@ a:focus-visible {
 
 .event-list {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .event-list-block {
   align-content: start;
+  grid-column: span 2;
+  overflow: hidden;
 }
 
 .fixed-day-times-block {
@@ -280,12 +284,14 @@ a:focus-visible {
 
 .event-list li {
   display: grid;
-  grid-template-columns: minmax(64px, auto) minmax(110px, 1fr) minmax(64px, auto) minmax(74px, auto) minmax(64px, auto) auto;
-  gap: 8px;
+  grid-template-columns: minmax(50px, 64px) minmax(0, 1fr) minmax(46px, auto) minmax(54px, auto) minmax(44px, auto) auto;
+  gap: 6px;
   align-items: center;
+  min-width: 0;
   min-height: 34px;
   border-block-end: 1px solid #263747;
   padding-block: 4px;
+  overflow: hidden;
 }
 
 .event-list li[data-event-status="next"] {
@@ -312,15 +318,18 @@ a:focus-visible {
 }
 
 .event-layer {
-  min-width: 58px;
+  min-width: 0;
   border: 1px solid #456073;
   border-radius: 999px;
-  padding: 2px 7px;
+  padding: 2px 5px;
   color: #d8e4ef;
   background: #101b26;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 800;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .event-title,
@@ -343,22 +352,40 @@ a:focus-visible {
   text-align: start;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .event-ring,
 .event-status {
   color: #a9b8c8;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .event-list button {
-  min-height: 30px;
-  padding: 4px 8px;
+  min-height: 24px;
+  border-color: #7d2f38;
+  padding: 2px 6px;
+  color: #ff9a8d;
+  background: rgba(83, 22, 28, 0.68);
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.event-list button:hover {
+  border-color: #ff9a8d;
+  background: rgba(125, 47, 56, 0.78);
 }
 
 @media (max-width: 880px) {
   .event-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .event-list-block {
+    grid-column: 1 / -1;
   }
 }
 
@@ -388,7 +415,7 @@ a:focus-visible {
   }
 
   .event-list li {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(42px, 56px) minmax(0, 1fr) auto;
   }
 
   .event-layer,
@@ -397,5 +424,10 @@ a:focus-visible {
   .event-ring,
   .event-status {
     min-width: 0;
+  }
+
+  .event-ring,
+  .event-status {
+    display: none;
   }
 }

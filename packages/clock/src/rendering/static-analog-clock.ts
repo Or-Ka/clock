@@ -19,9 +19,9 @@ const CLOCK_COLORS = {
   dateMuted: "#b7c6d6",
   dateStrong: "#f2f7fb",
   zmanitTick: "#ff1f1f",
-  sunrise: "#ffb084",
-  sunset: "#aaa8ff",
-  custom: "#66d8c2"
+  sunrise: "#ffd400",
+  sunset: "#ff4fd8",
+  custom: "#00e5ff"
 } as const;
 const OUTER_TIME_MARKER_RADIUS = 80;
 const INNER_TIME_MARKER_RADIUS = 74;
@@ -50,9 +50,12 @@ export interface ZmanitTick {
 
 interface ClockDom {
   readonly svg: SVGSVGElement;
+  readonly outerRing: SVGCircleElement;
+  readonly innerRing: SVGCircleElement;
   readonly eventLayer: SVGGElement;
   readonly zmanitLayer: SVGGElement;
   readonly currentTimeMarker: SVGGElement;
+  readonly dateDisplay: SVGGElement;
   readonly weekdayLabel: SVGTextElement;
   readonly hebrewDateLabel: SVGTextElement;
   readonly gregorianDateLabel: SVGTextElement;
@@ -171,7 +174,9 @@ function createClockDom(): ClockDom {
   svg.append(face);
 
   appendMinuteTicks(svg);
-  svg.append(createRing("inner", 74));
+  const outerRing = createRing("outer", 88);
+  const innerRing = createRing("inner", 74);
+  svg.append(outerRing, innerRing);
   appendRingHourLabels(svg, "outer", [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 88);
   appendRingHourLabels(svg, "inner", [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], 74);
 
@@ -186,9 +191,6 @@ function createClockDom(): ClockDom {
   const currentTimeMarker = createCurrentTimeMarker();
   svg.append(currentTimeMarker);
 
-  const dateDisplay = createDateDisplay();
-  svg.append(dateDisplay.group);
-
   const hourHand = createHand("hour-hand", 34, 3.2, CLOCK_COLORS.hand);
   const minuteHand = createHand("minute-hand", 50, 2.4, CLOCK_COLORS.hand);
   const secondHand = createHand("second-hand", 56, 1, CLOCK_COLORS.secondHand);
@@ -202,11 +204,17 @@ function createClockDom(): ClockDom {
   pin.dataset.clockPart = "center-pin";
   svg.append(pin);
 
+  const dateDisplay = createDateDisplay();
+  svg.append(dateDisplay.group);
+
   return {
     svg,
+    outerRing,
+    innerRing,
     eventLayer,
     zmanitLayer,
     currentTimeMarker,
+    dateDisplay: dateDisplay.group,
     weekdayLabel: dateDisplay.weekdayLabel,
     hebrewDateLabel: dateDisplay.hebrewDateLabel,
     gregorianDateLabel: dateDisplay.gregorianDateLabel,
@@ -221,11 +229,21 @@ function appendClockEffects(svg: SVGSVGElement): void {
   style.textContent = `
     [data-clock-part="current-time-marker"] {
       filter: drop-shadow(0 0 2px ${CLOCK_COLORS.zmanitTick}) drop-shadow(0 0 4px ${CLOCK_COLORS.zmanitTick});
-      pointer-events: none;
+      cursor: help;
     }
 
     [data-clock-part="event-marker"] {
       cursor: help;
+    }
+
+    [data-clock-part="hour-hand"],
+    [data-clock-part="minute-hand"],
+    [data-clock-part="second-hand"] {
+      opacity: 0.68;
+    }
+
+    [data-clock-part="date-display"] {
+      pointer-events: none;
     }
 
     [data-clock-part="current-time-halo"] {
@@ -401,6 +419,7 @@ function applyTime(dom: ClockDom, time: StaticClockTime): void {
   const secondAngle = second * 6;
   setHandPosition(dom.secondHand, secondAngle);
   setCurrentTimeMarkerPosition(dom.currentTimeMarker, time.hour, time.minute, second);
+  applyRingProminence(dom, time.hour >= 6 && time.hour < 18 ? "outer" : "inner");
   dom.svg.dataset.clockHourAngle = String(angles.hourAngle);
   dom.svg.dataset.clockMinuteAngle = String(angles.minuteAngle);
   dom.svg.dataset.clockSecondAngle = String(secondAngle);
@@ -423,6 +442,23 @@ function setCurrentTimeMarkerPosition(marker: SVGGElement, hour: number, minute:
   if (title !== null) {
     title.textContent = `זמן נוכחי ${formatTimeWithSeconds(hour, minute, second)}`;
   }
+}
+
+function applyRingProminence(dom: ClockDom, activeRing: ClockRing): void {
+  dom.svg.dataset.activeRing = activeRing;
+  setRingStyle(dom.outerRing, activeRing === "outer");
+  setRingStyle(dom.innerRing, activeRing === "inner");
+
+  for (const label of Array.from(dom.svg.querySelectorAll<SVGTextElement>('[data-clock-part="ring-hour-label"]'))) {
+    const isActive = label.dataset.clockRing === activeRing;
+    label.setAttribute("opacity", isActive ? "1" : "0.28");
+    label.setAttribute("font-weight", isActive ? "800" : "650");
+  }
+}
+
+function setRingStyle(ring: SVGCircleElement, isActive: boolean): void {
+  ring.setAttribute("stroke-width", isActive ? "3.2" : "1.15");
+  ring.setAttribute("opacity", isActive ? "1" : "0.22");
 }
 
 function ringTimeAngle(hour: number, minute: number, second: number): number {
@@ -494,17 +530,17 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
   line.setAttribute("stroke-linecap", "butt");
   line.setAttribute("opacity", "0.95");
 
-  title.textContent = `${tick.index} ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`;
+  title.textContent = `${displayZmanitIndex(tick.index)}, ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`;
   group.append(title, line);
   return group;
 }
 
 function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVGGElement {
   const marker = createSvgElement("g");
-  const markerRadius = event.ring === "outer" ? 91 - layerIndex * 3 : 84 - layerIndex * 3;
+  const radii = eventMarkerRadii(event.ring, layerIndex);
   const displayAngle = ringDisplayAngle(event.angle);
-  const inner = pointOnClock(displayAngle, markerRadius - 5);
-  const outer = pointOnClock(displayAngle, markerRadius + 5);
+  const inner = pointOnClock(displayAngle, radii.inner);
+  const outer = pointOnClock(displayAngle, radii.outer);
   const line = createSvgElement("line");
   const title = createSvgElement("title");
 
@@ -527,14 +563,24 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   line.setAttribute("x2", String(outer.x));
   line.setAttribute("y2", String(outer.y));
   line.setAttribute("stroke", eventColor(event.kind));
-  line.setAttribute("stroke-width", event.status === "next" ? "2.2" : "1.8");
+  line.setAttribute("stroke-width", event.status === "next" ? "1.55" : "1.25");
   line.setAttribute("stroke-linecap", "butt");
-  line.setAttribute("opacity", event.status === "past" ? "0.45" : "1");
+  line.setAttribute("opacity", event.status === "past" ? "0.58" : "1");
 
-  title.textContent = `${event.title}, ${pad(event.hour)}:${pad(event.minute)}, ${displayRing(event.ring)}, ${displayStatus(event.status)}`;
+  title.textContent = `${event.title}, ${pad(event.hour)}:${pad(event.minute)}, ${displayStatus(event.status)}`;
   marker.append(title, line);
 
   return marker;
+}
+
+function eventMarkerRadii(ring: ClockRing, layerIndex: number): { inner: number; outer: number } {
+  if (ring === "outer") {
+    const offset = layerIndex * 1.6;
+    return { inner: 89 - offset, outer: 98 - offset };
+  }
+
+  const offset = layerIndex * 1.8;
+  return { inner: 62 - offset, outer: 73 - offset };
 }
 
 function markerLayerIndex(events: readonly ResolvedInstantEvent[], event: ResolvedInstantEvent, index: number): number {
@@ -573,6 +619,10 @@ function displayStatus(status: ResolvedInstantEvent["status"]): string {
     return "האירוע הבא";
   }
   return "עתידי";
+}
+
+function displayZmanitIndex(index: number): string {
+  return `שעה זמנית ${index}`;
 }
 
 function setHandPosition(hand: SVGLineElement, angle: number): void {

@@ -607,7 +607,7 @@ function syncEventList(): void {
         const remove = document.createElement("button");
         remove.type = "button";
         remove.dataset.eventId = event.id;
-        remove.textContent = "מחיקה";
+        remove.textContent = "מחק";
         item.append(remove);
       }
       return item;
