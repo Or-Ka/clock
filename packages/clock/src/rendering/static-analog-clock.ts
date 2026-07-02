@@ -9,7 +9,6 @@ const CLOCK_COLORS = {
   faceStroke: "#6f879b",
   hand: "#eef5fb",
   secondHand: "#ff8d78",
-  outerRing: "#f2b86d",
   innerRing: "#8fb6e8",
   hourTick: "#d8e4ef",
   minuteTick: "#7890a3",
@@ -50,8 +49,6 @@ export interface ZmanitTick {
 
 interface ClockDom {
   readonly svg: SVGSVGElement;
-  readonly outerRing: SVGCircleElement;
-  readonly innerRing: SVGCircleElement;
   readonly eventLayer: SVGGElement;
   readonly zmanitLayer: SVGGElement;
   readonly currentTimeMarker: SVGGElement;
@@ -174,9 +171,8 @@ function createClockDom(): ClockDom {
   svg.append(face);
 
   appendMinuteTicks(svg);
-  const outerRing = createRing("outer", 88);
   const innerRing = createRing("inner", 74);
-  svg.append(outerRing, innerRing);
+  svg.append(innerRing);
   appendRingHourLabels(svg, "outer", [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 88);
   appendRingHourLabels(svg, "inner", [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], 74);
 
@@ -209,8 +205,6 @@ function createClockDom(): ClockDom {
 
   return {
     svg,
-    outerRing,
-    innerRing,
     eventLayer,
     zmanitLayer,
     currentTimeMarker,
@@ -267,17 +261,15 @@ function appendClockEffects(svg: SVGSVGElement): void {
   svg.append(style);
 }
 
-function createRing(ring: ClockRing, radius: number): SVGCircleElement {
+function createRing(ring: "inner", radius: number): SVGCircleElement {
   const circle = createSvgElement("circle");
   circle.setAttribute("cx", "100");
   circle.setAttribute("cy", "100");
   circle.setAttribute("r", String(radius));
   circle.setAttribute("fill", "none");
-  circle.setAttribute("stroke", ring === "outer" ? CLOCK_COLORS.outerRing : CLOCK_COLORS.innerRing);
+  circle.setAttribute("stroke", CLOCK_COLORS.innerRing);
   circle.setAttribute("stroke-width", "2.4");
-  if (ring === "inner") {
-    circle.setAttribute("opacity", "0.46");
-  }
+  circle.setAttribute("opacity", "0.46");
   circle.dataset.clockPart = `${ring}-ring`;
   circle.dataset.clockRing = ring;
   return circle;
@@ -446,19 +438,12 @@ function setCurrentTimeMarkerPosition(marker: SVGGElement, hour: number, minute:
 
 function applyRingProminence(dom: ClockDom, activeRing: ClockRing): void {
   dom.svg.dataset.activeRing = activeRing;
-  setRingStyle(dom.outerRing, activeRing === "outer");
-  setRingStyle(dom.innerRing, activeRing === "inner");
 
   for (const label of Array.from(dom.svg.querySelectorAll<SVGTextElement>('[data-clock-part="ring-hour-label"]'))) {
     const isActive = label.dataset.clockRing === activeRing;
     label.setAttribute("opacity", isActive ? "1" : "0.28");
     label.setAttribute("font-weight", isActive ? "800" : "650");
   }
-}
-
-function setRingStyle(ring: SVGCircleElement, isActive: boolean): void {
-  ring.setAttribute("stroke-width", isActive ? "3.2" : "1.15");
-  ring.setAttribute("opacity", isActive ? "1" : "0.22");
 }
 
 function ringTimeAngle(hour: number, minute: number, second: number): number {
@@ -510,8 +495,8 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
   const group = createSvgElement("g");
   const angle = standardClockAngle(tick.hour, tick.minute, tick.second);
   const isNightRingTick = tick.hour < 6 || tick.hour >= 18;
-  const inner = pointOnClock(angle, isNightRingTick ? 80 : 85);
-  const outer = pointOnClock(angle, isNightRingTick ? 92 : 97);
+  const inner = pointOnClock(angle, isNightRingTick ? 58 : 85);
+  const outer = pointOnClock(angle, isNightRingTick ? 70 : 97);
   const line = createSvgElement("line");
   const title = createSvgElement("title");
 

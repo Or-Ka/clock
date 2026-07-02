@@ -39,7 +39,7 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelectorAll('[data-clock-part="hour-tick"]')).toHaveLength(12);
     expect(container.querySelectorAll('[data-clock-part="minute-tick"]')).toHaveLength(48);
     expect(container.querySelectorAll('[data-clock-part="clock-hour-number"]')).toHaveLength(0);
-    expect(container.querySelector('[data-clock-part="outer-ring"]')).not.toBeNull();
+    expect(container.querySelector('[data-clock-part="outer-ring"]')).toBeNull();
     expect(container.querySelector('[data-clock-part="inner-ring"]')).not.toBeNull();
     expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="outer"]')).toHaveLength(12);
     expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="inner"]')).toHaveLength(12);
@@ -77,8 +77,8 @@ describe("createStaticAnalogClock", () => {
     expect(outerTwelve.getAttribute("stroke")).toBe("#101b26");
     expect(innerZero.getAttribute("fill")).toBe("#b9c7d5");
     expect(innerZero.getAttribute("opacity")).toBe("0.28");
-    expect(container.querySelector('[data-clock-part="outer-ring"]')?.getAttribute("stroke-width")).toBe("3.2");
-    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("opacity")).toBe("0.22");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("stroke-width")).toBe("2.4");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("opacity")).toBe("0.46");
     expect(outerTwelve.hasAttribute("transform")).toBe(false);
     expect(innerZero.hasAttribute("transform")).toBe(false);
   });
@@ -142,8 +142,8 @@ describe("createStaticAnalogClock", () => {
 
     expect(marker.getAttribute("data-clock-ring")).toBe("inner");
     expect(container.querySelector("svg")?.dataset.activeRing).toBe("inner");
-    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("stroke-width")).toBe("3.2");
-    expect(container.querySelector('[data-clock-part="outer-ring"]')?.getAttribute("opacity")).toBe("0.22");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("stroke-width")).toBe("2.4");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("opacity")).toBe("0.46");
     expect(marker.getAttribute("data-clock-radius")).toBe("74");
     expect(marker.getAttribute("data-clock-angle")).toBe("180");
     expect(marker.querySelector("title")?.textContent).toBe("זמן נוכחי 18:00:00");
@@ -186,7 +186,7 @@ describe("createStaticAnalogClock", () => {
 
     expect(tick?.getAttribute("data-clock-ring")).toBe("inner");
     expect(tick?.getAttribute("data-clock-angle")).toBe("172.5");
-    expect(distanceFromCenter(line, "x2", "y2")).toBeCloseTo(92, 0);
+    expect(distanceFromCenter(line, "x2", "y2")).toBeCloseTo(70, 0);
   });
 
   it("renders weekday, Hebrew date and Gregorian date in the center", () => {
