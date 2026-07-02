@@ -19,7 +19,6 @@ const CLOCK_COLORS = {
   dateMuted: "#b7c6d6",
   dateStrong: "#f2f7fb",
   zmanitTick: "#ff1f1f",
-  eventStroke: "#081017",
   sunrise: "#ffb084",
   sunset: "#aaa8ff",
   custom: "#66d8c2"
@@ -223,6 +222,10 @@ function appendClockEffects(svg: SVGSVGElement): void {
     [data-clock-part="current-time-marker"] {
       filter: drop-shadow(0 0 2px ${CLOCK_COLORS.zmanitTick}) drop-shadow(0 0 4px ${CLOCK_COLORS.zmanitTick});
       pointer-events: none;
+    }
+
+    [data-clock-part="event-marker"] {
+      cursor: help;
     }
 
     [data-clock-part="current-time-halo"] {
@@ -498,13 +501,11 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
 
 function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVGGElement {
   const marker = createSvgElement("g");
-  const markerRadius = event.ring === "outer" ? 80 - layerIndex * 5 : 58 - layerIndex * 5;
+  const markerRadius = event.ring === "outer" ? 91 - layerIndex * 3 : 84 - layerIndex * 3;
   const displayAngle = ringDisplayAngle(event.angle);
-  const inner = pointOnClock(displayAngle, markerRadius - 3);
-  const outer = pointOnClock(displayAngle, markerRadius + 3);
-  const dot = pointOnClock(displayAngle, markerRadius);
+  const inner = pointOnClock(displayAngle, markerRadius - 5);
+  const outer = pointOnClock(displayAngle, markerRadius + 5);
   const line = createSvgElement("line");
-  const circle = createSvgElement("circle");
   const title = createSvgElement("title");
 
   marker.dataset.clockPart = "event-marker";
@@ -526,20 +527,12 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   line.setAttribute("x2", String(outer.x));
   line.setAttribute("y2", String(outer.y));
   line.setAttribute("stroke", eventColor(event.kind));
-  line.setAttribute("stroke-width", event.status === "next" ? "3" : "2");
+  line.setAttribute("stroke-width", event.status === "next" ? "2.2" : "1.8");
   line.setAttribute("stroke-linecap", "butt");
   line.setAttribute("opacity", event.status === "past" ? "0.45" : "1");
 
-  circle.setAttribute("cx", String(dot.x));
-  circle.setAttribute("cy", String(dot.y));
-  circle.setAttribute("r", event.status === "next" ? "3.4" : "2.4");
-  circle.setAttribute("fill", eventColor(event.kind));
-  circle.setAttribute("stroke", event.status === "next" ? CLOCK_COLORS.eventStroke : CLOCK_COLORS.faceFill);
-  circle.setAttribute("stroke-width", event.status === "next" ? "1.4" : "0.8");
-  circle.setAttribute("opacity", event.status === "past" ? "0.45" : "1");
-
   title.textContent = `${event.title}, ${pad(event.hour)}:${pad(event.minute)}, ${displayRing(event.ring)}, ${displayStatus(event.status)}`;
-  marker.append(title, line, circle);
+  marker.append(title, line);
 
   return marker;
 }

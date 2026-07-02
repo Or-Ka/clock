@@ -272,6 +272,8 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-id")).toBe("day-times");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-kind")).toBe("day-times");
     expect(container.querySelector('[data-event-id="sunrise"] title')?.textContent).toContain("sunrise");
+    expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke-width")).toBe("2.2");
+    expect(container.querySelector('[data-event-id="sunrise"] circle')).toBeNull();
 
     clock.setEvents([
       resolvedEvent("night", "custom", "inner", 180, "future"),

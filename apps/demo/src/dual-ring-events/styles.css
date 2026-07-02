@@ -14,6 +14,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 ::selection {
   color: #071015;
   background: #8edbd0;
@@ -98,6 +102,27 @@ h2 {
 .event-form {
   display: grid;
   gap: 12px;
+}
+
+.add-event-block {
+  align-content: start;
+}
+
+.add-event-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.add-event-actions button[aria-expanded="true"] {
+  border-color: #8edbd0;
+  color: #081017;
+  background: #8edbd0;
+}
+
+.add-event-form {
+  border-block-start: 1px solid #263747;
+  padding-block-start: 12px;
 }
 
 .settings-block {
@@ -237,7 +262,7 @@ a:focus-visible {
 
 .fixed-day-time-row {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(110px, 160px) minmax(92px, 130px) auto;
+  grid-template-columns: minmax(160px, 1fr) minmax(104px, 140px) minmax(82px, 110px) minmax(84px, 110px) minmax(118px, 150px);
   gap: 8px;
   align-items: center;
   min-width: 0;
@@ -253,20 +278,14 @@ a:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.fixed-day-time-unit {
-  color: #a9b8c8;
-  font-size: 0.83rem;
-  font-weight: 800;
-}
-
 .event-list li {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(64px, auto) minmax(110px, 1fr) minmax(64px, auto) minmax(74px, auto) minmax(64px, auto) auto;
   gap: 8px;
   align-items: center;
-  min-height: 42px;
+  min-height: 34px;
   border-block-end: 1px solid #263747;
-  padding-block: 6px;
+  padding-block: 4px;
 }
 
 .event-list li[data-event-status="next"] {
@@ -292,28 +311,6 @@ a:focus-visible {
   text-underline-offset: 3px;
 }
 
-.event-kind {
-  min-width: 64px;
-  border-radius: 999px;
-  padding: 3px 7px;
-  color: #081017;
-  font-size: 0.76rem;
-  font-weight: 800;
-  text-align: center;
-}
-
-.event-kind-sunrise {
-  background: #ffb084;
-}
-
-.event-kind-sunset {
-  background: #aaa8ff;
-}
-
-.event-kind-custom {
-  background: #66d8c2;
-}
-
 .event-layer {
   min-width: 58px;
   border: 1px solid #456073;
@@ -326,17 +323,37 @@ a:focus-visible {
   text-align: center;
 }
 
-.event-details {
+.event-title,
+.event-time,
+.event-ring,
+.event-status {
   direction: rtl;
   min-width: 0;
-  overflow-wrap: anywhere;
   font-size: 0.9rem;
+}
+
+.event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-time {
+  direction: ltr;
+  text-align: start;
   font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.event-ring,
+.event-status {
+  color: #a9b8c8;
+  font-size: 0.8rem;
 }
 
 .event-list button {
-  min-height: 34px;
-  padding-inline: 9px;
+  min-height: 30px;
+  padding: 4px 8px;
 }
 
 @media (max-width: 880px) {
@@ -364,12 +381,21 @@ a:focus-visible {
   }
 
   .event-panel,
+  .add-event-actions,
   .time-fields,
   .fixed-day-time-row {
     grid-template-columns: 1fr;
   }
 
   .event-list li {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .event-layer,
+  .event-title,
+  .event-time,
+  .event-ring,
+  .event-status {
+    min-width: 0;
   }
 }
