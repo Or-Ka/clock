@@ -69,6 +69,7 @@ h1 {
 
 #clock-status {
   color: #2f6f60;
+  direction: rtl;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
   text-align: end;
@@ -138,6 +139,11 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
+input[type="number"] {
+  direction: ltr;
+  text-align: start;
+}
+
 button {
   min-height: 40px;
   border: 1px solid #778899;
@@ -184,6 +190,13 @@ a:focus-visible {
   background: #fff7e8;
 }
 
+.form-error {
+  min-height: 1.2em;
+  color: #9f2d20;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .event-kind {
   min-width: 64px;
   border-radius: 999px;
@@ -207,6 +220,7 @@ a:focus-visible {
 }
 
 .event-details {
+  direction: rtl;
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: 0.9rem;

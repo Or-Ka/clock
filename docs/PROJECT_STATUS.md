@@ -179,6 +179,20 @@ Phase 3 מוכן לביקורת ולמיזוג לאחר שהענף `feat/phase-3
 - בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings מהאפליקציה.
 - `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` ו-`npm.cmd run build --workspace @clock/clock` עברו.
 
+### סבב תיקוני תצוגה Phase 3
+
+סטטוס: הושלם ומוכן לביקורת.
+
+תוצאות:
+
+- לוח השעון המרכזי משתמש בכיוון רגיל: 12 למעלה, 3 מימין, 6 למטה ו-9 משמאל.
+- טבעות האירועים ממשיכות להשתמש במיפוי Phase 3: `outer` עבור 06:00-17:59 ו-`inner` עבור 18:00-05:59.
+- נוספו 60 שנתות במעגל החיצוני ביותר, ומתוכן 12 שנתות שעה בולטות.
+- נוספו סימוני מעבר חזותיים וגרדיאנט טבעות עבור 05:59-06:00 ו-17:59-18:00.
+- דמו Phase 3 תורגם לעברית ושומר על RTL.
+- לא שונו `TimeSource`, `ClockScheduler`, timezone, resolver אירועים, `ringForTime`, `dualRingAngle`, חישוב האירוע הבא או `setEvents()`.
+- בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings מהאפליקציה.
+
 ## החלטות מרכזיות בתוקף
 
 - workspace קטן, לא monorepo מרובה חבילות.

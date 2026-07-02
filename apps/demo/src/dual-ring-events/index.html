@@ -3,31 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Phase 3 Dual Ring Events Demo</title>
+    <title>דמו שלב 3 - אירועים בשתי טבעות</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="phase3-demo">
       <header class="demo-header">
         <div>
-          <h1>Dual Ring Events</h1>
-          <nav class="demo-links" aria-label="Demo phases">
-            <a href="../product-static-clock/index.html">Phase 1 - Static Clock</a>
-            <a href="../live-clock/index.html">Phase 2 - Live Clock</a>
-            <a aria-current="page" href="./index.html">Phase 3 - Dual Ring Events</a>
+          <h1>אירועים בשתי טבעות</h1>
+          <nav class="demo-links" aria-label="שלבי הדמו">
+            <a href="../product-static-clock/index.html">שלב 1 - שעון סטטי</a>
+            <a href="../live-clock/index.html">שלב 2 - שעון חי</a>
+            <a aria-current="page" href="./index.html">שלב 3 - אירועים בשתי טבעות</a>
           </nav>
         </div>
         <p id="clock-status" aria-live="polite">--:--</p>
       </header>
 
-      <section class="workspace" aria-label="Phase 3 demo workspace">
+      <section class="workspace" aria-label="אזור הדמו של שלב 3">
         <section class="clock-panel" aria-label="שעון חי עם שתי טבעות">
           <div class="clock-mount" id="phase3-clock"></div>
         </section>
 
         <aside class="event-panel" aria-label="ניהול אירועים">
           <div class="control-group">
-            <label for="timezone">Timezone</label>
+            <label for="timezone">אזור זמן</label>
             <select id="timezone">
               <option value="Asia/Jerusalem">Asia/Jerusalem</option>
               <option value="UTC">UTC</option>
@@ -36,36 +36,37 @@
             </select>
           </div>
 
-          <form id="event-form" class="event-form">
+          <form id="event-form" class="event-form" novalidate>
             <div class="control-group">
-              <label for="event-kind">Type</label>
+              <label for="event-kind">סוג אירוע</label>
               <select id="event-kind">
-                <option value="custom">Custom</option>
-                <option value="sunrise">Sunrise</option>
-                <option value="sunset">Sunset</option>
+                <option value="custom">אירוע מותאם</option>
+                <option value="sunrise">זריחה</option>
+                <option value="sunset">שקיעה</option>
               </select>
             </div>
 
             <div class="control-group">
-              <label for="event-title">Title</label>
-              <input id="event-title" type="text" value="Focus" maxlength="18" />
+              <label for="event-title">שם האירוע</label>
+              <input id="event-title" type="text" value="ריכוז" maxlength="18" />
             </div>
 
             <div class="time-fields">
               <div class="control-group">
-                <label for="event-hour">Hour</label>
+                <label for="event-hour">שעה</label>
                 <input id="event-hour" type="number" min="0" max="23" value="14" inputmode="numeric" />
               </div>
               <div class="control-group">
-                <label for="event-minute">Minute</label>
+                <label for="event-minute">דקה</label>
                 <input id="event-minute" type="number" min="0" max="59" value="30" inputmode="numeric" />
               </div>
             </div>
 
-            <button type="submit">Add event</button>
+            <p id="event-error" class="form-error" role="alert" aria-live="polite"></p>
+            <button type="submit">הוספת אירוע</button>
           </form>
 
-          <ul id="event-list" class="event-list" aria-label="Event list"></ul>
+          <ul id="event-list" class="event-list" aria-label="רשימת אירועים"></ul>
         </aside>
       </section>
     </main>

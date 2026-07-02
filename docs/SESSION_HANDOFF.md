@@ -19,6 +19,7 @@
 - Phase 2 הושלם ועבר Gate בענף `feat/phase-2-live-clock`.
 - Phase 3 נפתח מתוך `feat/phase-2-live-clock`, כי `main` המקומי עדיין אינו כולל את commits של Phase 2.
 - Phase 3 הושלם ומוכן לביקורת.
+- סבב תיקוני תצוגה ממוקד לדמו Phase 3 הושלם ומוכן לביקורת.
 - Phase 2 הוסיף שעון חי ומקורות זמן בלבד, ללא events, providers, markers, זריחה או שקיעה.
 
 ## המשך מומלץ
@@ -56,6 +57,16 @@
 - API חדש: `ClockRing`, `InstantEventDefinition`, `ResolvedInstantEvent`, `ringForTime`, `dualRingAngle`, `resolveInstantEvents`, `events` ו-`setEvents()`.
 - בדיקות: 8 test files, 78 tests.
 - בדיקת דפדפן: SVG יחיד, שתי טבעות, 12 תוויות בכל טבעת, אירועים בשתי הטבעות, add/delete ללא יצירת SVG חדש, responsive ב-1200px/760px/390px, ללא console errors/warnings מהאפליקציה.
+
+## תוצאות סבב תיקוני תצוגה Phase 3
+
+- לוח השעון המרכזי: 12 למעלה, 3 מימין, 6 למטה, 9 משמאל.
+- שנתות: 60 שנתות חיצוניות, 12 שנתות שעה בולטות.
+- טבעות אירועים: לוגיקת `outer`/`inner` לא השתנתה.
+- מעבר יום/לילה: גרדיאנט על הטבעות ושני סימוני מעבר ב-05:59-06:00 וב-17:59-18:00.
+- דמו: כל הטקסטים הגלויים תורגמו לעברית, למעט מזהי timezone טכניים.
+- בדיקות: 9 test files, 84 tests.
+- בדיקת דפדפן: responsive ב-1200px, 760px ו-390px, ללא overflow וללא console errors/warnings מהאפליקציה.
 
 ## עובדות שחשוב לשמר
 
