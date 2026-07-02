@@ -114,12 +114,17 @@
 - הודעות commit מפורטות בעברית.
 - commit רק לאחר בדיקות ועדכון תיעוד.
 
-## הפעלת דמו Phase 2
+## הפעלת דמו Phase 3
 
-להפעלת דמו השעון החי משורש הפרויקט:
+להפעלת דמו השעון החי עם שתי טבעות אירועים משורש הפרויקט:
 
 ```powershell
 npm.cmd run dev
 ```
 
-הפקודה מפעילה את `apps/demo/src/live-clock` דרך Vite על `127.0.0.1`.
+הפקודה מפעילה את `apps/demo/src/dual-ring-events` דרך Vite על `127.0.0.1`.
+
+דמואים נוספים זמינים דרך scripts ייעודיים:
+
+- `npm.cmd run dev:static-clock --workspace @clock/demo`
+- `npm.cmd run dev:live-clock --workspace @clock/demo`

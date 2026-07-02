@@ -1,6 +1,6 @@
 # Current Task
 
-עודכן: 2026-06-30
+עודכן: 2026-07-02
 
 ## משימה פעילה
 
@@ -8,7 +8,9 @@
 
 ## למה זו המשימה הפעילה
 
-Phase 2 הושלם בענף `feat/phase-2-live-clock` ועבר את Gate הבדיקות והדפדפן. אין להתחיל Phase 3 לפני ביקורת ומיזוג מאושרים.
+Phase 3 הושלם בענף `feat/phase-3-dual-ring-events` ומוכן לביקורת.
+
+`main` המקומי עדיין אינו כולל את commits של Phase 2, ולכן Phase 3 נפתח מענף `feat/phase-2-live-clock` כדי לא לאבד את בסיס השעון החי וללא merge ל-`main`.
 
 ```text
 fatal: not a git repository (or any of the parent directories): .git
@@ -29,10 +31,10 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## פעולות המשך מוצעות
 
-1. לבצע ביקורת ל-Phase 2.
+1. לבצע ביקורת ל-Phase 3.
 2. להחליט האם למזג את הענף ל-`main`.
-3. לא להתחיל Phase 3 לפני אישור מפורש.
+3. לא להתחיל Phase 4 לפני אישור מפורש.
 
 ## כלל חשוב
 
-ב-Phase 2 אין להוסיף אירועים, markers, ranges, anchors, derived events, providers, זריחה/שקיעה, location, API חיצוני, React adapter, Web Component, מחוג שניות, Desktop או EXE.
+ב-Phase 3 אין להוסיף API אמיתי של זריחה/שקיעה, provider, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE.

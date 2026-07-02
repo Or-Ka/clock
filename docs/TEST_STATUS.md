@@ -1,10 +1,10 @@
 # Test Status
 
-עודכן: 2026-06-30
+עודכן: 2026-07-02
 
 ## מצב נוכחי
 
-קיים test runner בסיסי: Vitest. Phase 2 מוסיף בדיקות דטרמיניסטיות למקורות זמן, scheduler, projection לפי timezone ו-live clock.
+קיים test runner בסיסי: Vitest. Phase 3 מוסיף בדיקות דטרמיניסטיות לטבעות, זוויות dual-ring, resolver אירועים, renderer ו-live clock עם `setEvents()`.
 
 ## ריצות אחרונות
 
@@ -16,11 +16,38 @@ npm.cmd run typecheck
 PASS: tsc -b tsconfig.json --pretty false
 
 npm.cmd test
-PASS: 7 test files, 54 tests
+PASS: 8 test files, 78 tests
 
 npm.cmd run build
-PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo, and live clock demo
+PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo, live clock demo, and dual ring events demo
+
+npm.cmd run build --workspace @clock/clock
+PASS: tsc -p tsconfig.build.json
 ```
+
+## בדיקות Phase 3
+
+נוספו בדיקות:
+
+- `packages/clock/src/events/event-model.test.ts`: בחירת טבעת, נוסחת זווית, שיוך זריחה/שקיעה לפי זמן בפועל, חישוב `past`/`next`/`future`, דחיית IDs כפולים וקלט זמן לא תקין.
+- `packages/clock/src/rendering/static-analog-clock.test.ts`: שתי טבעות, 24 תוויות שעה, סמני אירועים, `setEvents()` ללא החלפת SVG ו-`setEvents()` לאחר destroy.
+- `packages/clock/src/rendering/live-analog-clock.test.ts`: אירועים התחלתיים, `setEvents()`, דחיית קלט לא תקין בלי לשנות את התצוגה, חישוב סטטוסים מחדש בשינוי timezone ו-`setEvents()` לאחר destroy.
+
+## בדיקת דפדפן ל-Phase 3
+
+בוצעה מול `http://127.0.0.1:5173/`.
+
+תוצאות:
+
+- `npm.cmd run dev` הפעיל את דמו Phase 3.
+- ב-1200px: SVG יחיד, גודל שעון 620px, 12 תוויות בטבעת החיצונית, 12 תוויות בטבעת הפנימית, 5 אירועים, ללא overflow.
+- ב-760px: SVG יחיד, גודל שעון 620px, 12 תוויות בכל טבעת, 5 אירועים, ללא overflow.
+- ב-390px: SVG יחיד, גודל שעון 310px, 12 תוויות בכל טבעת, 5 אירועים, ללא overflow.
+- אירועים הופיעו בשתי הטבעות: 2 אירועים ב-`outer` ו-3 אירועים ב-`inner`.
+- סומן אירוע `next` אחד.
+- הוספת אירוע `00:15` שייכה אותו ל-`inner`.
+- הוספה ומחיקה שמרו על SVG יחיד.
+- console errors/warnings מהאפליקציה: אין.
 
 ## בדיקות Phase 2
 
@@ -87,5 +114,4 @@ PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo,
 
 ## מגבלות
 
-- עדיין אין בדיקות event resolver.
-- עדיין אין בדיקות browser אוטומטיות ל-SVG Spike; בדיקת הדפדפן שבוצעה הייתה ידנית/כלית.
+- עדיין אין browser tests אוטומטיים כחלק מ-CI; בדיקות הדפדפן בוצעו דרך כלי הדפדפן בסשן.

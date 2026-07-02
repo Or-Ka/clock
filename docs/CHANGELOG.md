@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-02
+
+- החל Phase 3 בענף `feat/phase-3-dual-ring-events`.
+- סומנה כהוחלפה החלטת ה-MVP הישנה שהציגה רק את מחזור 12 השעות הנוכחי.
+- נוסף ADR לתצוגת 24 שעות בשתי טבעות: `outer` עבור 06:00-17:59 ו-`inner` עבור 18:00-05:59.
+- נוספו `ClockRing`, `ringForTime()`, `dualRingAngle()` ו-`resolveInstantEvents()`.
+- נוסף מודל `InstantEventDefinition` ו-`ResolvedInstantEvent` לאירועים ידניים מסוג `sunrise`, `sunset` ו-`custom`.
+- הורחב ה-SVG renderer להצגת שתי טבעות, 24 תוויות שעה וסמני אירועים.
+- הורחב `LiveAnalogClock` עם `events` ו-`setEvents()`.
+- נוסף דמו Phase 3 תחת `apps/demo/src/dual-ring-events/` עם הוספה, מחיקה, timezone ורשימת אירועים.
+- `npm.cmd run dev` מפעיל כעת את דמו Phase 3.
+- נוספו בדיקות Phase 3 והורץ Gate מלא.
+
 ## 2026-06-30
 
 - נשמר מקור אמת ראשוני תחת `docs/`.

@@ -1,6 +1,6 @@
 # Project Status
 
-עודכן: 2026-06-30
+עודכן: 2026-07-02
 
 ## מצב נוכחי
 
@@ -81,7 +81,7 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## המשימה הבאה
 
-Phase 2 מוכן לביקורת. אין להתחיל Phase 3 לפני ביקורת ומיזוג מאושרים.
+Phase 3 מוכן לביקורת ולמיזוג לאחר שהענף `feat/phase-3-dual-ring-events` יעבור review. אין להתחיל Phase 4.
 
 ## שערים
 
@@ -159,6 +159,26 @@ Phase 2 מוכן לביקורת. אין להתחיל Phase 3 לפני ביקור
 - בדיקת דפדפן אימתה ש-Simulated Time במהירות `120x` מתקדם אוטומטית תוך שניות ושומר על SVG יחיד.
 - `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` ו-`npm.cmd run build --workspace @clock/clock` עברו.
 
+### Gate Phase 3
+
+סטטוס: הושלם ומוכן לביקורת.
+
+תוצאות:
+
+- שתי הטבעות מוצגות בו-זמנית.
+- הטבעת החיצונית מייצגת 06:00-17:59.
+- הטבעת הפנימית מייצגת 18:00-05:59.
+- כל טבעת כוללת 12 תוויות שעה.
+- כל 24 השעות מוצגות תמיד.
+- `ringForTime()` ו-`dualRingAngle()` נבדקו עבור גבולות 05:59, 06:00, 17:59, 18:00, 23:59 ו-00:00.
+- אירועי `sunrise`, `sunset` ו-`custom` ידניים משויכים לטבעת לפי הזמן המקומי בפועל.
+- האירוע הבא מחושב מכל אירועי היום ללא מעבר אוטומטי למחר.
+- `setEvents()` מעדכן את שכבת האירועים בלי ליצור SVG חדש.
+- דמו Phase 3 נמצא תחת `apps/demo/src/dual-ring-events/`.
+- `npm.cmd run dev` מפעיל את דמו Phase 3.
+- בדיקת דפדפן עברה ב-1200px, 760px ו-390px ללא console errors/warnings מהאפליקציה.
+- `npm.cmd run docs:check`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` ו-`npm.cmd run build --workspace @clock/clock` עברו.
+
 ## החלטות מרכזיות בתוקף
 
 - workspace קטן, לא monorepo מרובה חבילות.
@@ -175,4 +195,5 @@ Phase 2 מוכן לביקורת. אין להתחיל Phase 3 לפני ביקור
 - ה-renderer מקבל רק אירועים פתורים.
 - MVP כולל רק אירועים מוחלטים ידניים.
 - `anchor`, `derived` ו-`range` מתוכננים אך לא ממומשים ב-MVP.
-- תצוגת MVP היא מחזור 12 השעות הנוכחי.
+- Superseded: תצוגת MVP היא מחזור 12 השעות הנוכחי.
+- Phase 3 מציג תמיד 24 שעות בשתי טבעות: `outer` עבור 06:00-17:59 ו-`inner` עבור 18:00-05:59.

@@ -82,6 +82,7 @@ interface LiveAnalogClockOptions {
   readonly timeSource: TimeSource;
   readonly timeZone: string;
   readonly scheduler?: ClockScheduler;
+  readonly events?: InstantEventDefinition[];
 }
 
 interface LiveAnalogClock {
@@ -89,6 +90,7 @@ interface LiveAnalogClock {
   stop(): void;
   refresh(): void;
   setTimeZone(timeZone: string): void;
+  setEvents(events: InstantEventDefinition[]): void;
   destroy(): void;
 }
 
@@ -104,3 +106,44 @@ function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnalogClock
 - `projectInstantToStaticClockTime`
 
 יצירת `LiveAnalogClock` מרנדרת מצב ראשוני, אך אינה מתחילה timer אוטומטי. יש לקרוא ל-`start()` במפורש. `refresh()` עובד גם כשהשעון עצור. `setTimeZone()` לאחר `destroy()` זורק שגיאה. `destroy()` בטוח לקריאה חוזרת ומנקה את ה-scheduler ואת השעון הסטטי.
+
+## Phase 3 API: Dual Ring Events
+
+Phase 3 מוסיף אירועים ידניים מיידיים:
+
+```ts
+type ClockRing = "outer" | "inner";
+type InstantEventKind = "sunrise" | "sunset" | "custom";
+type InstantEventStatus = "past" | "next" | "future";
+
+interface InstantEventDefinition {
+  readonly id: string;
+  readonly type: "instant";
+  readonly kind?: InstantEventKind;
+  readonly title: string;
+  readonly hour: number;
+  readonly minute: number;
+  readonly description?: string;
+}
+
+interface ResolvedInstantEvent {
+  readonly id: string;
+  readonly type: "instant";
+  readonly kind: InstantEventKind;
+  readonly title: string;
+  readonly hour: number;
+  readonly minute: number;
+  readonly ring: ClockRing;
+  readonly angle: number;
+  readonly status: InstantEventStatus;
+  readonly description?: string;
+}
+```
+
+פונקציות עזר ציבוריות:
+
+- `ringForTime(hour, minute)`
+- `dualRingAngle(hour, minute)`
+- `resolveInstantEvents(events, currentTime)`
+
+`setEvents()` בודק קלט, דוחה IDs כפולים, אינו משנה את מערך הקלט, מחשב `ring` ו-`angle`, ומעדכן את שכבת האירועים בלי ליצור SVG חדש.

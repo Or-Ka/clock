@@ -24,6 +24,13 @@
 - SVG renderer מוצרי.
 - API `createAnalogClock`.
 
+## Phase 3: Dual Ring Events
+
+- שתי טבעות קבועות לכל 24 השעות.
+- אירועים ידניים מיידיים מסוג זריחה, שקיעה ומותאם.
+- API `events` ו-`setEvents()` ב-`LiveAnalogClock`.
+- דמו Phase 3 נפרד עם טופס הוספה, מחיקה, timezone ורשימת אירועים.
+
 ## שלב 4: הרחבות
 
 - anchors.
