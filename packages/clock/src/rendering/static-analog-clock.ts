@@ -26,6 +26,7 @@ const CLOCK_COLORS = {
 } as const;
 const OUTER_TIME_MARKER_RADIUS = 80;
 const INNER_TIME_MARKER_RADIUS = 74;
+const DATE_LABEL_FONT_FAMILY = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
 
 export interface StaticAnalogClockOptions {
   readonly container: HTMLElement;
@@ -377,6 +378,7 @@ function createDateLine(part: string, y: number, fontSize: string, fontWeight: s
   label.setAttribute("y", String(y));
   label.setAttribute("text-anchor", "middle");
   label.setAttribute("dominant-baseline", "central");
+  label.setAttribute("font-family", DATE_LABEL_FONT_FAMILY);
   label.setAttribute("font-size", fontSize);
   label.setAttribute("font-weight", fontWeight);
   label.setAttribute("fill", fill);

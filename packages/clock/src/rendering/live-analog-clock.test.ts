@@ -134,6 +134,34 @@ describe("createLiveAnalogClock", () => {
     expect(container.querySelector('[data-event-id="meeting"]')?.getAttribute("data-event-layer-id")).toBe("personal");
   });
 
+  it("updates the night Hebrew date display when day-time events are loaded", () => {
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-07-02T18:10:00Z"),
+      timeZone: "Asia/Jerusalem",
+      scheduler: createManualScheduler()
+    });
+
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).not.toContain("אור ל");
+
+    clock.setEventLayers([
+      {
+        id: "day-times",
+        title: "זמני היום",
+        kind: "day-times",
+        enabled: true,
+        events: [
+          { id: "sunrise", type: "instant", kind: "sunrise", title: "זריחה", hour: 6, minute: 0 },
+          { id: "sunset", type: "instant", kind: "sunset", title: "שקיעה", hour: 19, minute: 45 }
+        ]
+      }
+    ]);
+
+    expect(container.querySelector('[data-clock-part="weekday-label"]')?.textContent).toBe("חמישי (ליל שישי)");
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toContain("אור לי״ח");
+  });
+
   it("updates zmanit ticks without replacing the SVG", () => {
     const container = document.createElement("div");
     const clock = createLiveAnalogClock({

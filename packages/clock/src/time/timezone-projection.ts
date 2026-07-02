@@ -2,7 +2,28 @@ import type { Temporal } from "@js-temporal/polyfill";
 
 import type { ClockDateDisplay, StaticClockTime } from "./static-clock-time.js";
 
-export function projectInstantToStaticClockTime(instant: Temporal.Instant, timeZone: string): StaticClockTime {
+export interface StaticClockProjectionOptions {
+  readonly dateBoundary?: ClockDateBoundary;
+}
+
+export interface ClockDateBoundary {
+  readonly sunrise?: ClockDateBoundaryTime;
+  readonly sunset?: ClockDateBoundaryTime;
+}
+
+export interface ClockDateBoundaryTime {
+  readonly hour: number;
+  readonly minute: number;
+  readonly second?: number;
+}
+
+type NightDisplayPhase = "after-sunset" | "before-sunrise";
+
+export function projectInstantToStaticClockTime(
+  instant: Temporal.Instant,
+  timeZone: string,
+  options: StaticClockProjectionOptions = {}
+): StaticClockTime {
   if (timeZone.trim() === "") {
     throw new RangeError("timeZone must be a non-empty IANA time zone.");
   }
@@ -12,25 +33,26 @@ export function projectInstantToStaticClockTime(instant: Temporal.Instant, timeZ
     hour: zonedDateTime.hour,
     minute: zonedDateTime.minute,
     second: zonedDateTime.second,
-    dateDisplay: formatDateDisplay(instant.epochMilliseconds, timeZone)
+    dateDisplay: formatDateDisplay(zonedDateTime, timeZone, options.dateBoundary)
   };
 }
 
-function formatDateDisplay(epochMilliseconds: number, timeZone: string): ClockDateDisplay {
-  const date = new Date(epochMilliseconds);
-  const weekday = new Intl.DateTimeFormat("he-IL", {
-    weekday: "long",
-    timeZone
-  })
-    .format(date)
-    .replace(/^יום\s+/, "");
+function formatDateDisplay(
+  zonedDateTime: Temporal.ZonedDateTime,
+  timeZone: string,
+  dateBoundary: ClockDateBoundary | undefined
+): ClockDateDisplay {
+  const nightPhase = resolveNightDisplayPhase(zonedDateTime, dateBoundary);
+  const hebrewDateTime = nightPhase === "after-sunset" ? zonedDateTime.add({ days: 1 }) : zonedDateTime;
+  const weekday =
+    nightPhase === undefined ? formatWeekday(zonedDateTime, timeZone) : formatNightWeekday(zonedDateTime, timeZone, nightPhase);
   const hebrewParts = partsByType(
     new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
       day: "numeric",
       month: "long",
       year: "numeric",
       timeZone
-    }).formatToParts(date)
+    }).formatToParts(zonedDateTimeToDate(hebrewDateTime))
   );
   const gregorianParts = partsByType(
     new Intl.DateTimeFormat("he-IL", {
@@ -38,14 +60,82 @@ function formatDateDisplay(epochMilliseconds: number, timeZone: string): ClockDa
       month: "long",
       year: "numeric",
       timeZone
-    }).formatToParts(date)
+    }).formatToParts(zonedDateTimeToDate(zonedDateTime))
   );
+  const hebrewDate = formatHebrewDate(hebrewParts);
 
   return {
     weekday,
-    hebrewDate: formatHebrewDate(hebrewParts),
+    hebrewDate: nightPhase === undefined ? hebrewDate : `אור ל${hebrewDate}`,
     gregorianDate: `${gregorianParts.day ?? ""} ${gregorianParts.month ?? ""} ${gregorianParts.year ?? ""}`.trim()
   };
+}
+
+function formatWeekday(zonedDateTime: Temporal.ZonedDateTime, timeZone: string): string {
+  return new Intl.DateTimeFormat("he-IL", {
+    weekday: "long",
+    timeZone
+  })
+    .format(zonedDateTimeToDate(zonedDateTime))
+    .replace(/^יום\s+/, "");
+}
+
+function formatNightWeekday(
+  zonedDateTime: Temporal.ZonedDateTime,
+  timeZone: string,
+  nightPhase: NightDisplayPhase
+): string {
+  const civilWeekday =
+    nightPhase === "before-sunrise"
+      ? formatWeekday(zonedDateTime.subtract({ days: 1 }), timeZone)
+      : formatWeekday(zonedDateTime, timeZone);
+  const nightWeekday =
+    nightPhase === "before-sunrise"
+      ? formatWeekday(zonedDateTime, timeZone)
+      : formatWeekday(zonedDateTime.add({ days: 1 }), timeZone);
+
+  return `${civilWeekday} (ליל ${nightWeekday})`;
+}
+
+function resolveNightDisplayPhase(
+  zonedDateTime: Temporal.ZonedDateTime,
+  dateBoundary: ClockDateBoundary | undefined
+): NightDisplayPhase | undefined {
+  const second = secondOfDay(zonedDateTime);
+  const sunriseSecond = dateBoundary?.sunrise === undefined ? undefined : boundarySecondOfDay(dateBoundary.sunrise);
+  const sunsetSecond = dateBoundary?.sunset === undefined ? undefined : boundarySecondOfDay(dateBoundary.sunset);
+
+  if (sunsetSecond !== undefined && second >= sunsetSecond) {
+    return "after-sunset";
+  }
+
+  if (sunriseSecond !== undefined && second < sunriseSecond) {
+    return "before-sunrise";
+  }
+
+  return undefined;
+}
+
+function secondOfDay(time: ClockDateBoundaryTime): number {
+  return time.hour * 60 * 60 + time.minute * 60 + (time.second ?? 0);
+}
+
+function boundarySecondOfDay(time: ClockDateBoundaryTime): number {
+  if (!Number.isInteger(time.hour) || time.hour < 0 || time.hour > 23) {
+    throw new RangeError("dateBoundary time hour must be an integer between 0 and 23.");
+  }
+  if (!Number.isInteger(time.minute) || time.minute < 0 || time.minute > 59) {
+    throw new RangeError("dateBoundary time minute must be an integer between 0 and 59.");
+  }
+  if (time.second !== undefined && (!Number.isInteger(time.second) || time.second < 0 || time.second > 59)) {
+    throw new RangeError("dateBoundary time second must be an integer between 0 and 59.");
+  }
+
+  return secondOfDay(time);
+}
+
+function zonedDateTimeToDate(zonedDateTime: Temporal.ZonedDateTime): Date {
+  return new Date(zonedDateTime.toInstant().epochMilliseconds);
 }
 
 function partsByType(parts: Intl.DateTimeFormatPart[]): Partial<Record<Intl.DateTimeFormatPartTypes, string>> {
