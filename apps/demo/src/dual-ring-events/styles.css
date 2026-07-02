@@ -1,6 +1,7 @@
 :root {
-  color: #1f2933;
-  background: #f4f6f7;
+  color-scheme: dark;
+  color: #e8eef5;
+  background: #0b1117;
   font-family:
     system-ui,
     -apple-system,
@@ -13,9 +14,17 @@
   box-sizing: border-box;
 }
 
+::selection {
+  color: #071015;
+  background: #8edbd0;
+}
+
 body {
   min-width: 320px;
   margin: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(52, 82, 107, 0.34), transparent 36rem),
+    #0b1117;
 }
 
 button,
@@ -25,81 +34,59 @@ select {
 }
 
 .phase3-demo {
-  width: min(1180px, calc(100vw - 32px));
+  width: min(1280px, calc(100vw - 32px));
   margin: 0 auto;
-  padding: 22px 0;
-}
-
-.demo-header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-block-end: 16px;
+  padding: 18px 0 28px;
 }
 
 h1,
+h2,
 p {
   margin: 0;
 }
 
-h1 {
-  font-size: 1.45rem;
+h2 {
+  color: #f2f7fb;
+  font-size: 1rem;
   line-height: 1.2;
-}
-
-.demo-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-block-start: 8px;
-  font-size: 0.9rem;
-}
-
-.demo-links a {
-  color: #315f72;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-.demo-links a[aria-current="page"] {
-  color: #8a4d20;
-  font-weight: 700;
+  font-weight: 850;
 }
 
 #clock-status {
-  color: #2f6f60;
+  color: #88e0c2;
   direction: rtl;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
   text-align: end;
   white-space: nowrap;
+  justify-self: center;
 }
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(290px, 360px);
-  gap: 22px;
-  align-items: start;
+  gap: 24px;
 }
 
 .clock-panel {
   display: grid;
+  gap: 8px;
   place-items: center;
-  min-height: min(68vh, 650px);
-  border-block: 1px solid #d5dee6;
+  min-height: min(72vh, 720px);
+  padding-block: 4px 14px;
 }
 
 .clock-mount {
-  width: min(620px, 82vw);
+  width: min(680px, 88vw, 72vh);
   aspect-ratio: 1;
-  color: #243746;
+  color: #e6edf5;
 }
 
 .event-panel {
   display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
   gap: 14px;
-  align-content: start;
+  align-items: start;
+  direction: rtl;
 }
 
 .control-group {
@@ -111,38 +98,49 @@ h1 {
 .event-form {
   display: grid;
   gap: 12px;
-  padding-block: 14px;
-  border-block: 1px solid #d5dee6;
+}
+
+.settings-block {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  min-height: 100%;
+  border: 1px solid #263747;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(13, 23, 32, 0.78);
 }
 
 .layer-controls {
   display: grid;
   gap: 8px;
   margin: 0;
-  border: 1px solid #d5dee6;
+  border: 1px solid #33485c;
   border-radius: 6px;
   padding: 10px 12px 12px;
+  background: rgba(14, 24, 34, 0.72);
 }
 
 .layer-controls legend {
   padding-inline: 4px;
-  color: #53616f;
+  color: #b7c6d6;
   font-size: 0.86rem;
   font-weight: 800;
+  background: #0b1117;
 }
 
 .layer-controls label {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #1f2933;
+  color: #e8eef5;
 }
 
 .layer-controls input {
   width: 18px;
   min-height: 18px;
   margin: 0;
-  accent-color: #2f7f72;
+  accent-color: #60d5bd;
 }
 
 .time-fields {
@@ -152,7 +150,7 @@ h1 {
 }
 
 label {
-  color: #53616f;
+  color: #b7c6d6;
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -161,12 +159,26 @@ select,
 input {
   width: 100%;
   min-height: 40px;
-  border: 1px solid #9cadbc;
+  border: 1px solid #456073;
   border-radius: 6px;
   padding: 7px 9px;
-  color: #1f2933;
-  background: #ffffff;
+  color: #f2f7fb;
+  background: #101b26;
+  caret-color: #8edbd0;
   font-variant-numeric: tabular-nums;
+}
+
+select option {
+  color: #f2f7fb;
+  background: #101b26;
+}
+
+select:disabled,
+input:disabled {
+  color: #9cadbc;
+  background: #0d1720;
+  border-color: #33485c;
+  opacity: 1;
 }
 
 input[type="number"] {
@@ -176,25 +188,29 @@ input[type="number"] {
 
 button {
   min-height: 40px;
-  border: 1px solid #778899;
+  border: 1px solid #526c82;
   border-radius: 6px;
   padding: 7px 11px;
-  color: #1f2933;
-  background: #ffffff;
+  color: #f2f7fb;
+  background: #152231;
   cursor: pointer;
 }
 
 button:hover,
 select:hover,
 input:hover {
-  border-color: #2f6f60;
+  border-color: #8edbd0;
+}
+
+button:active {
+  background: #1b3042;
 }
 
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
 a:focus-visible {
-  outline: 3px solid #2a9d8f;
+  outline: 3px solid #8edbd0;
   outline-offset: 2px;
 }
 
@@ -206,56 +222,72 @@ a:focus-visible {
   list-style: none;
 }
 
+.event-list-block {
+  align-content: start;
+}
+
 .event-list li {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   min-height: 42px;
-  border-block-end: 1px solid #d5dee6;
+  border-block-end: 1px solid #263747;
   padding-block: 6px;
 }
 
 .event-list li[data-event-status="next"] {
-  background: #fff7e8;
+  background: rgba(255, 197, 110, 0.14);
 }
 
 .form-error {
   min-height: 1.2em;
-  color: #9f2d20;
+  color: #ff9a8d;
   font-size: 0.86rem;
   font-weight: 700;
+}
+
+.helper-text {
+  margin: 0;
+  color: #a9b8c8;
+  font-size: 0.83rem;
+  line-height: 1.45;
+}
+
+.helper-text a {
+  color: #8bd8ef;
+  text-underline-offset: 3px;
 }
 
 .event-kind {
   min-width: 64px;
   border-radius: 999px;
   padding: 3px 7px;
-  color: #ffffff;
+  color: #081017;
   font-size: 0.76rem;
   font-weight: 800;
   text-align: center;
 }
 
 .event-kind-sunrise {
-  background: #c65a3a;
+  background: #ffb084;
 }
 
 .event-kind-sunset {
-  background: #55519b;
+  background: #aaa8ff;
 }
 
 .event-kind-custom {
-  background: #2f7f72;
+  background: #66d8c2;
 }
 
 .event-layer {
   min-width: 58px;
-  border: 1px solid #9cadbc;
+  border: 1px solid #456073;
   border-radius: 999px;
   padding: 2px 7px;
-  color: #334155;
-  background: #ffffff;
+  color: #d8e4ef;
+  background: #101b26;
   font-size: 0.74rem;
   font-weight: 800;
   text-align: center;
@@ -275,17 +307,8 @@ a:focus-visible {
 }
 
 @media (max-width: 880px) {
-  .workspace {
-    grid-template-columns: 1fr;
-  }
-
   .event-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .event-list,
-  .event-form {
-    grid-column: 1 / -1;
   }
 }
 
@@ -295,20 +318,16 @@ a:focus-visible {
     padding: 16px 0;
   }
 
-  .demo-header {
-    flex-direction: column;
-  }
-
   #clock-status {
-    text-align: start;
+    text-align: center;
   }
 
   .clock-panel {
-    min-height: 330px;
+    min-height: 360px;
   }
 
   .clock-mount {
-    width: min(310px, 88vw);
+    width: min(340px, 90vw);
   }
 
   .event-panel,

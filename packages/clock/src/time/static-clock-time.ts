@@ -7,10 +7,8 @@ export interface StaticClockTime {
 
 export interface ClockDateDisplay {
   readonly weekday: string;
-  readonly hebrewDateLine1: string;
-  readonly hebrewDateLine2: string;
-  readonly gregorianDateLine1: string;
-  readonly gregorianDateLine2: string;
+  readonly hebrewDate: string;
+  readonly gregorianDate: string;
 }
 
 export function assertValidStaticClockTime(time: StaticClockTime): void {

@@ -4,27 +4,58 @@ import { assertValidStaticClockTime, type StaticClockTime } from "../time/static
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const activeClockContainers = new WeakMap<HTMLElement, SVGSVGElement>();
+const CLOCK_COLORS = {
+  faceFill: "#101b26",
+  faceStroke: "#6f879b",
+  hand: "#eef5fb",
+  secondHand: "#ff8d78",
+  outerRing: "#f2b86d",
+  innerRing: "#8fb6e8",
+  hourTick: "#d8e4ef",
+  minuteTick: "#7890a3",
+  outerLabel: "#f7f1de",
+  innerLabel: "#b9c7d5",
+  textHalo: "#101b26",
+  dateMuted: "#b7c6d6",
+  dateStrong: "#f2f7fb",
+  zmanitTick: "#ff1f1f",
+  eventStroke: "#081017",
+  sunrise: "#ffb084",
+  sunset: "#aaa8ff",
+  custom: "#66d8c2"
+} as const;
+const OUTER_TIME_MARKER_RADIUS = 80;
+const INNER_TIME_MARKER_RADIUS = 74;
 
 export interface StaticAnalogClockOptions {
   readonly container: HTMLElement;
   readonly time: StaticClockTime;
   readonly events?: readonly ResolvedInstantEvent[];
+  readonly zmanitTicks?: readonly ZmanitTick[];
 }
 
 export interface StaticAnalogClock {
   setTime(time: StaticClockTime): void;
   setEvents(events: readonly ResolvedInstantEvent[]): void;
+  setZmanitTicks(ticks: readonly ZmanitTick[]): void;
   destroy(): void;
+}
+
+export interface ZmanitTick {
+  readonly index: number;
+  readonly hour: number;
+  readonly minute: number;
+  readonly second: number;
 }
 
 interface ClockDom {
   readonly svg: SVGSVGElement;
   readonly eventLayer: SVGGElement;
+  readonly zmanitLayer: SVGGElement;
+  readonly currentTimeMarker: SVGGElement;
   readonly weekdayLabel: SVGTextElement;
-  readonly hebrewDateLine1: SVGTextElement;
-  readonly hebrewDateLine2: SVGTextElement;
-  readonly gregorianDateLine1: SVGTextElement;
-  readonly gregorianDateLine2: SVGTextElement;
+  readonly hebrewDateLabel: SVGTextElement;
+  readonly gregorianDateLabel: SVGTextElement;
   readonly hourHand: SVGLineElement;
   readonly minuteHand: SVGLineElement;
   readonly secondHand: SVGLineElement;
@@ -53,6 +84,7 @@ export function createStaticAnalogClock(options: StaticAnalogClockOptions): Stat
     options.container.replaceChildren(dom.svg);
     applyTime(dom, options.time);
     applyEvents(dom, options.events ?? []);
+    applyZmanitTicks(dom, options.zmanitTicks ?? []);
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(updateSizeState);
@@ -87,6 +119,14 @@ export function createStaticAnalogClock(options: StaticAnalogClockOptions): Stat
       ensureAttached(options.container, dom.svg);
       applyEvents(dom, events);
     },
+    setZmanitTicks(ticks: readonly ZmanitTick[]) {
+      if (destroyed) {
+        throw new Error("Cannot update zmanit ticks on a destroyed static analog clock.");
+      }
+
+      ensureAttached(options.container, dom.svg);
+      applyZmanitTicks(dom, ticks);
+    },
     destroy() {
       if (destroyed) {
         return;
@@ -118,32 +158,40 @@ function createClockDom(): ClockDom {
   svg.style.display = "block";
   svg.style.width = "100%";
   svg.style.height = "100%";
+  appendClockEffects(svg);
 
   const face = createSvgElement("circle");
   face.setAttribute("cx", "100");
   face.setAttribute("cy", "100");
   face.setAttribute("r", "98");
-  face.setAttribute("fill", "white");
-  face.setAttribute("stroke", "#cbd5df");
+  face.setAttribute("fill", CLOCK_COLORS.faceFill);
+  face.setAttribute("stroke", CLOCK_COLORS.faceStroke);
   face.setAttribute("stroke-width", "1.2");
   face.dataset.clockPart = "face";
   svg.append(face);
 
   appendMinuteTicks(svg);
-  svg.append(createRing("outer", 80), createRing("inner", 58));
-  appendRingHourLabels(svg, "outer", [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 80);
-  appendRingHourLabels(svg, "inner", [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], 58);
+  svg.append(createRing("inner", 74));
+  appendRingHourLabels(svg, "outer", [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 88);
+  appendRingHourLabels(svg, "inner", [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], 74);
 
   const eventLayer = createSvgElement("g");
   eventLayer.dataset.clockPart = "event-layer";
   svg.append(eventLayer);
 
+  const zmanitLayer = createSvgElement("g");
+  zmanitLayer.dataset.clockPart = "zmanit-layer";
+  svg.append(zmanitLayer);
+
+  const currentTimeMarker = createCurrentTimeMarker();
+  svg.append(currentTimeMarker);
+
   const dateDisplay = createDateDisplay();
   svg.append(dateDisplay.group);
 
-  const hourHand = createHand("hour-hand", 34, 3.2, "#213447");
-  const minuteHand = createHand("minute-hand", 50, 2.4, "#213447");
-  const secondHand = createHand("second-hand", 56, 1, "#b64a3a");
+  const hourHand = createHand("hour-hand", 34, 3.2, CLOCK_COLORS.hand);
+  const minuteHand = createHand("minute-hand", 50, 2.4, CLOCK_COLORS.hand);
+  const secondHand = createHand("second-hand", 56, 1, CLOCK_COLORS.secondHand);
   svg.append(hourHand, minuteHand, secondHand);
 
   const pin = createSvgElement("circle");
@@ -157,15 +205,44 @@ function createClockDom(): ClockDom {
   return {
     svg,
     eventLayer,
+    zmanitLayer,
+    currentTimeMarker,
     weekdayLabel: dateDisplay.weekdayLabel,
-    hebrewDateLine1: dateDisplay.hebrewDateLine1,
-    hebrewDateLine2: dateDisplay.hebrewDateLine2,
-    gregorianDateLine1: dateDisplay.gregorianDateLine1,
-    gregorianDateLine2: dateDisplay.gregorianDateLine2,
+    hebrewDateLabel: dateDisplay.hebrewDateLabel,
+    gregorianDateLabel: dateDisplay.gregorianDateLabel,
     hourHand,
     minuteHand,
     secondHand
   };
+}
+
+function appendClockEffects(svg: SVGSVGElement): void {
+  const style = createSvgElement("style");
+  style.textContent = `
+    [data-clock-part="current-time-marker"] {
+      filter: drop-shadow(0 0 2px ${CLOCK_COLORS.zmanitTick}) drop-shadow(0 0 4px ${CLOCK_COLORS.zmanitTick});
+      pointer-events: none;
+    }
+
+    [data-clock-part="current-time-halo"] {
+      animation: clock-current-time-pulse 2600ms ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    @keyframes clock-current-time-pulse {
+      0%, 100% { opacity: 0.2; transform: scale(0.9); }
+      50% { opacity: 0.42; transform: scale(1.08); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      [data-clock-part="current-time-halo"] {
+        animation: none;
+        opacity: 0.28;
+      }
+    }
+  `;
+  svg.append(style);
 }
 
 function createRing(ring: ClockRing, radius: number): SVGCircleElement {
@@ -174,27 +251,58 @@ function createRing(ring: ClockRing, radius: number): SVGCircleElement {
   circle.setAttribute("cy", "100");
   circle.setAttribute("r", String(radius));
   circle.setAttribute("fill", "none");
-  circle.setAttribute("stroke", ring === "outer" ? "#d69a49" : "#5f7fa6");
+  circle.setAttribute("stroke", ring === "outer" ? CLOCK_COLORS.outerRing : CLOCK_COLORS.innerRing);
   circle.setAttribute("stroke-width", "2.4");
+  if (ring === "inner") {
+    circle.setAttribute("opacity", "0.46");
+  }
   circle.dataset.clockPart = `${ring}-ring`;
   circle.dataset.clockRing = ring;
   return circle;
+}
+
+function createCurrentTimeMarker(): SVGGElement {
+  const marker = createSvgElement("g");
+  const halo = createSvgElement("circle");
+  const core = createSvgElement("circle");
+  const title = createSvgElement("title");
+
+  marker.dataset.clockPart = "current-time-marker";
+  marker.setAttribute("aria-hidden", "true");
+
+  halo.setAttribute("cx", "0");
+  halo.setAttribute("cy", "0");
+  halo.setAttribute("r", "3.2");
+  halo.setAttribute("fill", CLOCK_COLORS.zmanitTick);
+  halo.setAttribute("opacity", "0.26");
+  halo.dataset.clockPart = "current-time-halo";
+
+  core.setAttribute("cx", "0");
+  core.setAttribute("cy", "0");
+  core.setAttribute("r", "1.15");
+  core.setAttribute("fill", "#fff7e6");
+  core.setAttribute("stroke", CLOCK_COLORS.zmanitTick);
+  core.setAttribute("stroke-width", "0.9");
+  core.dataset.clockPart = "current-time-core";
+
+  marker.append(title, halo, core);
+  return marker;
 }
 
 function appendMinuteTicks(svg: SVGSVGElement): void {
   for (let minute = 0; minute < 60; minute += 1) {
     const isHourTick = minute % 5 === 0;
     const angle = minute * 6;
-    const outer = pointOnClock(angle, 97);
-    const inner = pointOnClock(angle, isHourTick ? 90 : 94);
+    const outer = pointOnClock(angle, isHourTick ? 98 : 96);
+    const inner = pointOnClock(angle, isHourTick ? 88 : 93);
     const tick = createSvgElement("line");
     tick.setAttribute("x1", String(inner.x));
     tick.setAttribute("y1", String(inner.y));
     tick.setAttribute("x2", String(outer.x));
     tick.setAttribute("y2", String(outer.y));
-    tick.setAttribute("stroke", isHourTick ? "#243746" : "#8fa1b2");
+    tick.setAttribute("stroke", isHourTick ? CLOCK_COLORS.hourTick : CLOCK_COLORS.minuteTick);
     tick.setAttribute("stroke-linecap", "butt");
-    tick.setAttribute("stroke-width", isHourTick ? "1.5" : "0.7");
+    tick.setAttribute("stroke-width", isHourTick ? "1.65" : "0.7");
     tick.dataset.clockPart = isHourTick ? "hour-tick" : "minute-tick";
     tick.dataset.clockTickKind = isHourTick ? "hour" : "minute";
     tick.dataset.clockTickMinute = String(minute);
@@ -212,11 +320,17 @@ function appendRingHourLabels(svg: SVGSVGElement, ring: ClockRing, hours: readon
     label.setAttribute("y", String(point.y));
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("dominant-baseline", "central");
-    label.setAttribute("font-size", ring === "outer" ? "7.2" : "6.6");
-    label.setAttribute("font-weight", "700");
-    label.setAttribute("fill", ring === "outer" ? "#17293a" : "#26384a");
+    label.setAttribute("font-size", ring === "outer" ? "7.6" : "5.4");
+    label.setAttribute("font-weight", ring === "outer" ? "700" : "650");
+    if (ring === "outer") {
+      label.setAttribute("font-family", "Georgia, 'Times New Roman', serif");
+    }
+    label.setAttribute("fill", ring === "outer" ? CLOCK_COLORS.outerLabel : CLOCK_COLORS.innerLabel);
+    if (ring === "inner") {
+      label.setAttribute("opacity", "0.58");
+    }
     label.setAttribute("paint-order", "stroke");
-    label.setAttribute("stroke", "white");
+    label.setAttribute("stroke", CLOCK_COLORS.textHalo);
     label.setAttribute("stroke-width", "2.4");
     label.setAttribute("stroke-linejoin", "round");
     label.dataset.clockPart = "ring-hour-label";
@@ -242,23 +356,19 @@ function createHand(part: string, length: number, width: number, stroke: string)
 function createDateDisplay(): {
   group: SVGGElement;
   weekdayLabel: SVGTextElement;
-  hebrewDateLine1: SVGTextElement;
-  hebrewDateLine2: SVGTextElement;
-  gregorianDateLine1: SVGTextElement;
-  gregorianDateLine2: SVGTextElement;
+  hebrewDateLabel: SVGTextElement;
+  gregorianDateLabel: SVGTextElement;
 } {
   const group = createSvgElement("g");
   group.dataset.clockPart = "date-display";
   group.setAttribute("direction", "rtl");
 
-  const weekdayLabel = createDateLine("weekday-label", 69, "5.4", "700", "#5b6672");
-  const hebrewDateLine1 = createDateLine("hebrew-date-line-1", 78, "5.9", "800", "#1f2933");
-  const hebrewDateLine2 = createDateLine("hebrew-date-line-2", 86, "5.4", "700", "#334155");
-  const gregorianDateLine1 = createDateLine("gregorian-date-line-1", 121, "5.7", "800", "#1f2933");
-  const gregorianDateLine2 = createDateLine("gregorian-date-line-2", 129, "5.3", "700", "#334155");
+  const weekdayLabel = createDateLine("weekday-label", 69, "5.4", "700", CLOCK_COLORS.dateMuted);
+  const hebrewDateLabel = createDateLine("hebrew-date-label", 80, "5.9", "800", CLOCK_COLORS.dateStrong);
+  const gregorianDateLabel = createDateLine("gregorian-date-label", 124, "5.7", "800", CLOCK_COLORS.dateStrong);
 
-  group.append(weekdayLabel, hebrewDateLine1, hebrewDateLine2, gregorianDateLine1, gregorianDateLine2);
-  return { group, weekdayLabel, hebrewDateLine1, hebrewDateLine2, gregorianDateLine1, gregorianDateLine2 };
+  group.append(weekdayLabel, hebrewDateLabel, gregorianDateLabel);
+  return { group, weekdayLabel, hebrewDateLabel, gregorianDateLabel };
 }
 
 function createDateLine(part: string, y: number, fontSize: string, fontWeight: string, fill: string): SVGTextElement {
@@ -271,7 +381,7 @@ function createDateLine(part: string, y: number, fontSize: string, fontWeight: s
   label.setAttribute("font-weight", fontWeight);
   label.setAttribute("fill", fill);
   label.setAttribute("paint-order", "stroke");
-  label.setAttribute("stroke", "white");
+  label.setAttribute("stroke", CLOCK_COLORS.textHalo);
   label.setAttribute("stroke-width", "1.8");
   label.setAttribute("stroke-linejoin", "round");
   label.dataset.clockPart = part;
@@ -285,6 +395,7 @@ function applyTime(dom: ClockDom, time: StaticClockTime): void {
   const second = time.second ?? new Date().getSeconds();
   const secondAngle = second * 6;
   setHandPosition(dom.secondHand, secondAngle);
+  setCurrentTimeMarkerPosition(dom.currentTimeMarker, time.hour, time.minute, second);
   dom.svg.dataset.clockHourAngle = String(angles.hourAngle);
   dom.svg.dataset.clockMinuteAngle = String(angles.minuteAngle);
   dom.svg.dataset.clockSecondAngle = String(secondAngle);
@@ -292,18 +403,72 @@ function applyTime(dom: ClockDom, time: StaticClockTime): void {
   dom.svg.setAttribute("aria-label", `שעון אנלוגי מציג ${pad(time.hour)}:${pad(time.minute)}`);
 }
 
+function setCurrentTimeMarkerPosition(marker: SVGGElement, hour: number, minute: number, second: number): void {
+  const ring = hour >= 6 && hour < 18 ? "outer" : "inner";
+  const radius = ring === "outer" ? OUTER_TIME_MARKER_RADIUS : INNER_TIME_MARKER_RADIUS;
+  const angle = ringTimeAngle(hour, minute, second);
+  const point = pointOnClock(angle, radius);
+  const title = marker.querySelector("title");
+
+  marker.setAttribute("transform", `translate(${point.x} ${point.y})`);
+  marker.dataset.clockRing = ring;
+  marker.dataset.clockAngle = String(angle);
+  marker.dataset.clockRadius = String(radius);
+  marker.dataset.clockTime = formatTimeWithSeconds(hour, minute, second);
+  if (title !== null) {
+    title.textContent = `זמן נוכחי ${formatTimeWithSeconds(hour, minute, second)}`;
+  }
+}
+
+function ringTimeAngle(hour: number, minute: number, second: number): number {
+  const minutesFromSix = (hour * 60 + minute + second / 60 - 6 * 60 + 24 * 60) % (12 * 60);
+  return (minutesFromSix / 2 + 180) % 360;
+}
+
 function applyDateDisplay(dom: ClockDom, time: StaticClockTime): void {
   const display = time.dateDisplay;
   dom.weekdayLabel.textContent = display?.weekday ?? "";
-  dom.hebrewDateLine1.textContent = display?.hebrewDateLine1 ?? "";
-  dom.hebrewDateLine2.textContent = display?.hebrewDateLine2 ?? "";
-  dom.gregorianDateLine1.textContent = display?.gregorianDateLine1 ?? "";
-  dom.gregorianDateLine2.textContent = display?.gregorianDateLine2 ?? "";
+  dom.hebrewDateLabel.textContent = display?.hebrewDate ?? "";
+  dom.gregorianDateLabel.textContent = display?.gregorianDate ?? "";
 }
 
 function applyEvents(dom: ClockDom, events: readonly ResolvedInstantEvent[]): void {
   dom.eventLayer.replaceChildren(...events.map((event, index) => createEventMarker(event, markerLayerIndex(events, event, index))));
   dom.svg.dataset.clockEventCount = String(events.length);
+}
+
+function applyZmanitTicks(dom: ClockDom, ticks: readonly ZmanitTick[]): void {
+  dom.zmanitLayer.replaceChildren(...ticks.map(createZmanitTickMarker));
+  dom.svg.dataset.zmanitTickCount = String(ticks.length);
+}
+
+function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
+  const group = createSvgElement("g");
+  const angle = standardClockAngle(tick.hour, tick.minute, tick.second);
+  const isNightRingTick = tick.hour < 6 || tick.hour >= 18;
+  const inner = pointOnClock(angle, isNightRingTick ? 80 : 85);
+  const outer = pointOnClock(angle, isNightRingTick ? 92 : 97);
+  const line = createSvgElement("line");
+  const title = createSvgElement("title");
+
+  group.dataset.clockPart = "zmanit-tick";
+  group.dataset.zmanitIndex = String(tick.index);
+  group.dataset.zmanitTime = formatTimeWithSeconds(tick.hour, tick.minute, tick.second);
+  group.dataset.clockAngle = String(angle);
+  group.dataset.clockRing = isNightRingTick ? "inner" : "outer";
+
+  line.setAttribute("x1", String(inner.x));
+  line.setAttribute("y1", String(inner.y));
+  line.setAttribute("x2", String(outer.x));
+  line.setAttribute("y2", String(outer.y));
+  line.setAttribute("stroke", CLOCK_COLORS.zmanitTick);
+  line.setAttribute("stroke-width", "0.85");
+  line.setAttribute("stroke-linecap", "butt");
+  line.setAttribute("opacity", "0.95");
+
+  title.textContent = `${tick.index} ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`;
+  group.append(title, line);
+  return group;
 }
 
 function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVGGElement {
@@ -344,7 +509,7 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   circle.setAttribute("cy", String(dot.y));
   circle.setAttribute("r", event.status === "next" ? "3.4" : "2.4");
   circle.setAttribute("fill", eventColor(event.kind));
-  circle.setAttribute("stroke", event.status === "next" ? "#111827" : "white");
+  circle.setAttribute("stroke", event.status === "next" ? CLOCK_COLORS.eventStroke : CLOCK_COLORS.faceFill);
   circle.setAttribute("stroke-width", event.status === "next" ? "1.4" : "0.8");
   circle.setAttribute("opacity", event.status === "past" ? "0.45" : "1");
 
@@ -364,14 +529,18 @@ function ringDisplayAngle(angle: number): number {
   return (angle + 180) % 360;
 }
 
+function standardClockAngle(hour: number, minute: number, second: number): number {
+  return ((hour % 12) + minute / 60 + second / 3600) * 30;
+}
+
 function eventColor(kind: ResolvedInstantEvent["kind"]): string {
   if (kind === "sunrise") {
-    return "#e76f51";
+    return CLOCK_COLORS.sunrise;
   }
   if (kind === "sunset") {
-    return "#5b5f97";
+    return CLOCK_COLORS.sunset;
   }
-  return "#2a9d8f";
+  return CLOCK_COLORS.custom;
 }
 
 function displayRing(ring: ClockRing): string {
@@ -409,6 +578,10 @@ function round(value: number): number {
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+function formatTimeWithSeconds(hour: number, minute: number, second: number): string {
+  return `${pad(hour)}:${pad(minute)}:${pad(second)}`;
 }
 
 function createSvgElement<K extends keyof SVGElementTagNameMap>(tagName: K): SVGElementTagNameMap[K] {

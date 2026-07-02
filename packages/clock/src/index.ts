@@ -35,6 +35,10 @@ export {
   type FetchLike
 } from "./events/event-provider.js";
 export {
+  SunriseSunsetEventLayerProvider,
+  type SunriseSunsetEventLayerProviderOptions
+} from "./events/sunrise-sunset-provider.js";
+export {
   createLiveAnalogClock,
   type LiveAnalogClock,
   type LiveAnalogClockOptions
@@ -42,5 +46,6 @@ export {
 export {
   createStaticAnalogClock,
   type StaticAnalogClock,
-  type StaticAnalogClockOptions
+  type StaticAnalogClockOptions,
+  type ZmanitTick
 } from "./rendering/static-analog-clock.js";

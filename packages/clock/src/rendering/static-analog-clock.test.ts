@@ -39,9 +39,16 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelectorAll('[data-clock-part="hour-tick"]')).toHaveLength(12);
     expect(container.querySelectorAll('[data-clock-part="minute-tick"]')).toHaveLength(48);
     expect(container.querySelectorAll('[data-clock-part="clock-hour-number"]')).toHaveLength(0);
+    expect(container.querySelector('[data-clock-part="outer-ring"]')).toBeNull();
+    expect(container.querySelector('[data-clock-part="inner-ring"]')).not.toBeNull();
     expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="outer"]')).toHaveLength(12);
     expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="inner"]')).toHaveLength(12);
     expect(container.querySelectorAll("linearGradient")).toHaveLength(0);
+    expect(container.querySelector('[data-clock-part="face"]')?.getAttribute("fill")).toBe("#101b26");
+    expect(container.querySelector('[data-clock-part="face"]')?.getAttribute("stroke")).toBe("#6f879b");
+    expect(container.querySelector('[data-clock-part="hour-hand"]')?.getAttribute("stroke")).toBe("#eef5fb");
+    expect(container.querySelector('[data-clock-part="minute-tick"]')?.getAttribute("stroke")).toBe("#7890a3");
+    expect(container.querySelector('[data-clock-part="current-time-marker"]')).not.toBeNull();
     expect(svg?.dataset.clockHourAngle).toBe("195");
     expect(svg?.dataset.clockMinuteAngle).toBe("180");
   });
@@ -63,8 +70,13 @@ describe("createStaticAnalogClock", () => {
     expect(Number(outerSix.getAttribute("y"))).toBeGreaterThan(100);
     expect(Number(innerZero.getAttribute("y"))).toBeLessThan(100);
     expect(Number(innerEighteen.getAttribute("y"))).toBeGreaterThan(100);
-    expect(distanceFromPoint(outerTwelve)).toBeCloseTo(80, 0);
-    expect(distanceFromPoint(innerZero)).toBeCloseTo(58, 0);
+    expect(distanceFromPoint(outerTwelve)).toBeCloseTo(88, 0);
+    expect(distanceFromPoint(innerZero)).toBeCloseTo(74, 0);
+    expect(outerTwelve.getAttribute("font-family")).toContain("Georgia");
+    expect(outerTwelve.getAttribute("fill")).toBe("#f7f1de");
+    expect(outerTwelve.getAttribute("stroke")).toBe("#101b26");
+    expect(innerZero.getAttribute("fill")).toBe("#b9c7d5");
+    expect(innerZero.getAttribute("opacity")).toBe("0.58");
     expect(outerTwelve.hasAttribute("transform")).toBe(false);
     expect(innerZero.hasAttribute("transform")).toBe(false);
   });
@@ -108,6 +120,69 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector("svg")?.dataset.clockSecondAngle).toBe("90");
   });
 
+  it("places the glowing current-time marker on the outer or inner time ring", () => {
+    const container = document.createElement("div");
+    const clock = createStaticAnalogClock({
+      container,
+      time: { hour: 12, minute: 0, second: 0 }
+    });
+
+    const marker = getCurrentTimeMarker(container);
+    expect(marker.getAttribute("data-clock-ring")).toBe("outer");
+    expect(marker.getAttribute("data-clock-radius")).toBe("80");
+    expect(marker.getAttribute("data-clock-angle")).toBe("0");
+    expect(marker.querySelector('[data-clock-part="current-time-halo"]')).not.toBeNull();
+    expect(marker.querySelector('[data-clock-part="current-time-core"]')).not.toBeNull();
+    expect(marker.querySelector("title")?.textContent).toBe("זמן נוכחי 12:00:00");
+
+    clock.setTime({ hour: 18, minute: 0, second: 0 });
+
+    expect(marker.getAttribute("data-clock-ring")).toBe("inner");
+    expect(marker.getAttribute("data-clock-radius")).toBe("74");
+    expect(marker.getAttribute("data-clock-angle")).toBe("180");
+    expect(marker.querySelector("title")?.textContent).toBe("זמן נוכחי 18:00:00");
+  });
+
+  it("renders red zmanit ticks with index and exact time tooltips", () => {
+    const container = document.createElement("div");
+    const clock = createStaticAnalogClock({
+      container,
+      time: { hour: 12, minute: 0 },
+      zmanitTicks: [
+        { index: 1, hour: 6, minute: 45, second: 25 },
+        { index: 2, hour: 7, minute: 30, second: 50 }
+      ]
+    });
+
+    expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(2);
+    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-time")).toBe("06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("1 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke")).toBe("#ff1f1f");
+    expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke-width")).toBe("0.85");
+
+    clock.setZmanitTicks([{ index: 12, hour: 18, minute: 22, second: 10 }]);
+
+    expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
+    expect(container.querySelector('[data-zmanit-index="12"] title')?.textContent).toBe("12 18:22:10");
+  });
+
+  it("moves night-range zmanit ticks inward without changing their clock angle", () => {
+    const container = document.createElement("div");
+
+    createStaticAnalogClock({
+      container,
+      time: { hour: 12, minute: 0 },
+      zmanitTicks: [{ index: 1, hour: 5, minute: 45, second: 0 }]
+    });
+
+    const tick = container.querySelector('[data-zmanit-index="1"]');
+    const line = tick?.querySelector("line") ?? null;
+
+    expect(tick?.getAttribute("data-clock-ring")).toBe("inner");
+    expect(tick?.getAttribute("data-clock-angle")).toBe("172.5");
+    expect(distanceFromCenter(line, "x2", "y2")).toBeCloseTo(92, 0);
+  });
+
   it("renders weekday, Hebrew date and Gregorian date in the center", () => {
     const container = document.createElement("div");
 
@@ -118,22 +193,18 @@ describe("createStaticAnalogClock", () => {
         minute: 0,
         dateDisplay: {
           weekday: "חמישי",
-          hebrewDateLine1: "י״ז תמוז",
-          hebrewDateLine2: "תשפ״ו",
-          gregorianDateLine1: "2 ביולי",
-          gregorianDateLine2: "2026"
+          hebrewDate: "י״ז בתמוז תשפ״ו",
+          gregorianDate: "2 ביולי 2026"
         }
       }
     });
 
     expect(container.querySelector('[data-clock-part="date-display"]')).not.toBeNull();
     expect(container.querySelector('[data-clock-part="weekday-label"]')?.textContent).toBe("חמישי");
-    expect(container.querySelector('[data-clock-part="hebrew-date-line-1"]')?.textContent).toBe("י״ז תמוז");
-    expect(container.querySelector('[data-clock-part="hebrew-date-line-2"]')?.textContent).toBe("תשפ״ו");
-    expect(container.querySelector('[data-clock-part="gregorian-date-line-1"]')?.textContent).toBe("2 ביולי");
-    expect(container.querySelector('[data-clock-part="gregorian-date-line-2"]')?.textContent).toBe("2026");
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toBe("י״ז בתמוז תשפ״ו");
+    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.textContent).toBe("2 ביולי 2026");
     expect(Number(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("y"))).toBeLessThan(100);
-    expect(Number(container.querySelector('[data-clock-part="gregorian-date-line-1"]')?.getAttribute("y"))).toBeGreaterThan(100);
+    expect(Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))).toBeGreaterThan(100);
   });
 
   it("updates hands with setTime without replacing the SVG element", () => {
@@ -355,6 +426,14 @@ function getRingLabel(container: HTMLElement, ring: ResolvedInstantEvent["ring"]
     throw new Error(`Missing ${ring} ring label ${hour}.`);
   }
   return label;
+}
+
+function getCurrentTimeMarker(container: HTMLElement): SVGGElement {
+  const marker = container.querySelector<SVGGElement>('[data-clock-part="current-time-marker"]');
+  if (!marker) {
+    throw new Error("Missing current-time marker.");
+  }
+  return marker;
 }
 
 function getTick(container: HTMLElement, minute: number): SVGLineElement {

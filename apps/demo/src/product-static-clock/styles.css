@@ -1,6 +1,7 @@
 :root {
-  color: #1f2933;
-  background: #f6f7f9;
+  color-scheme: dark;
+  color: #e8eef5;
+  background: #0b1117;
   font-family:
     system-ui,
     -apple-system,
@@ -13,9 +14,15 @@
   box-sizing: border-box;
 }
 
+::selection {
+  color: #071015;
+  background: #8edbd0;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  background: #0b1117;
 }
 
 .demo-shell {
@@ -42,7 +49,7 @@ h1 {
 }
 
 #demo-status {
-  color: #34515e;
+  color: #88e0c2;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
 }
@@ -57,11 +64,11 @@ h1 {
 .clock-box {
   width: 100%;
   aspect-ratio: 1;
-  color: #243746;
-  border: 1px solid #d7dee8;
+  color: #e6edf5;
+  border: 1px solid #33485c;
   border-radius: 8px;
   padding: 12px;
-  background: #ffffff;
+  background: #101b26;
 }
 
 .clock-box--small {
@@ -85,22 +92,26 @@ h1 {
 
 button {
   min-width: 76px;
-  border: 1px solid #8fa1b3;
+  border: 1px solid #526c82;
   border-radius: 6px;
   padding: 8px 10px;
-  color: #1f2933;
-  background: #ffffff;
+  color: #f2f7fb;
+  background: #152231;
   font: inherit;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
 button:hover {
-  border-color: #34515e;
+  border-color: #8edbd0;
+}
+
+button:active {
+  background: #1b3042;
 }
 
 button:focus-visible {
-  outline: 3px solid #2a9d8f;
+  outline: 3px solid #8edbd0;
   outline-offset: 2px;
 }
 

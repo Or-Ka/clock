@@ -1,6 +1,7 @@
 :root {
-  color: #22313f;
-  background: #f5f7f8;
+  color-scheme: dark;
+  color: #e8eef5;
+  background: #0b1117;
   font-family:
     system-ui,
     -apple-system,
@@ -13,9 +14,15 @@
   box-sizing: border-box;
 }
 
+::selection {
+  color: #071015;
+  background: #8edbd0;
+}
+
 body {
   min-width: 320px;
   margin: 0;
+  background: #0b1117;
 }
 
 button,
@@ -48,7 +55,7 @@ h1 {
 }
 
 #clock-status {
-  color: #27645f;
+  color: #88e0c2;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   text-align: end;
@@ -58,13 +65,13 @@ h1 {
   display: grid;
   place-items: center;
   min-height: min(58vh, 560px);
-  border-block: 1px solid #d9e1e8;
+  border-block: 1px solid #263747;
 }
 
 .clock-mount {
   width: min(520px, 82vw);
   aspect-ratio: 1;
-  color: #243746;
+  color: #e6edf5;
 }
 
 .control-grid {
@@ -94,7 +101,7 @@ h1 {
 
 label,
 legend {
-  color: #52616f;
+  color: #b7c6d6;
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -103,19 +110,24 @@ legend {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #22313f;
+  color: #e8eef5;
   font-weight: 500;
+}
+
+input[type="radio"] {
+  accent-color: #60d5bd;
 }
 
 select,
 input[type="datetime-local"] {
   width: 100%;
   min-height: 40px;
-  border: 1px solid #9fb0bf;
+  border: 1px solid #456073;
   border-radius: 6px;
   padding: 7px 9px;
-  color: #22313f;
-  background: #ffffff;
+  color: #f2f7fb;
+  background: #101b26;
+  caret-color: #8edbd0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -125,26 +137,35 @@ input[type="datetime-local"] {
   gap: 8px;
 }
 
+select option {
+  color: #f2f7fb;
+  background: #101b26;
+}
+
 button {
   min-height: 40px;
-  border: 1px solid #7c8d9b;
+  border: 1px solid #526c82;
   border-radius: 6px;
   padding: 7px 10px;
-  color: #1f2933;
-  background: #ffffff;
+  color: #f2f7fb;
+  background: #152231;
   cursor: pointer;
 }
 
 button:hover,
 select:hover,
 input:hover {
-  border-color: #27645f;
+  border-color: #8edbd0;
+}
+
+button:active {
+  background: #1b3042;
 }
 
 button:focus-visible,
 select:focus-visible,
 input:focus-visible {
-  outline: 3px solid #2a9d8f;
+  outline: 3px solid #8edbd0;
   outline-offset: 2px;
 }
 

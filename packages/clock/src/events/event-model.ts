@@ -3,7 +3,7 @@ import { assertValidStaticClockTime, type StaticClockTime } from "../time/static
 export type ClockRing = "outer" | "inner";
 export type InstantEventKind = "sunrise" | "sunset" | "custom";
 export type InstantEventStatus = "past" | "next" | "future";
-export type EventLayerKind = "day-times" | "personal" | "api" | "custom";
+export type EventLayerKind = "day-times" | "personal" | "special" | "api" | "custom";
 export type EventDefinition = InstantEventDefinition;
 export type ResolvedClockItem = ResolvedInstantEvent;
 
@@ -14,6 +14,7 @@ export interface InstantEventDefinition {
   readonly title: string;
   readonly hour: number;
   readonly minute: number;
+  readonly second?: number;
   readonly description?: string;
 }
 
@@ -32,6 +33,7 @@ export interface ResolvedInstantEvent {
   readonly title: string;
   readonly hour: number;
   readonly minute: number;
+  readonly second?: number;
   readonly ring: ClockRing;
   readonly angle: number;
   readonly status: InstantEventStatus;
@@ -41,16 +43,16 @@ export interface ResolvedInstantEvent {
   readonly description?: string;
 }
 
-export function ringForTime(hour: number, minute: number): ClockRing {
-  assertValidStaticClockTime({ hour, minute });
+export function ringForTime(hour: number, minute: number, second = 0): ClockRing {
+  assertValidStaticClockTime({ hour, minute, second });
   return hour >= 6 && hour < 18 ? "outer" : "inner";
 }
 
-export function dualRingAngle(hour: number, minute: number): number {
-  assertValidStaticClockTime({ hour, minute });
-  const minutesSinceMidnight = hour * 60 + minute;
-  const shiftedMinutes = (minutesSinceMidnight - 6 * 60 + 24 * 60) % (12 * 60);
-  return (shiftedMinutes / (12 * 60)) * 360;
+export function dualRingAngle(hour: number, minute: number, second = 0): number {
+  assertValidStaticClockTime({ hour, minute, second });
+  const secondsSinceMidnight = secondsOfDay(hour, minute, second);
+  const shiftedSeconds = (secondsSinceMidnight - 6 * 60 * 60 + 24 * 60 * 60) % (12 * 60 * 60);
+  return (shiftedSeconds / (12 * 60 * 60)) * 360;
 }
 
 export function resolveInstantEvents(
@@ -60,13 +62,13 @@ export function resolveInstantEvents(
   assertValidStaticClockTime(currentTime);
   validateInstantEvents(events);
 
-  const currentMinutes = minutesOfDay(currentTime.hour, currentTime.minute);
-  const nextEventId = findNextEventId(events, currentMinutes);
+  const currentSeconds = secondsOfDay(currentTime.hour, currentTime.minute, currentTime.second ?? 0);
+  const nextEventId = findNextEventId(events, currentSeconds);
 
   return events.map((event) => {
-    const eventMinutes = minutesOfDay(event.hour, event.minute);
+    const eventSeconds = eventSecondsOfDay(event);
     const status: InstantEventStatus =
-      event.id === nextEventId ? "next" : eventMinutes < currentMinutes ? "past" : "future";
+      event.id === nextEventId ? "next" : eventSeconds < currentSeconds ? "past" : "future";
 
     return {
       id: event.id,
@@ -75,8 +77,9 @@ export function resolveInstantEvents(
       title: event.title,
       hour: event.hour,
       minute: event.minute,
-      ring: ringForTime(event.hour, event.minute),
-      angle: dualRingAngle(event.hour, event.minute),
+      ...(event.second === undefined ? {} : { second: event.second }),
+      ring: ringForTime(event.hour, event.minute, event.second ?? 0),
+      angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
       status,
       ...(event.description === undefined ? {} : { description: event.description })
     };
@@ -98,17 +101,17 @@ export function resolveEventLayers(
           layer
         }))
   );
-  const currentMinutes = minutesOfDay(currentTime.hour, currentTime.minute);
-  const nextEventId = findNextLayerEventId(enabledLayerEvents, currentMinutes);
+  const currentSeconds = secondsOfDay(currentTime.hour, currentTime.minute, currentTime.second ?? 0);
+  const nextEventId = findNextLayerEventId(enabledLayerEvents, currentSeconds);
 
   return enabledLayerEvents.map(({ event, layer }) => {
     if (event.type !== "instant") {
       throw new Error("Only instant events are supported in the current resolver.");
     }
 
-    const eventMinutes = minutesOfDay(event.hour, event.minute);
+    const eventSeconds = eventSecondsOfDay(event);
     const status: InstantEventStatus =
-      event.id === nextEventId ? "next" : eventMinutes < currentMinutes ? "past" : "future";
+      event.id === nextEventId ? "next" : eventSeconds < currentSeconds ? "past" : "future";
 
     return {
       id: event.id,
@@ -117,8 +120,9 @@ export function resolveEventLayers(
       title: event.title,
       hour: event.hour,
       minute: event.minute,
-      ring: ringForTime(event.hour, event.minute),
-      angle: dualRingAngle(event.hour, event.minute),
+      ...(event.second === undefined ? {} : { second: event.second }),
+      ring: ringForTime(event.hour, event.minute, event.second ?? 0),
+      angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
       status,
       layerId: layer.id,
       layerTitle: layer.title,
@@ -146,7 +150,7 @@ function validateInstantEvents(events: readonly InstantEventDefinition[]): void 
     if (event.kind !== undefined && event.kind !== "sunrise" && event.kind !== "sunset" && event.kind !== "custom") {
       throw new Error(`Unsupported instant event kind: ${event.kind}.`);
     }
-    assertValidStaticClockTime({ hour: event.hour, minute: event.minute });
+    assertValidStaticClockTime({ hour: event.hour, minute: event.minute, second: event.second ?? 0 });
   }
 }
 
@@ -177,18 +181,18 @@ function validateEventLayers(layers: readonly EventLayerDefinition[]): void {
   }
 }
 
-function findNextEventId(events: readonly InstantEventDefinition[], currentMinutes: number): string | undefined {
+function findNextEventId(events: readonly InstantEventDefinition[], currentSeconds: number): string | undefined {
   let nextEvent: InstantEventDefinition | undefined;
-  let nextMinutes = Number.POSITIVE_INFINITY;
+  let nextSeconds = Number.POSITIVE_INFINITY;
 
   for (const event of events) {
-    const eventMinutes = minutesOfDay(event.hour, event.minute);
-    if (eventMinutes < currentMinutes || eventMinutes >= nextMinutes) {
+    const eventSeconds = eventSecondsOfDay(event);
+    if (eventSeconds < currentSeconds || eventSeconds >= nextSeconds) {
       continue;
     }
 
     nextEvent = event;
-    nextMinutes = eventMinutes;
+    nextSeconds = eventSeconds;
   }
 
   return nextEvent?.id;
@@ -196,28 +200,32 @@ function findNextEventId(events: readonly InstantEventDefinition[], currentMinut
 
 function findNextLayerEventId(
   entries: readonly { readonly event: EventDefinition; readonly layer: EventLayerDefinition }[],
-  currentMinutes: number
+  currentSeconds: number
 ): string | undefined {
   let nextEvent: EventDefinition | undefined;
-  let nextMinutes = Number.POSITIVE_INFINITY;
+  let nextSeconds = Number.POSITIVE_INFINITY;
 
   for (const { event } of entries) {
     if (event.type !== "instant") {
       continue;
     }
 
-    const eventMinutes = minutesOfDay(event.hour, event.minute);
-    if (eventMinutes < currentMinutes || eventMinutes >= nextMinutes) {
+    const eventSeconds = eventSecondsOfDay(event);
+    if (eventSeconds < currentSeconds || eventSeconds >= nextSeconds) {
       continue;
     }
 
     nextEvent = event;
-    nextMinutes = eventMinutes;
+    nextSeconds = eventSeconds;
   }
 
   return nextEvent?.id;
 }
 
-function minutesOfDay(hour: number, minute: number): number {
-  return hour * 60 + minute;
+function eventSecondsOfDay(event: InstantEventDefinition): number {
+  return secondsOfDay(event.hour, event.minute, event.second ?? 0);
+}
+
+function secondsOfDay(hour: number, minute: number, second: number): number {
+  return hour * 60 * 60 + minute * 60 + second;
 }
