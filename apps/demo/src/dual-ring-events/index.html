@@ -3,52 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>דמו שלב 3 - אירועים בשתי טבעות</title>
+    <title>שעון יומי</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="phase3-demo">
-      <header class="demo-header">
-        <div>
-          <h1>אירועים בשתי טבעות</h1>
-          <nav class="demo-links" aria-label="שלבי הדמו">
-            <a href="../product-static-clock/index.html">שלב 1 - שעון סטטי</a>
-            <a href="../live-clock/index.html">שלב 2 - שעון חי</a>
-            <a aria-current="page" href="./index.html">שלב 3 - אירועים בשתי טבעות</a>
-          </nav>
-        </div>
-        <p id="clock-status" aria-live="polite">--:--</p>
-      </header>
-
-      <section class="workspace" aria-label="אזור הדמו של שלב 3">
-        <section class="clock-panel" aria-label="שעון חי עם שתי טבעות">
+      <section class="workspace" aria-label="שעון והגדרות">
+        <section class="clock-panel" aria-label="שעון חי עם טבעות אירועים">
+          <p id="clock-status" aria-live="polite">--:--</p>
           <div class="clock-mount" id="phase3-clock"></div>
         </section>
 
         <aside class="event-panel" aria-label="ניהול אירועים">
-          <div class="control-group">
-            <label for="timezone">אזור זמן</label>
-            <select id="timezone">
-              <option value="Asia/Jerusalem">Asia/Jerusalem</option>
-              <option value="UTC">UTC</option>
-              <option value="America/New_York">America/New_York</option>
-              <option value="Europe/London">Europe/London</option>
-            </select>
-          </div>
+          <section class="settings-block" aria-labelledby="location-settings-title">
+            <h2 id="location-settings-title">הגדרות מיקום</h2>
 
-          <fieldset class="layer-controls" aria-label="שכבות תצוגה">
-            <legend>שכבות תצוגה</legend>
-            <label>
-              <input type="checkbox" data-layer-toggle="day-times" checked />
-              זמני היום
-            </label>
-            <label>
-              <input type="checkbox" data-layer-toggle="personal" checked />
-              אירועים אישיים
-            </label>
-          </fieldset>
+            <div class="control-group">
+              <label for="location">מיקום</label>
+              <select id="location">
+                <option value="jerusalem">ירושלים</option>
+                <option value="tel-aviv">תל אביב</option>
+                <option value="haifa">חיפה</option>
+                <option value="london">לונדון</option>
+                <option value="new-york">ניו יורק</option>
+              </select>
+            </div>
 
-          <form id="event-form" class="event-form" novalidate>
+            <div class="control-group">
+              <label for="timezone">אזור זמן של המיקום</label>
+              <select id="timezone" disabled aria-describedby="day-times-status">
+                <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+              </select>
+            </div>
+
+            <p id="day-times-status" class="helper-text" aria-live="polite">
+              זמני זריחה ושקיעה ייטענו לפי המיקום והתאריך של היום.
+            </p>
+
+            <fieldset class="layer-controls" aria-label="שכבות תצוגה">
+              <legend>שכבות תצוגה</legend>
+              <label>
+                <input type="checkbox" data-layer-toggle="day-times" checked />
+                זמני היום
+              </label>
+              <label>
+                <input type="checkbox" data-layer-toggle="personal" checked />
+                אירועים אישיים
+              </label>
+              <label>
+                <input type="checkbox" data-layer-toggle="special" checked />
+                אירועים מיוחדים
+              </label>
+              <label>
+                <input type="checkbox" data-zmanit-layer-toggle checked />
+                שעות זמניות
+              </label>
+            </fieldset>
+          </section>
+
+          <form id="event-form" class="settings-block event-form" aria-labelledby="event-settings-title" novalidate>
+            <h2 id="event-settings-title">הגדרות אירוע</h2>
+
             <div class="control-group">
               <label for="event-kind">סוג אירוע</label>
               <select id="event-kind">
@@ -78,7 +96,73 @@
             <button type="submit">הוספת אירוע</button>
           </form>
 
-          <ul id="event-list" class="event-list" aria-label="רשימת אירועים"></ul>
+          <form
+            id="derived-event-form"
+            class="settings-block event-form"
+            aria-labelledby="special-event-settings-title"
+            novalidate
+          >
+            <h2 id="special-event-settings-title">הגדרות אירוע מיוחד</h2>
+
+            <div class="control-group">
+              <label for="derived-event-title">שם אירוע מיוחד</label>
+              <input id="derived-event-title" type="text" value="לפני שקיעה" maxlength="18" />
+            </div>
+
+            <div class="control-group">
+              <label for="derived-event-base">מבוסס על</label>
+              <select id="derived-event-base">
+                <option value="sunset">שקיעה</option>
+                <option value="sunrise">זריחה</option>
+                <option value="zmanit-1">שעה זמנית 1</option>
+                <option value="zmanit-2">שעה זמנית 2</option>
+                <option value="zmanit-3">שעה זמנית 3</option>
+                <option value="zmanit-4">שעה זמנית 4</option>
+                <option value="zmanit-5">שעה זמנית 5</option>
+                <option value="zmanit-6">שעה זמנית 6</option>
+                <option value="zmanit-7">שעה זמנית 7</option>
+                <option value="zmanit-8">שעה זמנית 8</option>
+                <option value="zmanit-9">שעה זמנית 9</option>
+                <option value="zmanit-10">שעה זמנית 10</option>
+                <option value="zmanit-11">שעה זמנית 11</option>
+                <option value="zmanit-12">שעה זמנית 12</option>
+              </select>
+            </div>
+
+            <div class="time-fields">
+              <div class="control-group">
+                <label for="derived-event-direction">כיוון</label>
+                <select id="derived-event-direction">
+                  <option value="before">לפני</option>
+                  <option value="after">אחרי</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label for="derived-event-offset">כמות</label>
+                <input id="derived-event-offset" type="number" min="0" step="0.25" value="1" inputmode="decimal" />
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="derived-event-offset-unit">יחידה</label>
+              <select id="derived-event-offset-unit">
+                <option value="hours">שעות</option>
+                <option value="minutes">דקות</option>
+                <option value="zmanit-hours">שעות זמניות</option>
+              </select>
+            </div>
+
+            <p id="derived-event-error" class="form-error" role="alert" aria-live="polite"></p>
+            <button type="submit">הוספת אירוע מיוחד</button>
+          </form>
+
+          <section class="settings-block event-list-block" aria-labelledby="event-list-title">
+            <h2 id="event-list-title">רשימת אירועים</h2>
+            <ul id="event-list" class="event-list" aria-label="רשימת אירועים"></ul>
+            <p class="helper-text">
+              זמני הזריחה והשקיעה נטענים מ־<a href="https://sunrise-sunset.org/api">API זריחה ושקיעה</a>.
+            </p>
+          </section>
         </aside>
       </section>
     </main>

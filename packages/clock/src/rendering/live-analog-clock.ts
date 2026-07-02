@@ -4,7 +4,7 @@ import { MinuteBoundaryClockScheduler } from "../time/clock-scheduler.js";
 import type { StaticClockTime } from "../time/static-clock-time.js";
 import type { TimeSource } from "../time/time-source.js";
 import { projectInstantToStaticClockTime } from "../time/timezone-projection.js";
-import { createStaticAnalogClock, type StaticAnalogClock } from "./static-analog-clock.js";
+import { createStaticAnalogClock, type StaticAnalogClock, type ZmanitTick } from "./static-analog-clock.js";
 
 export interface LiveAnalogClockOptions {
   readonly container: HTMLElement;
@@ -13,6 +13,7 @@ export interface LiveAnalogClockOptions {
   readonly scheduler?: ClockScheduler;
   readonly events?: readonly InstantEventDefinition[];
   readonly eventLayers?: readonly EventLayerDefinition[];
+  readonly zmanitTicks?: readonly ZmanitTick[];
 }
 
 export interface LiveAnalogClock {
@@ -22,12 +23,14 @@ export interface LiveAnalogClock {
   setTimeZone(timeZone: string): void;
   setEvents(events: readonly InstantEventDefinition[]): void;
   setEventLayers(eventLayers: readonly EventLayerDefinition[]): void;
+  setZmanitTicks(ticks: readonly ZmanitTick[]): void;
   destroy(): void;
 }
 
 export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnalogClock {
   let timeZone = options.timeZone;
   let eventLayers = initialEventLayers(options);
+  let zmanitTicks = [...(options.zmanitTicks ?? [])];
   let destroyed = false;
   let secondTimer: ReturnType<typeof setInterval> | undefined;
   const scheduler = options.scheduler ?? new MinuteBoundaryClockScheduler();
@@ -35,7 +38,8 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
   const staticClock = createStaticAnalogClock({
     container: options.container,
     time: initialTime,
-    events: resolveEventLayers(eventLayers, initialTime)
+    events: resolveEventLayers(eventLayers, initialTime),
+    zmanitTicks
   });
 
   const ensureActive = (action: string): void => {
@@ -101,6 +105,11 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
       const resolvedEvents = resolveEventLayers(nextEventLayers, currentTime);
       eventLayers = cloneEventLayers(nextEventLayers);
       staticClock.setEvents(resolvedEvents);
+    },
+    setZmanitTicks(nextTicks: readonly ZmanitTick[]) {
+      ensureActive("set zmanit ticks on");
+      zmanitTicks = [...nextTicks];
+      staticClock.setZmanitTicks(zmanitTicks);
     },
     destroy() {
       if (destroyed) {

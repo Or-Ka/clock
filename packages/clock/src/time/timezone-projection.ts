@@ -43,10 +43,8 @@ function formatDateDisplay(epochMilliseconds: number, timeZone: string): ClockDa
 
   return {
     weekday,
-    hebrewDateLine1: `${hebrewParts.day ?? ""} ${hebrewParts.month ?? ""}`.trim(),
-    hebrewDateLine2: hebrewParts.year ?? "",
-    gregorianDateLine1: `${gregorianParts.day ?? ""} ${gregorianParts.month ?? ""}`.trim(),
-    gregorianDateLine2: gregorianParts.year ?? ""
+    hebrewDate: formatHebrewDate(hebrewParts),
+    gregorianDate: `${gregorianParts.day ?? ""} ${gregorianParts.month ?? ""} ${gregorianParts.year ?? ""}`.trim()
   };
 }
 
@@ -58,4 +56,102 @@ function partsByType(parts: Intl.DateTimeFormatPart[]): Partial<Record<Intl.Date
     }
   }
   return result;
+}
+
+function formatHebrewDate(parts: Partial<Record<Intl.DateTimeFormatPartTypes, string>>): string {
+  const day = Number(parts.day);
+  const year = Number(parts.year);
+  const month = withHebrewMonthPrefix(parts.month ?? "");
+  const dayText = Number.isFinite(day) ? toHebrewNumeral(day) : parts.day ?? "";
+  const yearText = Number.isFinite(year) ? toHebrewYear(year) : parts.year ?? "";
+  return `${dayText} ${month} ${yearText}`.trim();
+}
+
+function withHebrewMonthPrefix(month: string): string {
+  if (month === "") {
+    return "";
+  }
+  return month.startsWith("ב") ? month : `ב${month}`;
+}
+
+function toHebrewYear(year: number): string {
+  const reducedYear = year % 1000;
+  return toHebrewNumeral(reducedYear);
+}
+
+function toHebrewNumeral(value: number): string {
+  if (!Number.isInteger(value) || value <= 0 || value >= 1000) {
+    return String(value);
+  }
+
+  const specialCases = new Map<number, string>([
+    [15, "טו"],
+    [16, "טז"]
+  ]);
+  const raw = specialCases.get(value) ?? buildHebrewNumeral(value);
+
+  if (raw.length === 1) {
+    return `${raw}׳`;
+  }
+
+  return `${raw.slice(0, -1)}״${raw.slice(-1)}`;
+}
+
+function buildHebrewNumeral(value: number): string {
+  const parts: string[] = [];
+  let remaining = value;
+
+  const hundreds: readonly [number, string][] = [
+    [400, "ת"],
+    [300, "ש"],
+    [200, "ר"],
+    [100, "ק"]
+  ];
+  const tens: readonly [number, string][] = [
+    [90, "צ"],
+    [80, "פ"],
+    [70, "ע"],
+    [60, "ס"],
+    [50, "נ"],
+    [40, "מ"],
+    [30, "ל"],
+    [20, "כ"],
+    [10, "י"]
+  ];
+  const ones: readonly [number, string][] = [
+    [9, "ט"],
+    [8, "ח"],
+    [7, "ז"],
+    [6, "ו"],
+    [5, "ה"],
+    [4, "ד"],
+    [3, "ג"],
+    [2, "ב"],
+    [1, "א"]
+  ];
+
+  for (const [amount, letter] of hundreds) {
+    while (remaining >= amount) {
+      parts.push(letter);
+      remaining -= amount;
+    }
+  }
+
+  for (const [amount, letter] of tens) {
+    if (remaining >= amount) {
+      parts.push(letter);
+      remaining -= amount;
+      break;
+    }
+  }
+
+  for (const [amount, letter] of ones) {
+    if (remaining >= amount) {
+      parts.push(letter);
+      remaining -= amount;
+      break;
+    }
+  }
+
+  return parts.join("");
 }

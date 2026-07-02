@@ -18,10 +18,11 @@ describe("projectInstantToStaticClockTime", () => {
     const projected = projectInstantToStaticClockTime(instant, "Asia/Jerusalem");
 
     expect(projected.dateDisplay?.weekday).toBeTruthy();
-    expect(projected.dateDisplay?.hebrewDateLine1).toBeTruthy();
-    expect(projected.dateDisplay?.hebrewDateLine2).toBeTruthy();
-    expect(projected.dateDisplay?.gregorianDateLine1).toContain("יולי");
-    expect(projected.dateDisplay?.gregorianDateLine2).toBe("2026");
+    expect(projected.dateDisplay?.hebrewDate).toContain("תשפ״ו");
+    expect(projected.dateDisplay?.hebrewDate).toContain("ב");
+    expect(projected.dateDisplay?.hebrewDate).not.toMatch(/\d/);
+    expect(projected.dateDisplay?.gregorianDate).toContain("יולי");
+    expect(projected.dateDisplay?.gregorianDate).toContain("2026");
   });
 
   it("rejects invalid time zones", () => {

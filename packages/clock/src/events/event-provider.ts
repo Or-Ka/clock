@@ -16,6 +16,7 @@ export interface ApiInstantEventPayload {
   readonly title: string;
   readonly hour: number;
   readonly minute: number;
+  readonly second?: number;
   readonly description?: string;
 }
 
@@ -73,6 +74,7 @@ function parsePayload(payload: unknown): InstantEventDefinition[] {
     title: event.title,
     hour: event.hour,
     minute: event.minute,
+    ...(event.second === undefined ? {} : { second: event.second }),
     ...(event.kind === undefined ? {} : { kind: event.kind }),
     ...(event.description === undefined ? {} : { description: event.description })
   }));

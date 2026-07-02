@@ -134,6 +134,23 @@ describe("createLiveAnalogClock", () => {
     expect(container.querySelector('[data-event-id="meeting"]')?.getAttribute("data-event-layer-id")).toBe("personal");
   });
 
+  it("updates zmanit ticks without replacing the SVG", () => {
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-06-30T08:00:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler()
+    });
+    const svg = container.querySelector("svg");
+
+    clock.setZmanitTicks([{ index: 1, hour: 6, minute: 45, second: 25 }]);
+
+    expect(container.querySelector("svg")).toBe(svg);
+    expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
+    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("1 06:45:25");
+  });
+
   it("rejects invalid setEvents input without changing the rendered events", () => {
     const container = document.createElement("div");
     const clock = createLiveAnalogClock({

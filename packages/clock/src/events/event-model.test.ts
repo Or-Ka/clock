@@ -83,6 +83,20 @@ describe("resolveInstantEvents", () => {
     expect(events[0]?.kind).toBe("custom");
     expect(() => resolveInstantEvents([event("bad", "custom", 24, 0)], { hour: 7, minute: 0 })).toThrow(RangeError);
   });
+
+  it("preserves second precision for API-backed instant events", () => {
+    const resolved = resolveInstantEvents(
+      [{ ...event("sunrise", "sunrise", 5, 42), second: 25 }],
+      { hour: 5, minute: 0, second: 0 }
+    );
+
+    expect(resolved[0]).toMatchObject({
+      id: "sunrise",
+      second: 25,
+      status: "next"
+    });
+    expect(resolved[0]?.angle).toBeCloseTo(351.208, 3);
+  });
 });
 
 describe("resolveEventLayers", () => {
