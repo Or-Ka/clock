@@ -76,7 +76,9 @@ describe("createStaticAnalogClock", () => {
     expect(outerTwelve.getAttribute("fill")).toBe("#f7f1de");
     expect(outerTwelve.getAttribute("stroke")).toBe("#101b26");
     expect(innerZero.getAttribute("fill")).toBe("#b9c7d5");
-    expect(innerZero.getAttribute("opacity")).toBe("0.58");
+    expect(innerZero.getAttribute("opacity")).toBe("0.28");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("stroke-width")).toBe("2.4");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("opacity")).toBe("0.46");
     expect(outerTwelve.hasAttribute("transform")).toBe(false);
     expect(innerZero.hasAttribute("transform")).toBe(false);
   });
@@ -129,7 +131,8 @@ describe("createStaticAnalogClock", () => {
 
     const marker = getCurrentTimeMarker(container);
     expect(marker.getAttribute("data-clock-ring")).toBe("outer");
-    expect(marker.getAttribute("data-clock-radius")).toBe("80");
+    expect(container.querySelector("svg")?.dataset.activeRing).toBe("outer");
+    expect(marker.getAttribute("data-clock-radius")).toBe("92");
     expect(marker.getAttribute("data-clock-angle")).toBe("0");
     expect(marker.querySelector('[data-clock-part="current-time-halo"]')).not.toBeNull();
     expect(marker.querySelector('[data-clock-part="current-time-core"]')).not.toBeNull();
@@ -138,6 +141,9 @@ describe("createStaticAnalogClock", () => {
     clock.setTime({ hour: 18, minute: 0, second: 0 });
 
     expect(marker.getAttribute("data-clock-ring")).toBe("inner");
+    expect(container.querySelector("svg")?.dataset.activeRing).toBe("inner");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("stroke-width")).toBe("2.4");
+    expect(container.querySelector('[data-clock-part="inner-ring"]')?.getAttribute("opacity")).toBe("0.46");
     expect(marker.getAttribute("data-clock-radius")).toBe("74");
     expect(marker.getAttribute("data-clock-angle")).toBe("180");
     expect(marker.querySelector("title")?.textContent).toBe("זמן נוכחי 18:00:00");
@@ -156,14 +162,14 @@ describe("createStaticAnalogClock", () => {
 
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(2);
     expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-time")).toBe("06:45:25");
-    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("1 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("שעה זמנית 1, 06:45:25");
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke")).toBe("#ff1f1f");
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke-width")).toBe("0.85");
 
     clock.setZmanitTicks([{ index: 12, hour: 18, minute: 22, second: 10 }]);
 
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
-    expect(container.querySelector('[data-zmanit-index="12"] title')?.textContent).toBe("12 18:22:10");
+    expect(container.querySelector('[data-zmanit-index="12"] title')?.textContent).toBe("שעה זמנית 12, 18:22:10");
   });
 
   it("moves night-range zmanit ticks inward without changing their clock angle", () => {
@@ -180,7 +186,7 @@ describe("createStaticAnalogClock", () => {
 
     expect(tick?.getAttribute("data-clock-ring")).toBe("inner");
     expect(tick?.getAttribute("data-clock-angle")).toBe("172.5");
-    expect(distanceFromCenter(line, "x2", "y2")).toBeCloseTo(92, 0);
+    expect(distanceFromCenter(line, "x2", "y2")).toBeCloseTo(70, 0);
   });
 
   it("renders weekday, Hebrew date and Gregorian date in the center", () => {
@@ -272,6 +278,10 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-id")).toBe("day-times");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-kind")).toBe("day-times");
     expect(container.querySelector('[data-event-id="sunrise"] title')?.textContent).toContain("sunrise");
+    expect(container.querySelector('[data-event-id="sunrise"] title')?.textContent).not.toContain("טבעת");
+    expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke")).toBe("#ffd400");
+    expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke-width")).toBe("1.55");
+    expect(container.querySelector('[data-event-id="sunrise"] circle')).toBeNull();
 
     clock.setEvents([
       resolvedEvent("night", "custom", "inner", 180, "future"),
@@ -284,6 +294,8 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="night"]')?.getAttribute("data-clock-ring")).toBe("inner");
     expect(container.querySelector('[data-event-id="night"]')?.getAttribute("data-event-angle")).toBe("180");
     expect(container.querySelector('[data-event-id="night"]')?.getAttribute("data-event-display-angle")).toBe("0");
+    expect(distanceFromCenter(container.querySelector('[data-event-id="night"] line'), "x2", "y2")).toBeCloseTo(73, 0);
+    expect(container.querySelector('[data-event-id="sunset"] line')?.getAttribute("stroke")).toBe("#ff4fd8");
   });
 
   it("rejects invalid initial and update times", () => {

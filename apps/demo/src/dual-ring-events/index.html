@@ -64,7 +64,30 @@
             </fieldset>
           </section>
 
-          <form id="event-form" class="settings-block event-form" aria-labelledby="event-settings-title" novalidate>
+          <section class="settings-block add-event-block" aria-labelledby="add-event-title">
+            <h2 id="add-event-title">הוספת אירוע</h2>
+            <div class="add-event-actions" role="group" aria-label="בחירת סוג אירוע להוספה">
+              <button type="button" data-event-form-toggle="regular" aria-controls="event-form" aria-expanded="false">
+                אירוע רגיל
+              </button>
+              <button
+                type="button"
+                data-event-form-toggle="special"
+                aria-controls="derived-event-form"
+                aria-expanded="false"
+              >
+                אירוע מיוחד
+              </button>
+            </div>
+
+          <form
+            id="event-form"
+            class="event-form add-event-form"
+            data-add-event-form="regular"
+            aria-labelledby="event-settings-title"
+            hidden
+            novalidate
+          >
             <h2 id="event-settings-title">הגדרות אירוע</h2>
 
             <div class="control-group">
@@ -93,13 +116,15 @@
             </div>
 
             <p id="event-error" class="form-error" role="alert" aria-live="polite"></p>
-            <button type="submit">הוספת אירוע</button>
+            <button type="submit">שמירה</button>
           </form>
 
           <form
             id="derived-event-form"
-            class="settings-block event-form"
+            class="event-form add-event-form"
+            data-add-event-form="special"
             aria-labelledby="special-event-settings-title"
+            hidden
             novalidate
           >
             <h2 id="special-event-settings-title">הגדרות אירוע מיוחד</h2>
@@ -153,8 +178,9 @@
             </div>
 
             <p id="derived-event-error" class="form-error" role="alert" aria-live="polite"></p>
-            <button type="submit">הוספת אירוע מיוחד</button>
+            <button type="submit">שמירה</button>
           </form>
+          </section>
 
           <section class="settings-block event-list-block" aria-labelledby="event-list-title">
             <h2 id="event-list-title">רשימת אירועים</h2>
@@ -162,6 +188,12 @@
             <p class="helper-text">
               זמני הזריחה והשקיעה נטענים מ־<a href="https://sunrise-sunset.org/api">API זריחה ושקיעה</a>.
             </p>
+          </section>
+
+          <section class="settings-block fixed-day-times-block" aria-labelledby="fixed-day-times-title">
+            <h2 id="fixed-day-times-title">אירועים קבועים</h2>
+            <div class="fixed-day-time-list" id="fixed-day-time-list" aria-label="אירועים קבועים לפי זריחה ושקיעה"></div>
+            <p id="fixed-day-time-status" class="helper-text" aria-live="polite"></p>
           </section>
         </aside>
       </section>

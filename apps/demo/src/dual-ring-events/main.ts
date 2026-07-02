@@ -22,7 +22,9 @@ type DemoLocation = {
 
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
 type DerivedDirection = "before" | "after";
-type DerivedOffsetUnit = "minutes" | "hours" | "zmanit-hours";
+type EventOffsetUnit = "minutes" | "hours" | "zmanit-hours";
+type DerivedOffsetUnit = EventOffsetUnit;
+type FixedDayTimeBase = "sunrise" | "sunset";
 
 type DerivedEventDefinition = {
   readonly id: string;
@@ -31,6 +33,15 @@ type DerivedEventDefinition = {
   readonly direction: DerivedDirection;
   readonly offsetValue: number;
   readonly offsetUnit: DerivedOffsetUnit;
+};
+
+type FixedDayTimeDefinition = {
+  readonly id: string;
+  readonly title: string;
+  readonly base: FixedDayTimeBase;
+  readonly direction: DerivedDirection;
+  readonly offsetValue: number;
+  readonly offsetUnit: EventOffsetUnit;
 };
 
 const DAY_TIMES_LAYER_ID = "day-times";
@@ -49,12 +60,28 @@ const LOCATION_OPTIONS: readonly DemoLocation[] = [
     timeZone: "America/New_York"
   }
 ];
+const DEFAULT_FIXED_DAY_TIME_EVENTS: readonly FixedDayTimeDefinition[] = [
+  { id: "alot-hashachar", title: "עלות השחר", base: "sunrise", direction: "before", offsetValue: 72, offsetUnit: "minutes" },
+  { id: "talit-tefillin", title: "טלית ותפילין", base: "sunrise", direction: "before", offsetValue: 50, offsetUnit: "minutes" },
+  { id: "sof-shema", title: "סוף זמן קריאת שמע", base: "sunrise", direction: "after", offsetValue: 3, offsetUnit: "zmanit-hours" },
+  { id: "sof-tefila", title: "סוף זמן תפילה", base: "sunrise", direction: "after", offsetValue: 4, offsetUnit: "zmanit-hours" },
+  { id: "chatzot", title: "חצות", base: "sunrise", direction: "after", offsetValue: 6, offsetUnit: "zmanit-hours" },
+  { id: "plag-hamincha", title: "פלג המנחה", base: "sunset", direction: "before", offsetValue: 1.25, offsetUnit: "zmanit-hours" },
+  { id: "tzeit-hakochavim", title: "צאת הכוכבים", base: "sunset", direction: "after", offsetValue: 18, offsetUnit: "minutes" }
+];
+const AUTOMATIC_SHABBAT_EVENTS: readonly (FixedDayTimeDefinition & { readonly weekdays: readonly number[] })[] = [
+  { id: "candle-lighting", title: "הדלקת נרות", base: "sunset", direction: "before", offsetValue: 18, offsetUnit: "minutes", weekdays: [5] },
+  { id: "shabbat-entry", title: "כניסת שבת", base: "sunset", direction: "before", offsetValue: 18, offsetUnit: "minutes", weekdays: [5] },
+  { id: "shabbat-exit", title: "יציאת שבת", base: "sunset", direction: "after", offsetValue: 42, offsetUnit: "minutes", weekdays: [6] }
+];
 
 const mount = getRequiredElement<HTMLElement>("#phase3-clock");
 const status = getRequiredElement<HTMLElement>("#clock-status");
 const timezoneSelect = getRequiredElement<HTMLSelectElement>("#timezone");
 const locationSelect = getRequiredElement<HTMLSelectElement>("#location");
 const dayTimesStatus = getRequiredElement<HTMLElement>("#day-times-status");
+const eventFormToggles = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-event-form-toggle]"));
+const addEventForms = Array.from(document.querySelectorAll<HTMLFormElement>("[data-add-event-form]"));
 const eventForm = getRequiredElement<HTMLFormElement>("#event-form");
 const kindSelect = getRequiredElement<HTMLSelectElement>("#event-kind");
 const titleInput = getRequiredElement<HTMLInputElement>("#event-title");
@@ -67,6 +94,8 @@ const derivedDirectionSelect = getRequiredElement<HTMLSelectElement>("#derived-e
 const derivedOffsetInput = getRequiredElement<HTMLInputElement>("#derived-event-offset");
 const derivedOffsetUnitSelect = getRequiredElement<HTMLSelectElement>("#derived-event-offset-unit");
 const derivedError = getRequiredElement<HTMLElement>("#derived-event-error");
+const fixedDayTimeList = getRequiredElement<HTMLElement>("#fixed-day-time-list");
+const fixedDayTimeStatus = getRequiredElement<HTMLElement>("#fixed-day-time-status");
 const eventList = getRequiredElement<HTMLUListElement>("#event-list");
 const eventError = getRequiredElement<HTMLElement>("#event-error");
 const layerToggles = Array.from(document.querySelectorAll<HTMLInputElement>("[data-layer-toggle]"));
@@ -78,6 +107,7 @@ let dayTimesAbortController: AbortController | undefined;
 let dayTimesCacheKey = "";
 let zmanitTicks: ZmanitTick[] = [];
 let derivedEvents: DerivedEventDefinition[] = [];
+let fixedDayTimeEvents: FixedDayTimeDefinition[] = [...DEFAULT_FIXED_DAY_TIME_EVENTS];
 let eventLayers: EventLayerDefinition[] = [
   emptyDayTimesLayer(),
   {
@@ -95,6 +125,7 @@ let eventLayers: EventLayerDefinition[] = [
 ];
 
 syncTimeZoneToLocation();
+renderFixedDayTimeControls();
 
 const clock = createLiveAnalogClock({
   container: mount,
@@ -133,6 +164,18 @@ zmanitLayerToggle.addEventListener("change", () => {
   clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
 });
 
+for (const toggle of eventFormToggles) {
+  toggle.addEventListener("click", () => {
+    const formName = toggle.dataset.eventFormToggle;
+    if (formName === undefined) {
+      return;
+    }
+
+    const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+    syncAddEventFormVisibility(isExpanded ? undefined : formName);
+  });
+}
+
 eventForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -156,6 +199,7 @@ eventForm.addEventListener("submit", (event) => {
   eventLayers = eventLayers.map((layer) =>
     layer.id === PERSONAL_LAYER_ID ? { ...layer, events: [...layer.events, nextEvent] } : layer
   );
+  syncAddEventFormVisibility(undefined);
   applyEventLayers();
 });
 
@@ -181,8 +225,12 @@ derivedForm.addEventListener("submit", (event) => {
     }
   ];
   refreshSpecialLayer();
+  syncAddEventFormVisibility(undefined);
   applyEventLayers();
 });
+
+fixedDayTimeList.addEventListener("input", handleFixedDayTimeControlEvent);
+fixedDayTimeList.addEventListener("change", handleFixedDayTimeControlEvent);
 
 eventList.addEventListener("click", (event) => {
   const button = (event.target as Element).closest<HTMLButtonElement>("button[data-event-id]");
@@ -209,6 +257,16 @@ window.addEventListener("beforeunload", destroyClock);
 function applyEventLayers(): void {
   clock.setEventLayers(eventLayers);
   syncEventList();
+}
+
+function syncAddEventFormVisibility(activeFormName: string | undefined): void {
+  for (const form of addEventForms) {
+    form.hidden = form.dataset.addEventForm !== activeFormName;
+  }
+
+  for (const toggle of eventFormToggles) {
+    toggle.setAttribute("aria-expanded", String(toggle.dataset.eventFormToggle === activeFormName));
+  }
 }
 
 async function refreshDayTimesLayer(force = false): Promise<void> {
@@ -241,9 +299,10 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     dayTimesStatus.textContent = `זמני היום נטענו עבור ${selectedLocation.title} בתאריך ${date}.`;
     eventLayers = eventLayers.map((existingLayer) =>
       existingLayer.id === DAY_TIMES_LAYER_ID
-        ? mergeLayerEnabled(layer, existingLayer.enabled)
+        ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(layer, existingLayer.enabled))
         : existingLayer
     );
+    syncFixedDayTimeStatus();
     zmanitTicks = createZmanitTicks(layer.events);
     clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
     refreshSpecialLayer();
@@ -259,9 +318,180 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     );
     zmanitTicks = [];
     clock.setZmanitTicks([]);
+    syncFixedDayTimeStatus();
     refreshSpecialLayer();
     applyEventLayers();
   }
+}
+
+function renderFixedDayTimeControls(): void {
+  fixedDayTimeList.replaceChildren(
+    ...fixedDayTimeEvents.map((definition) => {
+      const row = document.createElement("div");
+      row.className = "fixed-day-time-row";
+      row.dataset.fixedDayTimeId = definition.id;
+
+      const title = document.createElement("span");
+      title.className = "fixed-day-time-title";
+      title.textContent = definition.title;
+
+      const base = document.createElement("select");
+      base.dataset.fixedField = "base";
+      base.ariaLabel = `${definition.title} מבוסס על`;
+      base.append(createOption("sunrise", "זריחה"), createOption("sunset", "שקיעה"));
+      base.value = definition.base;
+
+      const direction = document.createElement("select");
+      direction.dataset.fixedField = "direction";
+      direction.ariaLabel = `${definition.title} לפני או אחרי`;
+      direction.append(createOption("before", "לפני"), createOption("after", "אחרי"));
+      direction.value = definition.direction;
+
+      const offset = document.createElement("input");
+      offset.dataset.fixedField = "offsetValue";
+      offset.type = "number";
+      offset.min = "0";
+      offset.max = "720";
+      offset.step = "0.25";
+      offset.inputMode = "decimal";
+      offset.value = String(definition.offsetValue);
+      offset.ariaLabel = `${definition.title} כמות`;
+
+      const unit = document.createElement("select");
+      unit.dataset.fixedField = "offsetUnit";
+      unit.ariaLabel = `${definition.title} יחידה`;
+      unit.append(createOption("minutes", "דקות"), createOption("hours", "שעות"), createOption("zmanit-hours", "שעות זמניות"));
+      unit.value = definition.offsetUnit;
+
+      row.append(title, base, direction, offset, unit);
+      return row;
+    })
+  );
+  syncFixedDayTimeStatus();
+}
+
+function handleFixedDayTimeControlEvent(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  const row = target.closest<HTMLElement>("[data-fixed-day-time-id]");
+  const id = row?.dataset.fixedDayTimeId;
+  const field = target.dataset.fixedField;
+  if (id === undefined || field === undefined) {
+    return;
+  }
+
+  fixedDayTimeEvents = fixedDayTimeEvents.map((definition) => {
+    if (definition.id !== id) {
+      return definition;
+    }
+
+    if (field === "base" && isFixedDayTimeBase(target.value)) {
+      return { ...definition, base: target.value };
+    }
+    if (field === "direction" && isDerivedDirection(target.value)) {
+      return { ...definition, direction: target.value };
+    }
+    if (field === "offsetValue") {
+      return { ...definition, offsetValue: Number(target.value) };
+    }
+    if (field === "offsetUnit" && isEventOffsetUnit(target.value)) {
+      return { ...definition, offsetUnit: target.value };
+    }
+    return definition;
+  });
+
+  refreshFixedDayTimeEvents();
+  applyEventLayers();
+}
+
+function refreshFixedDayTimeEvents(): void {
+  eventLayers = eventLayers.map((layer) =>
+    layer.id === DAY_TIMES_LAYER_ID ? addFixedDayTimeEventsToLayer(layer) : layer
+  );
+  syncFixedDayTimeStatus();
+}
+
+function addFixedDayTimeEventsToLayer(layer: EventLayerDefinition): EventLayerDefinition {
+  const sourceEvents = layer.events.filter((event) => !event.id.startsWith("fixed-"));
+  return {
+    ...layer,
+    events: [...sourceEvents, ...resolveFixedDayTimeEvents(sourceEvents), ...resolveAutomaticShabbatEvents(sourceEvents)]
+  };
+}
+
+function resolveFixedDayTimeEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
+  return resolveOffsetDefinitions(events, fixedDayTimeEvents, "fixed");
+}
+
+function resolveAutomaticShabbatEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
+  const weekday = weekdayIndexForDateKey(currentDateKey());
+  const definitions = AUTOMATIC_SHABBAT_EVENTS.filter((definition) => definition.weekdays.includes(weekday));
+  return resolveOffsetDefinitions(events, definitions, "fixed-shabbat");
+}
+
+function resolveOffsetDefinitions(
+  events: readonly InstantEventDefinition[],
+  definitions: readonly FixedDayTimeDefinition[],
+  idPrefix: string
+): InstantEventDefinition[] {
+  const sunrise = events.find((event) => event.kind === "sunrise");
+  const sunset = events.find((event) => event.kind === "sunset");
+  if (sunrise === undefined || sunset === undefined) {
+    return [];
+  }
+
+  const sunriseSeconds = eventSecondOfDay(sunrise);
+  const sunsetSeconds = eventSecondOfDay(sunset);
+  const zmanitHourSeconds = (sunsetSeconds - sunriseSeconds) / 12;
+  if (zmanitHourSeconds <= 0) {
+    return [];
+  }
+
+  return definitions.flatMap((definition) => {
+    if (!Number.isFinite(definition.offsetValue) || definition.offsetValue < 0) {
+      return [];
+    }
+
+    const baseEvent = definition.base === "sunrise" ? sunrise : sunset;
+    const offsetSeconds = fixedOffsetSeconds(definition, zmanitHourSeconds);
+    const signedOffset = definition.direction === "before" ? -offsetSeconds : offsetSeconds;
+    const time = timeFromSeconds(Math.round(eventSecondOfDay(baseEvent) + signedOffset));
+    return [
+      {
+        id: `${idPrefix}-${definition.id}`,
+        type: "instant",
+        kind: "custom",
+        title: definition.title,
+        hour: time.hour,
+        minute: time.minute,
+        second: time.second,
+        description: `${displayDirection(definition.direction)} ${definition.offsetValue} ${displayOffsetUnit(definition.offsetUnit)} מ${displayFixedBase(definition.base)}`
+      }
+    ];
+  });
+}
+
+function fixedOffsetSeconds(definition: FixedDayTimeDefinition, zmanitHourSeconds: number): number {
+  if (definition.offsetUnit === "minutes") {
+    return definition.offsetValue * 60;
+  }
+  if (definition.offsetUnit === "hours") {
+    return definition.offsetValue * 3600;
+  }
+  return definition.offsetValue * zmanitHourSeconds;
+}
+
+function syncFixedDayTimeStatus(): void {
+  const dayTimesLayer = eventLayers.find((layer) => layer.id === DAY_TIMES_LAYER_ID);
+  const anchorCount = dayTimesLayer?.events.filter(isSunriseOrSunsetEvent).length ?? 0;
+  const resolvedCount = dayTimesLayer?.events.filter((event) => event.id.startsWith("fixed-")).length ?? 0;
+  fixedDayTimeStatus.textContent =
+    anchorCount < 2
+      ? "האירועים הקבועים יחושבו אחרי טעינת זריחה ושקיעה."
+      : `${resolvedCount} אירועים קבועים מחושבים בתוך שכבת זמני היום.`;
 }
 
 function refreshSpecialLayer(): void {
@@ -339,7 +569,9 @@ function derivedOffsetSeconds(definition: DerivedEventDefinition, zmanitHourSeco
 
 function syncEventList(): void {
   const currentTime = projectInstantToStaticClockTime(timeSource.now(), timezoneSelect.value);
-  const resolved = resolveEventLayers(eventLayers, currentTime);
+  const resolved = [...resolveEventLayers(eventLayers, currentTime)].sort(
+    (first, second) => eventSecondOfDay(first) - eventSecondOfDay(second)
+  );
   status.textContent = `שעה מקומית ${formatTime(currentTime.hour, currentTime.minute)} | ${selectedLocation.title} | ${timezoneSelect.value}`;
   eventList.replaceChildren(
     ...resolved.map((event) => {
@@ -350,24 +582,34 @@ function syncEventList(): void {
         item.dataset.eventLayerId = event.layerId;
       }
 
-      const details = document.createElement("span");
-      details.className = "event-details";
-      details.textContent = `${event.title} | ${formatEventTime(event)} | ${event.layerTitle ?? "שכבה"} | ${displayRing(event.ring)} | ${displayStatus(event.status)}`;
-
-      const kind = document.createElement("span");
-      kind.className = `event-kind event-kind-${event.kind}`;
-      kind.textContent = displayKind(event.kind);
-
       const layer = document.createElement("span");
       layer.className = `event-layer event-layer-${event.layerKind ?? "custom"}`;
       layer.textContent = displayLayerKind(event.layerKind);
 
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.dataset.eventId = event.id;
-      remove.textContent = "מחיקה";
+      const title = document.createElement("span");
+      title.className = "event-title";
+      title.textContent = event.title;
 
-      item.append(kind, layer, details, remove);
+      const time = document.createElement("span");
+      time.className = "event-time";
+      time.textContent = formatEventTime(event);
+
+      const ring = document.createElement("span");
+      ring.className = "event-ring";
+      ring.textContent = displayRing(event.ring);
+
+      const state = document.createElement("span");
+      state.className = "event-status";
+      state.textContent = displayStatus(event.status);
+
+      item.append(layer, title, time, ring, state);
+      if (event.layerId === PERSONAL_LAYER_ID || event.layerId === SPECIAL_LAYER_ID) {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.dataset.eventId = event.id;
+        remove.textContent = "מחק";
+        item.append(remove);
+      }
       return item;
     })
   );
@@ -480,6 +722,10 @@ function currentDateKey(): string {
   return `${year}-${month}-${day}`;
 }
 
+function weekdayIndexForDateKey(date: string): number {
+  return new Date(`${date}T12:00:00Z`).getUTCDay();
+}
+
 function emptyDayTimesLayer(): EventLayerDefinition {
   return {
     id: DAY_TIMES_LAYER_ID,
@@ -508,6 +754,29 @@ function mergeLayerEnabled(layer: EventLayerDefinition, enabled: boolean | undef
   return { ...layer, enabled };
 }
 
+function isSunriseOrSunsetEvent(event: InstantEventDefinition): boolean {
+  return event.kind === "sunrise" || event.kind === "sunset";
+}
+
+function isFixedDayTimeBase(value: string): value is FixedDayTimeBase {
+  return value === "sunrise" || value === "sunset";
+}
+
+function isDerivedDirection(value: string): value is DerivedDirection {
+  return value === "before" || value === "after";
+}
+
+function isEventOffsetUnit(value: string): value is EventOffsetUnit {
+  return value === "minutes" || value === "hours" || value === "zmanit-hours";
+}
+
+function createOption(value: string, label: string): HTMLOptionElement {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  return option;
+}
+
 function syncTimeZoneToLocation(): void {
   timezoneSelect.value = selectedLocation.timeZone;
 }
@@ -518,16 +787,6 @@ function getLocationById(locationId: string): DemoLocation {
     throw new Error(`מיקום לא נתמך: ${locationId}`);
   }
   return location;
-}
-
-function displayKind(kind: InstantEventKind | undefined): string {
-  if (kind === "sunrise") {
-    return "זריחה";
-  }
-  if (kind === "sunset") {
-    return "שקיעה";
-  }
-  return "מותאם";
 }
 
 function displayLayerKind(kind: EventLayerKind | undefined): string {
@@ -541,6 +800,24 @@ function displayLayerKind(kind: EventLayerKind | undefined): string {
     return "מיוחד";
   }
   return "שכבה";
+}
+
+function displayFixedBase(base: FixedDayTimeBase): string {
+  return base === "sunrise" ? "זריחה" : "שקיעה";
+}
+
+function displayDirection(direction: DerivedDirection): string {
+  return direction === "before" ? "לפני" : "אחרי";
+}
+
+function displayOffsetUnit(unit: EventOffsetUnit): string {
+  if (unit === "minutes") {
+    return "דקות";
+  }
+  if (unit === "hours") {
+    return "שעות";
+  }
+  return "שעות זמניות";
 }
 
 function displayRing(ring: "outer" | "inner"): string {

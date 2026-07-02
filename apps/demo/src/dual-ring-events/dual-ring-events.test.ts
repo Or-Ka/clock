@@ -21,6 +21,7 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("הגדרות מיקום");
     expect(html).toContain("הגדרות אירוע");
     expect(html).toContain("הגדרות אירוע מיוחד");
+    expect(html).toContain("אירועים קבועים");
     expect(html).toContain("רשימת אירועים");
   });
 
@@ -36,6 +37,12 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("שעות זמניות");
     expect(html).toContain("data-zmanit-layer-toggle");
     expect(html).toContain('id="derived-event-form"');
+    expect(html).toContain('data-event-form-toggle="regular"');
+    expect(html).toContain('data-event-form-toggle="special"');
+    expect(html).toContain('data-add-event-form="regular"');
+    expect(html).toContain('data-add-event-form="special"');
+    expect(html).toContain('id="fixed-day-time-list"');
+    expect(html).toContain('id="fixed-day-time-status"');
     expect(html).toContain("אירועים מיוחדים");
     expect(html).toContain("שעות זמניות</option>");
     expect(html).toContain("API זריחה ושקיעה");
@@ -43,6 +50,9 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("refreshDayTimesLayer");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
+    expect(main).toContain("DEFAULT_FIXED_DAY_TIME_EVENTS");
+    expect(main).toContain("AUTOMATIC_SHABBAT_EVENTS");
+    expect(main).toContain("addFixedDayTimeEventsToLayer");
     expect(main).toContain("resolveDerivedEvents");
     expect(main).toContain("derivedOffsetSeconds");
   });
@@ -56,6 +66,52 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("PERSONAL_LAYER_ID");
     expect(main).toContain("emptyDayTimesLayer()");
     expect(main).toContain("layer.id === DAY_TIMES_LAYER_ID");
+  });
+
+  it("defines configurable fixed day-time events from sunrise and sunset anchors", () => {
+    const main = readDemoFile("main.ts");
+
+    for (const label of [
+      "עלות השחר",
+      "טלית ותפילין",
+      "סוף זמן קריאת שמע",
+      "סוף זמן תפילה",
+      "חצות",
+      "פלג המנחה",
+      "צאת הכוכבים"
+    ]) {
+      expect(main).toContain(label);
+    }
+
+    expect(main).toContain('base: "sunrise"');
+    expect(main).toContain('base: "sunset"');
+    expect(main).toContain('offsetUnit: "zmanit-hours"');
+    expect(main).toContain('id: `${idPrefix}-${definition.id}`');
+    expect(main).toContain('existingLayer.id === DAY_TIMES_LAYER_ID');
+  });
+
+  it("keeps add-event forms collapsed behind explicit event-type choices", () => {
+    const html = readDemoFile("index.html");
+
+    expect(html).toContain("הוספת אירוע");
+    expect(html).toContain("אירוע רגיל");
+    expect(html).toContain("אירוע מיוחד");
+    expect(html).toContain('id="event-form"');
+    expect(html).toContain('id="derived-event-form"');
+    expect(html).toContain("שמירה");
+    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע</button>");
+    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע מיוחד</button>");
+  });
+
+  it("adds automatic Shabbat times only for Friday and Saturday", () => {
+    const main = readDemoFile("main.ts");
+
+    expect(main).toContain("הדלקת נרות");
+    expect(main).toContain("כניסת שבת");
+    expect(main).toContain("יציאת שבת");
+    expect(main).toContain("weekdays: [5]");
+    expect(main).toContain("weekdays: [6]");
+    expect(main).toContain("resolveAutomaticShabbatEvents");
   });
 
   it("does not leave the previous visible English demo labels in place", () => {
