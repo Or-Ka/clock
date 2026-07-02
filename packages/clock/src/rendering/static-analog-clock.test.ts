@@ -206,8 +206,36 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-weight")).toBe("700");
+    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-weight")).toBe("700");
     expect(Number(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("y"))).toBeLessThan(100);
     expect(Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))).toBeGreaterThan(100);
+  });
+
+  it("renders the night weekday parenthetical on a second line", () => {
+    const container = document.createElement("div");
+
+    createStaticAnalogClock({
+      container,
+      time: {
+        hour: 22,
+        minute: 0,
+        dateDisplay: {
+          weekday: "חמישי (ליל שישי)",
+          hebrewDate: "אור לי״ח בתמוז תשפ״ו",
+          gregorianDate: "2 ביולי 2026"
+        }
+      }
+    });
+
+    const weekdayLabel = container.querySelector('[data-clock-part="weekday-label"]');
+    const lines = Array.from(weekdayLabel?.querySelectorAll("tspan") ?? []);
+
+    expect(lines).toHaveLength(2);
+    expect(lines[0]?.textContent).toBe("חמישי");
+    expect(lines[1]?.textContent).toBe("(ליל שישי)");
+    expect(lines[1]?.getAttribute("dy")).toBe("6.5");
+    expect(lines[1]?.getAttribute("font-size")).toBe("4.4");
   });
 
   it("updates hands with setTime without replacing the SVG element", () => {

@@ -364,9 +364,9 @@ function createDateDisplay(): {
   group.dataset.clockPart = "date-display";
   group.setAttribute("direction", "rtl");
 
-  const weekdayLabel = createDateLine("weekday-label", 69, "5.4", "700", CLOCK_COLORS.dateMuted);
-  const hebrewDateLabel = createDateLine("hebrew-date-label", 80, "5.9", "800", CLOCK_COLORS.dateStrong);
-  const gregorianDateLabel = createDateLine("gregorian-date-label", 124, "5.7", "800", CLOCK_COLORS.dateStrong);
+  const weekdayLabel = createDateLine("weekday-label", 66, "5.4", "700", CLOCK_COLORS.dateMuted);
+  const hebrewDateLabel = createDateLine("hebrew-date-label", 82, "5.9", "700", CLOCK_COLORS.dateStrong);
+  const gregorianDateLabel = createDateLine("gregorian-date-label", 124, "5.7", "700", CLOCK_COLORS.dateStrong);
 
   group.append(weekdayLabel, hebrewDateLabel, gregorianDateLabel);
   return { group, weekdayLabel, hebrewDateLabel, gregorianDateLabel };
@@ -429,9 +429,32 @@ function ringTimeAngle(hour: number, minute: number, second: number): number {
 
 function applyDateDisplay(dom: ClockDom, time: StaticClockTime): void {
   const display = time.dateDisplay;
-  dom.weekdayLabel.textContent = display?.weekday ?? "";
+  applyWeekdayLabel(dom.weekdayLabel, display?.weekday ?? "");
   dom.hebrewDateLabel.textContent = display?.hebrewDate ?? "";
   dom.gregorianDateLabel.textContent = display?.gregorianDate ?? "";
+}
+
+function applyWeekdayLabel(label: SVGTextElement, weekday: string): void {
+  const match = /^(.*?)\s*(\([^()]+\))$/.exec(weekday);
+  if (match === null) {
+    label.textContent = weekday;
+    return;
+  }
+
+  const weekdayLine = createSvgElement("tspan");
+  const nightLine = createSvgElement("tspan");
+
+  weekdayLine.textContent = match[1]?.trim() ?? "";
+  weekdayLine.setAttribute("x", "100");
+  weekdayLine.setAttribute("dy", "0");
+
+  nightLine.textContent = match[2] ?? "";
+  nightLine.setAttribute("x", "100");
+  nightLine.setAttribute("dy", "6.5");
+  nightLine.setAttribute("font-size", "4.4");
+  nightLine.setAttribute("font-weight", "700");
+
+  label.replaceChildren(weekdayLine, nightLine);
 }
 
 function applyEvents(dom: ClockDom, events: readonly ResolvedInstantEvent[]): void {
