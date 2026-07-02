@@ -75,3 +75,26 @@ interface ResolvedInstantEvent {
 - `past`, `next` ו-`future` מחושבים מחדש בעת refresh או שינוי timezone.
 - IDs כפולים, שעה לא תקינה או דקה לא תקינה נדחים.
 - resolver אינו משנה את מערך הקלט.
+
+## שכבות תצוגה לאירועים
+
+אירועי Phase 3 יכולים להגיע גם דרך שכבות תצוגה:
+
+```ts
+interface EventLayerDefinition {
+  readonly id: string;
+  readonly title: string;
+  readonly kind?: "day-times" | "personal" | "api" | "custom";
+  readonly enabled?: boolean;
+  readonly events: readonly EventDefinition[];
+}
+```
+
+`resolveEventLayers()` פותר רק שכבות פעילות. שכבה עם `enabled: false` אינה מוצגת ואינה משתתפת בחישוב `next`. כל `ResolvedInstantEvent` כולל `layerId`, `layerTitle` ו-`layerKind`, כדי שה-renderer וה-demo יוכלו להציג ולסנן אירועים לפי שכבה בלי לשנות את מודל הטבעות.
+
+שכבות קיימות בדמו:
+
+- `day-times`: אירועי זמני היום הידניים של Phase 3.
+- `personal`: אירועים אישיים שהמשתמש מוסיף בדמו.
+
+שכבת `api` נתמכת בתשתית provider, אך חיבור API אמיתי חסום עד שיוגדרו endpoint, סכמה ונתוני מיקום/תאריך נדרשים. סוגים עתידיים כמו ranges או אירועים מבוססי שנים צריכים להיכנס דרך שכבת תצוגה ייעודית לפני פתרון ל-renderer.

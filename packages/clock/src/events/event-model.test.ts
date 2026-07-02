@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { dualRingAngle, resolveInstantEvents, ringForTime, type InstantEventDefinition } from "./event-model.js";
+import {
+  dualRingAngle,
+  resolveEventLayers,
+  resolveInstantEvents,
+  ringForTime,
+  type EventLayerDefinition,
+  type InstantEventDefinition
+} from "./event-model.js";
 
 describe("ringForTime", () => {
   it.each([
@@ -78,6 +85,61 @@ describe("resolveInstantEvents", () => {
   });
 });
 
+describe("resolveEventLayers", () => {
+  it("resolves only enabled layers and preserves layer metadata", () => {
+    const resolved = resolveEventLayers(
+      [
+        layer("day-times", "day-times", true, [event("sunrise", "sunrise", 5, 40)]),
+        layer("personal", "personal", false, [event("meeting", "custom", 9, 0)])
+      ],
+      { hour: 5, minute: 0 }
+    );
+
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0]).toMatchObject({
+      id: "sunrise",
+      layerId: "day-times",
+      layerTitle: "day-times",
+      layerKind: "day-times",
+      status: "next"
+    });
+  });
+
+  it("computes the next event across all enabled layers", () => {
+    const resolved = resolveEventLayers(
+      [
+        layer("day-times", "day-times", true, [event("sunset", "sunset", 18, 40)]),
+        layer("personal", "personal", true, [event("meeting", "custom", 9, 0)])
+      ],
+      { hour: 8, minute: 0 }
+    );
+
+    expect(resolved.map(({ id, status }) => [id, status])).toEqual([
+      ["sunset", "future"],
+      ["meeting", "next"]
+    ]);
+  });
+
+  it("rejects duplicate layer ids and duplicate event ids across layers", () => {
+    expect(() =>
+      resolveEventLayers(
+        [layer("same", "day-times", true, []), layer("same", "personal", true, [])],
+        { hour: 8, minute: 0 }
+      )
+    ).toThrow("Duplicate event layer id");
+
+    expect(() =>
+      resolveEventLayers(
+        [
+          layer("one", "day-times", true, [event("same", "sunrise", 6, 0)]),
+          layer("two", "personal", true, [event("same", "custom", 7, 0)])
+        ],
+        { hour: 8, minute: 0 }
+      )
+    ).toThrow("Duplicate event id across layers");
+  });
+});
+
 function event(
   id: string,
   kind: InstantEventDefinition["kind"],
@@ -90,6 +152,21 @@ function event(
     title: id,
     hour,
     minute,
+    ...(kind === undefined ? {} : { kind })
+  };
+}
+
+function layer(
+  id: string,
+  kind: EventLayerDefinition["kind"],
+  enabled: boolean,
+  events: readonly InstantEventDefinition[]
+): EventLayerDefinition {
+  return {
+    id,
+    title: id,
+    enabled,
+    events,
     ...(kind === undefined ? {} : { kind })
   };
 }

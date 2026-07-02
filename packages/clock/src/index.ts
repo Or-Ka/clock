@@ -9,19 +9,31 @@ export {
   type TimeSource
 } from "./time/time-source.js";
 export { projectInstantToStaticClockTime } from "./time/timezone-projection.js";
-export { type StaticClockTime } from "./time/static-clock-time.js";
+export { type ClockDateDisplay, type StaticClockTime } from "./time/static-clock-time.js";
 export {
   dualRingAngle,
+  resolveEventLayers,
   resolveInstantEvents,
   ringForTime,
   type ClockRing,
   type EventDefinition,
+  type EventLayerDefinition,
+  type EventLayerKind,
   type InstantEventDefinition,
   type InstantEventKind,
   type InstantEventStatus,
   type ResolvedClockItem,
   type ResolvedInstantEvent
 } from "./events/event-model.js";
+export {
+  ApiEventLayerProvider,
+  type ApiEventLayerPayload,
+  type ApiEventLayerProviderOptions,
+  type ApiInstantEventPayload,
+  type EventLayerProvider,
+  type EventProviderRequest,
+  type FetchLike
+} from "./events/event-provider.js";
 export {
   createLiveAnalogClock,
   type LiveAnalogClock,

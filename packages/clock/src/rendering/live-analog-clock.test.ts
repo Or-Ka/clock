@@ -82,6 +82,58 @@ describe("createLiveAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunset"]')?.getAttribute("data-clock-ring")).toBe("inner");
   });
 
+  it("renders event layers and allows a layer to be toggled off", () => {
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-06-30T08:00:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler(),
+      eventLayers: [
+        {
+          id: "day-times",
+          title: "זמני היום",
+          kind: "day-times",
+          enabled: true,
+          events: [{ id: "sunrise", type: "instant", kind: "sunrise", title: "Sunrise", hour: 5, minute: 40 }]
+        },
+        {
+          id: "personal",
+          title: "אישי",
+          kind: "personal",
+          enabled: true,
+          events: [{ id: "meeting", type: "instant", kind: "custom", title: "Meeting", hour: 9, minute: 0 }]
+        }
+      ]
+    });
+    const svg = container.querySelector("svg");
+
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(2);
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-id")).toBe("day-times");
+
+    clock.setEventLayers([
+      {
+        id: "day-times",
+        title: "זמני היום",
+        kind: "day-times",
+        enabled: false,
+        events: [{ id: "sunrise", type: "instant", kind: "sunrise", title: "Sunrise", hour: 5, minute: 40 }]
+      },
+      {
+        id: "personal",
+        title: "אישי",
+        kind: "personal",
+        enabled: true,
+        events: [{ id: "meeting", type: "instant", kind: "custom", title: "Meeting", hour: 9, minute: 0 }]
+      }
+    ]);
+
+    expect(container.querySelector("svg")).toBe(svg);
+    expect(container.querySelectorAll('[data-clock-part="event-marker"]')).toHaveLength(1);
+    expect(container.querySelector('[data-event-id="sunrise"]')).toBeNull();
+    expect(container.querySelector('[data-event-id="meeting"]')?.getAttribute("data-event-layer-id")).toBe("personal");
+  });
+
   it("rejects invalid setEvents input without changing the rendered events", () => {
     const container = document.createElement("div");
     const clock = createLiveAnalogClock({

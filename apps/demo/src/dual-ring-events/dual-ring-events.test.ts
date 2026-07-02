@@ -17,11 +17,16 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("שלב 3 - אירועים בשתי טבעות");
   });
 
-  it("translates central form controls and validation messages to Hebrew", () => {
+  it("translates central controls, layer toggles and validation messages to Hebrew", () => {
     const html = readDemoFile("index.html");
     const main = readDemoFile("main.ts");
 
     expect(html).toContain("אזור זמן");
+    expect(html).toContain("שכבות תצוגה");
+    expect(html).toContain('data-layer-toggle="day-times"');
+    expect(html).toContain('data-layer-toggle="personal"');
+    expect(html).toContain("זמני היום");
+    expect(html).toContain("אירועים אישיים");
     expect(html).toContain("סוג אירוע");
     expect(html).toContain("אירוע מותאם");
     expect(html).toContain("הוספת אירוע");
@@ -29,6 +34,15 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("מחיקה");
     expect(main).toContain("השעה חייבת להיות מספר שלם בין 0 ל-23.");
     expect(main).toContain("הדקה חייבת להיות מספר שלם בין 0 ל-59.");
+  });
+
+  it("keeps the demo event model layer-based", () => {
+    const main = readDemoFile("main.ts");
+
+    expect(main).toContain("let eventLayers: EventLayerDefinition[]");
+    expect(main).toContain("clock.setEventLayers(eventLayers)");
+    expect(main).toContain("DAY_TIMES_LAYER_ID");
+    expect(main).toContain("PERSONAL_LAYER_ID");
   });
 
   it("does not leave the previous visible English demo labels in place", () => {

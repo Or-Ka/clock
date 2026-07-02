@@ -4,11 +4,11 @@
 
 ## משימה פעילה
 
-אין משימה פעילה.
+T067: סבב המשך נקודתי ל-Phase 3: שכבות תצוגה לאירועים ותצוגת תאריך במרכז השעון.
 
 ## למה זו המשימה הפעילה
 
-Phase 3 הושלם בענף `feat/phase-3-dual-ring-events`. סבב תיקוני התצוגה הממוקד לדמו Phase 3 הושלם גם הוא ומוכן לביקורת.
+Phase 3 הושלם בענף `feat/phase-3-dual-ring-events`. סבב תיקוני התצוגה הממוקד לדמו Phase 3 הושלם גם הוא ומוכן לביקורת. הסבב הנוכחי מוסיף תשתית שכבות תצוגה (`day-times`, `personal`, ובהמשך `api`) ותצוגת תאריך עברי/לועזי במרכז השעון.
 
 `main` המקומי עדיין אינו כולל את commits של Phase 2, ולכן Phase 3 נפתח מענף `feat/phase-2-live-clock` כדי לא לאבד את בסיס השעון החי וללא merge ל-`main`.
 
@@ -37,4 +37,4 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## כלל חשוב
 
-ב-Phase 3 אין להוסיף API אמיתי של זריחה/שקיעה, provider, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE.
+ב-Phase 3 אין להוסיף API אמיתי של זריחה/שקיעה, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE. קיימת כעת תשתית provider כללית שמחזירה שכבת אירועים לפי תאריך ואזור זמן, אך חיבור API אמיתי חסום עד שיוגדרו endpoint, סכמה ונתוני מיקום.

@@ -77,7 +77,7 @@ fatal: not a git repository (or any of the parent directories): .git
 
 ## משימה פעילה
 
-אין משימה פעילה.
+T067: סבב המשך נקודתי ל-Phase 3: שכבות תצוגה לאירועים ותצוגת תאריך במרכז השעון.
 
 ## המשימה הבאה
 

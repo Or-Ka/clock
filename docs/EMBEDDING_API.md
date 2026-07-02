@@ -83,6 +83,7 @@ interface LiveAnalogClockOptions {
   readonly timeZone: string;
   readonly scheduler?: ClockScheduler;
   readonly events?: InstantEventDefinition[];
+  readonly eventLayers?: EventLayerDefinition[];
 }
 
 interface LiveAnalogClock {
@@ -91,6 +92,7 @@ interface LiveAnalogClock {
   refresh(): void;
   setTimeZone(timeZone: string): void;
   setEvents(events: InstantEventDefinition[]): void;
+  setEventLayers(eventLayers: EventLayerDefinition[]): void;
   destroy(): void;
 }
 
@@ -147,3 +149,21 @@ interface ResolvedInstantEvent {
 - `resolveInstantEvents(events, currentTime)`
 
 `setEvents()` בודק קלט, דוחה IDs כפולים, אינו משנה את מערך הקלט, מחשב `ring` ו-`angle`, ומעדכן את שכבת האירועים בלי ליצור SVG חדש.
+
+`eventLayers` ו-`setEventLayers()` הם API מתקדם יותר מעל `events`. הם מאפשרים להפריד אירועי זמני היום, אירועים אישיים, אירועי API וסוגים עתידיים לשכבות שאפשר להדליק ולכבות. `setEvents()` נשאר נתיב תאימות וממפה את הקלט לשכבת `personal` ברירת מחדל.
+
+תשתית provider ראשונה:
+
+```ts
+interface EventProviderRequest {
+  readonly date: string;
+  readonly timeZone: string;
+  readonly signal?: AbortSignal;
+}
+
+interface EventLayerProvider {
+  loadLayer(request: EventProviderRequest): Promise<EventLayerDefinition>;
+}
+```
+
+`ApiEventLayerProvider` מחזיר `EventLayerDefinition` מסוג `api` לפי `date` ו-`timeZone`. אין עדיין provider אמיתי לזמני זריחה/שקיעה או endpoint פרויקטלי; זה חסום עד להגדרת API, סכמה ונתוני מיקום.
