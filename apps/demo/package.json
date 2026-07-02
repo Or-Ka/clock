@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json --noEmit && vite build src/spikes/svg-clock --outDir ../../../dist/spikes/svg-clock --emptyOutDir && vite build src/product-static-clock --outDir ../../dist/product-static-clock --emptyOutDir && vite build src/live-clock --outDir ../../dist/live-clock --emptyOutDir",
-    "dev": "vite src/live-clock --host 127.0.0.1",
+    "build": "tsc -p tsconfig.json --noEmit && vite build src/spikes/svg-clock --outDir ../../../dist/spikes/svg-clock --emptyOutDir && vite build src/product-static-clock --outDir ../../dist/product-static-clock --emptyOutDir && vite build src/live-clock --outDir ../../dist/live-clock --emptyOutDir && vite build src/dual-ring-events --outDir ../../dist/dual-ring-events --emptyOutDir",
+    "dev": "vite src/dual-ring-events --host 127.0.0.1",
     "dev:svg-spike": "vite src/spikes/svg-clock --host 127.0.0.1",
     "dev:static-clock": "vite src/product-static-clock --host 127.0.0.1",
+    "dev:live-clock": "vite src/live-clock --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

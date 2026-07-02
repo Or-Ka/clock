@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phase 3 Dual Ring Events Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="phase3-demo">
+      <header class="demo-header">
+        <div>
+          <h1>Dual Ring Events</h1>
+          <nav class="demo-links" aria-label="Demo phases">
+            <a href="../product-static-clock/index.html">Phase 1 - Static Clock</a>
+            <a href="../live-clock/index.html">Phase 2 - Live Clock</a>
+            <a aria-current="page" href="./index.html">Phase 3 - Dual Ring Events</a>
+          </nav>
+        </div>
+        <p id="clock-status" aria-live="polite">--:--</p>
+      </header>
+
+      <section class="workspace" aria-label="Phase 3 demo workspace">
+        <section class="clock-panel" aria-label="שעון חי עם שתי טבעות">
+          <div class="clock-mount" id="phase3-clock"></div>
+        </section>
+
+        <aside class="event-panel" aria-label="ניהול אירועים">
+          <div class="control-group">
+            <label for="timezone">Timezone</label>
+            <select id="timezone">
+              <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+              <option value="UTC">UTC</option>
+              <option value="America/New_York">America/New_York</option>
+              <option value="Europe/London">Europe/London</option>
+            </select>
+          </div>
+
+          <form id="event-form" class="event-form">
+            <div class="control-group">
+              <label for="event-kind">Type</label>
+              <select id="event-kind">
+                <option value="custom">Custom</option>
+                <option value="sunrise">Sunrise</option>
+                <option value="sunset">Sunset</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="event-title">Title</label>
+              <input id="event-title" type="text" value="Focus" maxlength="18" />
+            </div>
+
+            <div class="time-fields">
+              <div class="control-group">
+                <label for="event-hour">Hour</label>
+                <input id="event-hour" type="number" min="0" max="23" value="14" inputmode="numeric" />
+              </div>
+              <div class="control-group">
+                <label for="event-minute">Minute</label>
+                <input id="event-minute" type="number" min="0" max="59" value="30" inputmode="numeric" />
+              </div>
+            </div>
+
+            <button type="submit">Add event</button>
+          </form>
+
+          <ul id="event-list" class="event-list" aria-label="Event list"></ul>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
