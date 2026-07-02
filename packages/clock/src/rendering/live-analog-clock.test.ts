@@ -158,7 +158,9 @@ describe("createLiveAnalogClock", () => {
       }
     ]);
 
-    expect(container.querySelector('[data-clock-part="weekday-label"]')?.textContent).toBe("חמישי (ליל שישי)");
+    const weekdayLines = Array.from(container.querySelectorAll('[data-clock-part="weekday-label"] tspan'));
+    expect(weekdayLines[0]?.textContent).toBe("חמישי");
+    expect(weekdayLines[1]?.textContent).toBe("(ליל שישי)");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toContain("אור לי״ח");
   });
 
