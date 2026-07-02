@@ -21,6 +21,7 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("הגדרות מיקום");
     expect(html).toContain("הגדרות אירוע");
     expect(html).toContain("הגדרות אירוע מיוחד");
+    expect(html).toContain("אירועים קבועים");
     expect(html).toContain("רשימת אירועים");
   });
 
@@ -36,6 +37,8 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("שעות זמניות");
     expect(html).toContain("data-zmanit-layer-toggle");
     expect(html).toContain('id="derived-event-form"');
+    expect(html).toContain('id="fixed-day-time-list"');
+    expect(html).toContain('id="fixed-day-time-status"');
     expect(html).toContain("אירועים מיוחדים");
     expect(html).toContain("שעות זמניות</option>");
     expect(html).toContain("API זריחה ושקיעה");
@@ -43,6 +46,8 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("refreshDayTimesLayer");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
+    expect(main).toContain("DEFAULT_FIXED_DAY_TIME_EVENTS");
+    expect(main).toContain("addFixedDayTimeEventsToLayer");
     expect(main).toContain("resolveDerivedEvents");
     expect(main).toContain("derivedOffsetSeconds");
   });
@@ -56,6 +61,27 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("PERSONAL_LAYER_ID");
     expect(main).toContain("emptyDayTimesLayer()");
     expect(main).toContain("layer.id === DAY_TIMES_LAYER_ID");
+  });
+
+  it("defines configurable fixed day-time events from sunrise and sunset anchors", () => {
+    const main = readDemoFile("main.ts");
+
+    for (const label of [
+      "עלות השחר",
+      "טלית ותפילין",
+      "סוף זמן קריאת שמע",
+      "סוף זמן תפילה",
+      "חצות",
+      "פלג המנחה",
+      "צאת הכוכבים"
+    ]) {
+      expect(main).toContain(label);
+    }
+
+    expect(main).toContain('base: "sunrise"');
+    expect(main).toContain('base: "sunset"');
+    expect(main).toContain('id: `fixed-${definition.id}`');
+    expect(main).toContain('existingLayer.id === DAY_TIMES_LAYER_ID');
   });
 
   it("does not leave the previous visible English demo labels in place", () => {

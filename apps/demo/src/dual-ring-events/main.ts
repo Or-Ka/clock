@@ -23,6 +23,7 @@ type DemoLocation = {
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
 type DerivedDirection = "before" | "after";
 type DerivedOffsetUnit = "minutes" | "hours" | "zmanit-hours";
+type FixedDayTimeBase = "sunrise" | "sunset";
 
 type DerivedEventDefinition = {
   readonly id: string;
@@ -31,6 +32,13 @@ type DerivedEventDefinition = {
   readonly direction: DerivedDirection;
   readonly offsetValue: number;
   readonly offsetUnit: DerivedOffsetUnit;
+};
+
+type FixedDayTimeDefinition = {
+  readonly id: string;
+  readonly title: string;
+  readonly base: FixedDayTimeBase;
+  readonly offsetMinutes: number;
 };
 
 const DAY_TIMES_LAYER_ID = "day-times";
@@ -48,6 +56,15 @@ const LOCATION_OPTIONS: readonly DemoLocation[] = [
     longitude: -74.006,
     timeZone: "America/New_York"
   }
+];
+const DEFAULT_FIXED_DAY_TIME_EVENTS: readonly FixedDayTimeDefinition[] = [
+  { id: "alot-hashachar", title: "עלות השחר", base: "sunrise", offsetMinutes: -72 },
+  { id: "talit-tefillin", title: "טלית ותפילין", base: "sunrise", offsetMinutes: -50 },
+  { id: "sof-shema", title: "סוף זמן קריאת שמע", base: "sunrise", offsetMinutes: 180 },
+  { id: "sof-tefila", title: "סוף זמן תפילה", base: "sunrise", offsetMinutes: 240 },
+  { id: "chatzot", title: "חצות", base: "sunrise", offsetMinutes: 360 },
+  { id: "plag-hamincha", title: "פלג המנחה", base: "sunset", offsetMinutes: -75 },
+  { id: "tzeit-hakochavim", title: "צאת הכוכבים", base: "sunset", offsetMinutes: 18 }
 ];
 
 const mount = getRequiredElement<HTMLElement>("#phase3-clock");
@@ -67,6 +84,8 @@ const derivedDirectionSelect = getRequiredElement<HTMLSelectElement>("#derived-e
 const derivedOffsetInput = getRequiredElement<HTMLInputElement>("#derived-event-offset");
 const derivedOffsetUnitSelect = getRequiredElement<HTMLSelectElement>("#derived-event-offset-unit");
 const derivedError = getRequiredElement<HTMLElement>("#derived-event-error");
+const fixedDayTimeList = getRequiredElement<HTMLElement>("#fixed-day-time-list");
+const fixedDayTimeStatus = getRequiredElement<HTMLElement>("#fixed-day-time-status");
 const eventList = getRequiredElement<HTMLUListElement>("#event-list");
 const eventError = getRequiredElement<HTMLElement>("#event-error");
 const layerToggles = Array.from(document.querySelectorAll<HTMLInputElement>("[data-layer-toggle]"));
@@ -78,6 +97,7 @@ let dayTimesAbortController: AbortController | undefined;
 let dayTimesCacheKey = "";
 let zmanitTicks: ZmanitTick[] = [];
 let derivedEvents: DerivedEventDefinition[] = [];
+let fixedDayTimeEvents: FixedDayTimeDefinition[] = [...DEFAULT_FIXED_DAY_TIME_EVENTS];
 let eventLayers: EventLayerDefinition[] = [
   emptyDayTimesLayer(),
   {
@@ -95,6 +115,7 @@ let eventLayers: EventLayerDefinition[] = [
 ];
 
 syncTimeZoneToLocation();
+renderFixedDayTimeControls();
 
 const clock = createLiveAnalogClock({
   container: mount,
@@ -184,6 +205,9 @@ derivedForm.addEventListener("submit", (event) => {
   applyEventLayers();
 });
 
+fixedDayTimeList.addEventListener("input", handleFixedDayTimeControlEvent);
+fixedDayTimeList.addEventListener("change", handleFixedDayTimeControlEvent);
+
 eventList.addEventListener("click", (event) => {
   const button = (event.target as Element).closest<HTMLButtonElement>("button[data-event-id]");
   if (!button) {
@@ -241,9 +265,10 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     dayTimesStatus.textContent = `זמני היום נטענו עבור ${selectedLocation.title} בתאריך ${date}.`;
     eventLayers = eventLayers.map((existingLayer) =>
       existingLayer.id === DAY_TIMES_LAYER_ID
-        ? mergeLayerEnabled(layer, existingLayer.enabled)
+        ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(layer, existingLayer.enabled))
         : existingLayer
     );
+    syncFixedDayTimeStatus();
     zmanitTicks = createZmanitTicks(layer.events);
     clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
     refreshSpecialLayer();
@@ -259,9 +284,133 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     );
     zmanitTicks = [];
     clock.setZmanitTicks([]);
+    syncFixedDayTimeStatus();
     refreshSpecialLayer();
     applyEventLayers();
   }
+}
+
+function renderFixedDayTimeControls(): void {
+  fixedDayTimeList.replaceChildren(
+    ...fixedDayTimeEvents.map((definition) => {
+      const row = document.createElement("div");
+      row.className = "fixed-day-time-row";
+      row.dataset.fixedDayTimeId = definition.id;
+
+      const title = document.createElement("span");
+      title.className = "fixed-day-time-title";
+      title.textContent = definition.title;
+
+      const base = document.createElement("select");
+      base.dataset.fixedField = "base";
+      base.ariaLabel = `${definition.title} מבוסס על`;
+      base.append(createOption("sunrise", "זריחה"), createOption("sunset", "שקיעה"));
+      base.value = definition.base;
+
+      const offset = document.createElement("input");
+      offset.dataset.fixedField = "offsetMinutes";
+      offset.type = "number";
+      offset.min = "-720";
+      offset.max = "720";
+      offset.step = "1";
+      offset.inputMode = "numeric";
+      offset.value = String(definition.offsetMinutes);
+      offset.ariaLabel = `${definition.title} דקות מהבסיס`;
+
+      const unit = document.createElement("span");
+      unit.className = "fixed-day-time-unit";
+      unit.textContent = "דקות";
+
+      row.append(title, base, offset, unit);
+      return row;
+    })
+  );
+  syncFixedDayTimeStatus();
+}
+
+function handleFixedDayTimeControlEvent(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  const row = target.closest<HTMLElement>("[data-fixed-day-time-id]");
+  const id = row?.dataset.fixedDayTimeId;
+  const field = target.dataset.fixedField;
+  if (id === undefined || field === undefined) {
+    return;
+  }
+
+  fixedDayTimeEvents = fixedDayTimeEvents.map((definition) => {
+    if (definition.id !== id) {
+      return definition;
+    }
+
+    if (field === "base" && isFixedDayTimeBase(target.value)) {
+      return { ...definition, base: target.value };
+    }
+    if (field === "offsetMinutes") {
+      return { ...definition, offsetMinutes: Number(target.value) };
+    }
+    return definition;
+  });
+
+  refreshFixedDayTimeEvents();
+  applyEventLayers();
+}
+
+function refreshFixedDayTimeEvents(): void {
+  eventLayers = eventLayers.map((layer) =>
+    layer.id === DAY_TIMES_LAYER_ID ? addFixedDayTimeEventsToLayer(layer) : layer
+  );
+  syncFixedDayTimeStatus();
+}
+
+function addFixedDayTimeEventsToLayer(layer: EventLayerDefinition): EventLayerDefinition {
+  const sourceEvents = layer.events.filter((event) => !event.id.startsWith("fixed-"));
+  return {
+    ...layer,
+    events: [...sourceEvents, ...resolveFixedDayTimeEvents(sourceEvents)]
+  };
+}
+
+function resolveFixedDayTimeEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
+  const sunrise = events.find((event) => event.kind === "sunrise");
+  const sunset = events.find((event) => event.kind === "sunset");
+  if (sunrise === undefined || sunset === undefined) {
+    return [];
+  }
+
+  return fixedDayTimeEvents.flatMap((definition) => {
+    if (!Number.isFinite(definition.offsetMinutes)) {
+      return [];
+    }
+
+    const baseEvent = definition.base === "sunrise" ? sunrise : sunset;
+    const time = timeFromSeconds(eventSecondOfDay(baseEvent) + definition.offsetMinutes * 60);
+    return [
+      {
+        id: `fixed-${definition.id}`,
+        type: "instant",
+        kind: "custom",
+        title: definition.title,
+        hour: time.hour,
+        minute: time.minute,
+        second: time.second,
+        description: `${definition.offsetMinutes} דקות מ${displayFixedBase(definition.base)}`
+      }
+    ];
+  });
+}
+
+function syncFixedDayTimeStatus(): void {
+  const dayTimesLayer = eventLayers.find((layer) => layer.id === DAY_TIMES_LAYER_ID);
+  const anchorCount = dayTimesLayer?.events.filter(isSunriseOrSunsetEvent).length ?? 0;
+  const resolvedCount = dayTimesLayer?.events.filter((event) => event.id.startsWith("fixed-")).length ?? 0;
+  fixedDayTimeStatus.textContent =
+    anchorCount < 2
+      ? "האירועים הקבועים יחושבו אחרי טעינת זריחה ושקיעה."
+      : `${resolvedCount} אירועים קבועים מחושבים בתוך שכבת זמני היום.`;
 }
 
 function refreshSpecialLayer(): void {
@@ -362,12 +511,14 @@ function syncEventList(): void {
       layer.className = `event-layer event-layer-${event.layerKind ?? "custom"}`;
       layer.textContent = displayLayerKind(event.layerKind);
 
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.dataset.eventId = event.id;
-      remove.textContent = "מחיקה";
-
-      item.append(kind, layer, details, remove);
+      item.append(kind, layer, details);
+      if (event.layerId === PERSONAL_LAYER_ID || event.layerId === SPECIAL_LAYER_ID) {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.dataset.eventId = event.id;
+        remove.textContent = "מחיקה";
+        item.append(remove);
+      }
       return item;
     })
   );
@@ -508,6 +659,21 @@ function mergeLayerEnabled(layer: EventLayerDefinition, enabled: boolean | undef
   return { ...layer, enabled };
 }
 
+function isSunriseOrSunsetEvent(event: InstantEventDefinition): boolean {
+  return event.kind === "sunrise" || event.kind === "sunset";
+}
+
+function isFixedDayTimeBase(value: string): value is FixedDayTimeBase {
+  return value === "sunrise" || value === "sunset";
+}
+
+function createOption(value: string, label: string): HTMLOptionElement {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = label;
+  return option;
+}
+
 function syncTimeZoneToLocation(): void {
   timezoneSelect.value = selectedLocation.timeZone;
 }
@@ -541,6 +707,10 @@ function displayLayerKind(kind: EventLayerKind | undefined): string {
     return "מיוחד";
   }
   return "שכבה";
+}
+
+function displayFixedBase(base: FixedDayTimeBase): string {
+  return base === "sunrise" ? "זריחה" : "שקיעה";
 }
 
 function displayRing(ring: "outer" | "inner"): string {
