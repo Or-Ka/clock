@@ -132,7 +132,7 @@ describe("createStaticAnalogClock", () => {
     const marker = getCurrentTimeMarker(container);
     expect(marker.getAttribute("data-clock-ring")).toBe("outer");
     expect(container.querySelector("svg")?.dataset.activeRing).toBe("outer");
-    expect(marker.getAttribute("data-clock-radius")).toBe("80");
+    expect(marker.getAttribute("data-clock-radius")).toBe("92");
     expect(marker.getAttribute("data-clock-angle")).toBe("0");
     expect(marker.querySelector('[data-clock-part="current-time-halo"]')).not.toBeNull();
     expect(marker.querySelector('[data-clock-part="current-time-core"]')).not.toBeNull();

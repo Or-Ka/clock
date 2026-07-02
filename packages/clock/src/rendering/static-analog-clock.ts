@@ -22,7 +22,7 @@ const CLOCK_COLORS = {
   sunset: "#ff4fd8",
   custom: "#00e5ff"
 } as const;
-const OUTER_TIME_MARKER_RADIUS = 80;
+const OUTER_TIME_MARKER_RADIUS = 92;
 const INNER_TIME_MARKER_RADIUS = 74;
 const DATE_LABEL_FONT_FAMILY = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
 
