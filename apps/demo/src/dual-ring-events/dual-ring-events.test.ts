@@ -140,6 +140,9 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(css).toContain(':root[data-display-mode="floatingClock"] .clock-mount');
     expect(css).toContain("width: 200px");
     expect(css).toContain("z-index: 2147483000");
+    expect(css).toContain('data-clock-ring="outer"');
+    expect(css).toContain("font-size: 8.7px");
+    expect(css).toContain("text-rendering: geometricPrecision");
     expect(css).toContain(".clock-context-menu");
     expect(css).toContain('[data-event-kind="sunrise"] line');
     expect(css).toContain(".event-symbol");
