@@ -107,6 +107,12 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("createClockContextMenu");
     expect(main).toContain("displayModeLabel");
     expect(main).toContain("floatingClock");
+    expect(main).toContain("documentPictureInPicture");
+    expect(main).toContain("requestWindow({ width: 200, height: 200 })");
+    expect(main).toContain("openFloatingClockWindow");
+    expect(main).toContain("restoreFloatingClockToMainDocument");
+    expect(main).toContain("syncFloatingClockWindowStyles");
+    expect(main).toContain("data-floating-clock-window");
     expect(main).toContain('mount.addEventListener("contextmenu"');
     expect(main).toContain("root.dataset.displayMode");
     expect(main).toContain("applyDisplayPreferences");
