@@ -374,7 +374,8 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
 const mount = getRequiredElement<HTMLElement>("#phase3-clock");
 const status = getRequiredElement<HTMLElement>("#clock-status");
 const clockPanel = getRequiredElement<HTMLElement>(".clock-panel");
-const eventPanel = getRequiredElement<HTMLElement>(".event-panel");
+// Presence is required by the layout; the reference itself is unused.
+getRequiredElement<HTMLElement>(".event-panel");
 const timezoneSelect = getRequiredElement<HTMLSelectElement>("#timezone");
 const locationSelect = getRequiredElement<HTMLSelectElement>("#location");
 const dayTimesStatus = getRequiredElement<HTMLElement>("#day-times-status");

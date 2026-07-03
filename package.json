@@ -15,12 +15,22 @@
     "dev:static-clock": "npm --workspace @clock/demo run dev:static-clock --",
     "test": "vitest run",
     "typecheck": "tsc -b tsconfig.json --pretty false",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "docs:check": "node scripts/check-docs.mjs"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
     "jsdom": "^29.1.1",
+    "prettier": "^3.9.4",
     "typescript": "^5.8.0",
+    "typescript-eslint": "^8.62.1",
     "vitest": "^3.2.0"
   }
 }
