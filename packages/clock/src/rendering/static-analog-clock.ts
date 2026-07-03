@@ -498,13 +498,17 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
   const inner = pointOnClock(angle, isNightRingTick ? 58 : 85);
   const outer = pointOnClock(angle, isNightRingTick ? 70 : 97);
   const line = createSvgElement("line");
-  const title = createSvgElement("title");
 
   group.dataset.clockPart = "zmanit-tick";
   group.dataset.zmanitIndex = String(tick.index);
+  group.dataset.zmanitTitle = displayZmanitIndex(tick.index);
   group.dataset.zmanitTime = formatTimeWithSeconds(tick.hour, tick.minute, tick.second);
+  group.dataset.zmanitHour = String(tick.hour);
+  group.dataset.zmanitMinute = String(tick.minute);
+  group.dataset.zmanitSecond = String(tick.second);
   group.dataset.clockAngle = String(angle);
   group.dataset.clockRing = isNightRingTick ? "inner" : "outer";
+  group.setAttribute("aria-label", `${displayZmanitIndex(tick.index)}, ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`);
 
   line.setAttribute("x1", String(inner.x));
   line.setAttribute("y1", String(inner.y));
@@ -515,8 +519,7 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
   line.setAttribute("stroke-linecap", "butt");
   line.setAttribute("opacity", "0.95");
 
-  title.textContent = `${displayZmanitIndex(tick.index)}, ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`;
-  group.append(title, line);
+  group.append(line);
   return group;
 }
 
@@ -527,20 +530,28 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   const inner = pointOnClock(displayAngle, radii.inner);
   const outer = pointOnClock(displayAngle, radii.outer);
   const line = createSvgElement("line");
-  const title = createSvgElement("title");
 
   marker.dataset.clockPart = "event-marker";
   marker.dataset.eventId = event.id;
   marker.dataset.eventKind = event.kind;
+  marker.dataset.eventTitle = event.title;
+  marker.dataset.eventTime = formatEventTime(event);
   marker.dataset.eventStatus = event.status;
   marker.dataset.clockRing = event.ring;
   marker.dataset.eventAngle = String(event.angle);
   marker.dataset.eventDisplayAngle = String(displayAngle);
+  marker.setAttribute("aria-label", `${event.title}, ${formatEventTime(event)}, ${displayStatus(event.status)}`);
   if (event.layerId !== undefined) {
     marker.dataset.eventLayerId = event.layerId;
   }
+  if (event.layerTitle !== undefined) {
+    marker.dataset.eventLayerTitle = event.layerTitle;
+  }
   if (event.layerKind !== undefined) {
     marker.dataset.eventLayerKind = event.layerKind;
+  }
+  if (event.description !== undefined) {
+    marker.dataset.eventDescription = event.description;
   }
 
   line.setAttribute("x1", String(inner.x));
@@ -552,8 +563,7 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   line.setAttribute("stroke-linecap", "butt");
   line.setAttribute("opacity", event.status === "past" ? "0.58" : "1");
 
-  title.textContent = `${event.title}, ${pad(event.hour)}:${pad(event.minute)}, ${displayStatus(event.status)}`;
-  marker.append(title, line);
+  marker.append(line);
 
   return marker;
 }
@@ -631,6 +641,14 @@ function round(value: number): number {
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+function formatEventTime(event: { readonly hour: number; readonly minute: number; readonly second?: number }): string {
+  if (event.second === undefined) {
+    return `${pad(event.hour)}:${pad(event.minute)}`;
+  }
+
+  return `${pad(event.hour)}:${pad(event.minute)}:${pad(event.second)}`;
 }
 
 function formatTimeWithSeconds(hour: number, minute: number, second: number): string {

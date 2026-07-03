@@ -162,14 +162,16 @@ describe("createStaticAnalogClock", () => {
 
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(2);
     expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-time")).toBe("06:45:25");
-    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("שעה זמנית 1, 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-title")).toBe("שעה זמנית 1");
+    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("aria-label")).toBe("שעה זמנית 1, 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"] title')).toBeNull();
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke")).toBe("#ff1f1f");
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke-width")).toBe("0.85");
 
     clock.setZmanitTicks([{ index: 12, hour: 18, minute: 22, second: 10 }]);
 
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
-    expect(container.querySelector('[data-zmanit-index="12"] title')?.textContent).toBe("שעה זמנית 12, 18:22:10");
+    expect(container.querySelector('[data-zmanit-index="12"]')?.getAttribute("aria-label")).toBe("שעה זמנית 12, 18:22:10");
   });
 
   it("moves night-range zmanit ticks inward without changing their clock angle", () => {
@@ -277,8 +279,10 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-display-angle")).toBe("200");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-id")).toBe("day-times");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-kind")).toBe("day-times");
-    expect(container.querySelector('[data-event-id="sunrise"] title')?.textContent).toContain("sunrise");
-    expect(container.querySelector('[data-event-id="sunrise"] title')?.textContent).not.toContain("טבעת");
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-title")).toBe("sunrise");
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-time")).toBe("06:00");
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-title")).toBe("זמני היום");
+    expect(container.querySelector('[data-event-id="sunrise"] title')).toBeNull();
     expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke")).toBe("#ffd400");
     expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke-width")).toBe("1.55");
     expect(container.querySelector('[data-event-id="sunrise"] circle')).toBeNull();

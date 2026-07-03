@@ -178,7 +178,8 @@ describe("createLiveAnalogClock", () => {
 
     expect(container.querySelector("svg")).toBe(svg);
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
-    expect(container.querySelector('[data-zmanit-index="1"] title')?.textContent).toBe("שעה זמנית 1, 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("aria-label")).toBe("שעה זמנית 1, 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"] title')).toBeNull();
   });
 
   it("rejects invalid setEvents input without changing the rendered events", () => {
