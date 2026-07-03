@@ -28,7 +28,7 @@ type EventAlertOffsetUnit = "minutes" | "hours";
 type EventAlertDirection = "before" | "after";
 type FixedDayTimeAnchorBase = "sunrise" | "sunset";
 type FixedDayTimeBase = FixedDayTimeAnchorBase | "set-start" | "set-end";
-type ZmanitTimeSetId = "alot-tzeit" | "sunrise-sunset" | "tefillin-tefila";
+type ZmanitTimeSetId = string;
 type DisplayMode = "fullMode" | "clockOnly" | "floatingClock";
 type DisplayTemplateId = "classic" | "night" | "paper" | "focus" | "festival";
 type DisplayFontFamily = "system" | "serif" | "mono" | "rounded";
@@ -151,6 +151,7 @@ type DisplayPreferences = {
   readonly displayMode: DisplayMode;
   readonly fontFamily: DisplayFontFamily;
   readonly fontScale: number;
+  readonly clockScale: number;
   readonly backgroundColor: string;
   readonly panelColor: string;
   readonly textColor: string;
@@ -167,6 +168,7 @@ type DemoExportState = {
   readonly exportedAt: string;
   readonly selectedLocationId: string;
   readonly selectedDefaultZmanitSetId: ZmanitTimeSetId;
+  readonly zmanitTimeSets: readonly ZmanitTimeSetDefinition[];
   readonly personalEvents: readonly InstantEventDefinition[];
   readonly derivedEvents: readonly DerivedEventDefinition[];
   readonly fixedDayTimeEvents: readonly FixedDayTimeDefinition[];
@@ -196,13 +198,13 @@ const DEFAULT_FIXED_DAY_TIME_EVENTS: readonly FixedDayTimeDefinition[] = [
   { id: "alot-hashachar", title: "עלות השחר", base: "sunrise", direction: "before", offsetValue: 72, offsetUnit: "minutes" },
   { id: "talit-tefillin", title: "טלית ותפילין", base: "sunrise", direction: "before", offsetValue: 50, offsetUnit: "minutes" },
   { id: "sof-shema", title: "סוף זמן קריאת שמע", base: "set-start", direction: "after", offsetValue: 3, offsetUnit: "zmanit-hours", zmanitSetId: "alot-tzeit" },
-  { id: "sof-tefila", title: "סוף זמן תפילה", base: "set-end", direction: "after", offsetValue: 0, offsetUnit: "minutes", zmanitSetId: "tefillin-tefila" },
+  { id: "sof-tefila", title: "סוף זמן תפילה", base: "set-start", direction: "after", offsetValue: 4, offsetUnit: "zmanit-hours" },
   { id: "chatzot", title: "חצות", base: "set-start", direction: "after", offsetValue: 6, offsetUnit: "zmanit-hours" },
   { id: "plag-hamincha", title: "פלג המנחה", base: "set-end", direction: "before", offsetValue: 1.25, offsetUnit: "zmanit-hours" },
   { id: "tzeit-hakochavim", title: "צאת הכוכבים", base: "sunset", direction: "after", offsetValue: 18, offsetUnit: "minutes", zmanitSetId: "alot-tzeit" }
 ];
 const DEFAULT_ZMANIT_SET_ID: ZmanitTimeSetId = "sunrise-sunset";
-const ZMANIT_TIME_SETS: readonly ZmanitTimeSetDefinition[] = [
+const DEFAULT_ZMANIT_TIME_SETS: readonly ZmanitTimeSetDefinition[] = [
   {
     id: "alot-tzeit",
     title: "עלות השחר עד צאת הכוכבים",
@@ -218,13 +220,6 @@ const ZMANIT_TIME_SETS: readonly ZmanitTimeSetDefinition[] = [
     startTime: { base: "sunrise", direction: "after", offsetValue: 0, offsetUnit: "minutes" },
     endTime: { base: "sunset", direction: "after", offsetValue: 0, offsetUnit: "minutes" },
     fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS
-  },
-  {
-    id: "tefillin-tefila",
-    title: "טלית ותפילין עד סוף זמן תפילה",
-    startTime: { base: "sunrise", direction: "before", offsetValue: 50, offsetUnit: "minutes" },
-    endTime: { base: "sunrise", direction: "after", offsetValue: 4, offsetUnit: "hours" },
-    fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS.filter((event) => ["talit-tefillin", "sof-tefila"].includes(event.id))
   }
 ];
 const AUTOMATIC_SHABBAT_EVENTS: readonly (FixedDayTimeDefinition & { readonly weekdays: readonly number[] })[] = [
@@ -279,6 +274,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
     displayMode: "fullMode",
     fontFamily: "system",
     fontScale: 100,
+    clockScale: 100,
     backgroundColor: "#eef3f5",
     panelColor: "#ffffff",
     textColor: "#12202a",
@@ -298,6 +294,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
     displayMode: "fullMode",
     fontFamily: "system",
     fontScale: 100,
+    clockScale: 100,
     backgroundColor: "#0b1117",
     panelColor: "#101b26",
     textColor: "#e8eef5",
@@ -317,6 +314,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
     displayMode: "fullMode",
     fontFamily: "serif",
     fontScale: 104,
+    clockScale: 100,
     backgroundColor: "#f4f0e6",
     panelColor: "#fffaf0",
     textColor: "#2f2a20",
@@ -336,6 +334,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
     displayMode: "fullMode",
     fontFamily: "mono",
     fontScale: 96,
+    clockScale: 100,
     backgroundColor: "#f6f8fb",
     panelColor: "#ffffff",
     textColor: "#101418",
@@ -355,6 +354,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
     displayMode: "fullMode",
     fontFamily: "rounded",
     fontScale: 106,
+    clockScale: 100,
     backgroundColor: "#15131b",
     panelColor: "#211b2a",
     textColor: "#fff6ea",
@@ -412,6 +412,20 @@ const fixedDayTimeList = getRequiredElement<HTMLElement>("#fixed-day-time-list")
 const fixedDayTimeStatus = getRequiredElement<HTMLElement>("#fixed-day-time-status");
 const zmanitSetSelect = getRequiredElement<HTMLSelectElement>("#zmanit-set");
 const zmanitSetStatus = getRequiredElement<HTMLElement>("#zmanit-set-status");
+const zmanitSetForm = getRequiredElement<HTMLFormElement>("#zmanit-set-form");
+const zmanitSetEditorSelect = getRequiredElement<HTMLSelectElement>("#zmanit-set-editor");
+const zmanitSetTitleInput = getRequiredElement<HTMLInputElement>("#zmanit-set-title-input");
+const zmanitStartBaseSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-base");
+const zmanitStartDirectionSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-direction");
+const zmanitStartOffsetInput = getRequiredElement<HTMLInputElement>("#zmanit-start-offset");
+const zmanitStartUnitSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-unit");
+const zmanitEndBaseSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-base");
+const zmanitEndDirectionSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-direction");
+const zmanitEndOffsetInput = getRequiredElement<HTMLInputElement>("#zmanit-end-offset");
+const zmanitEndUnitSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-unit");
+const zmanitSetNewButton = getRequiredElement<HTMLButtonElement>("#zmanit-set-new");
+const zmanitSetRemoveButton = getRequiredElement<HTMLButtonElement>("#zmanit-set-delete");
+const zmanitSetEditorStatus = getRequiredElement<HTMLElement>("#zmanit-set-editor-status");
 const eventList = getRequiredElement<HTMLUListElement>("#event-list");
 const eventError = getRequiredElement<HTMLElement>("#event-error");
 const alertsEnabledInput = getRequiredElement<HTMLInputElement>("#alerts-enabled");
@@ -427,6 +441,7 @@ const displayTemplateSelect = getRequiredElement<HTMLSelectElement>("#display-te
 const displayModeSelect = getRequiredElement<HTMLSelectElement>("#display-mode");
 const displayFontFamilySelect = getRequiredElement<HTMLSelectElement>("#display-font-family");
 const displayFontScaleInput = getRequiredElement<HTMLInputElement>("#display-font-scale");
+const displayClockScaleInput = getRequiredElement<HTMLInputElement>("#display-clock-scale");
 const displayBackgroundColorInput = getRequiredElement<HTMLInputElement>("#display-background-color");
 const displayPanelColorInput = getRequiredElement<HTMLInputElement>("#display-panel-color");
 const displayTextColorInput = getRequiredElement<HTMLInputElement>("#display-text-color");
@@ -442,7 +457,9 @@ let selectedLocation = getLocationById(locationSelect.value);
 let dayTimesAbortController: AbortController | undefined;
 let dayTimesCacheKey = "";
 let zmanitTicks: ZmanitTick[] = [];
+let zmanitTimeSets: ZmanitTimeSetDefinition[] = DEFAULT_ZMANIT_TIME_SETS.map(cloneZmanitTimeSet);
 let selectedDefaultZmanitSetId: ZmanitTimeSetId = DEFAULT_ZMANIT_SET_ID;
+let selectedEditorZmanitSetId: ZmanitTimeSetId = DEFAULT_ZMANIT_SET_ID;
 let derivedEvents: DerivedEventDefinition[] = [];
 let fixedDayTimeEvents: FixedDayTimeDefinition[] = [...DEFAULT_FIXED_DAY_TIME_EVENTS];
 let displayPreferences = loadDisplayPreferences();
@@ -530,6 +547,23 @@ zmanitSetSelect.addEventListener("change", () => {
   refreshDayTimeDerivedState();
 });
 
+zmanitSetEditorSelect.addEventListener("change", () => {
+  if (!isZmanitTimeSetId(zmanitSetEditorSelect.value)) {
+    return;
+  }
+
+  selectedEditorZmanitSetId = zmanitSetEditorSelect.value;
+  syncZmanitSetEditorControls();
+});
+
+zmanitSetForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveEditedZmanitSet();
+});
+
+zmanitSetNewButton.addEventListener("click", addZmanitSet);
+zmanitSetRemoveButton.addEventListener("click", deleteEditedZmanitSet);
+
 displayPreferencesToggle.addEventListener("click", () => {
   setDisplayPreferencesOpen(displayPreferencesPanel.hidden);
 });
@@ -582,6 +616,11 @@ displayFontFamilySelect.addEventListener("change", () => {
 
 displayFontScaleInput.addEventListener("input", () => {
   displayPreferences = { ...displayPreferences, fontScale: Number(displayFontScaleInput.value) };
+  applyDisplayPreferences();
+});
+
+displayClockScaleInput.addEventListener("input", () => {
+  displayPreferences = { ...displayPreferences, clockScale: Number(displayClockScaleInput.value) };
   applyDisplayPreferences();
 });
 
@@ -749,15 +788,152 @@ window.addEventListener("beforeunload", destroyClock);
 
 function renderZmanitSetControls(): void {
   zmanitSetSelect.replaceChildren(
-    ...ZMANIT_TIME_SETS.map((set) => createOption(set.id, set.title))
+    ...zmanitTimeSets.map((set) => createOption(set.id, set.title))
   );
+  zmanitSetEditorSelect.replaceChildren(
+    ...zmanitTimeSets.map((set) => createOption(set.id, set.title))
+  );
+  ensureSelectedZmanitSetIds();
   zmanitSetSelect.value = selectedDefaultZmanitSetId;
+  zmanitSetEditorSelect.value = selectedEditorZmanitSetId;
   syncZmanitSetStatus();
+  syncZmanitSetEditorControls();
+}
+
+function ensureSelectedZmanitSetIds(): void {
+  if (zmanitTimeSets.length === 0) {
+    zmanitTimeSets = DEFAULT_ZMANIT_TIME_SETS.map(cloneZmanitTimeSet);
+  }
+
+  if (!isZmanitTimeSetId(selectedDefaultZmanitSetId)) {
+    selectedDefaultZmanitSetId = zmanitTimeSets[0]?.id ?? DEFAULT_ZMANIT_SET_ID;
+  }
+
+  if (!isZmanitTimeSetId(selectedEditorZmanitSetId)) {
+    selectedEditorZmanitSetId = selectedDefaultZmanitSetId;
+  }
 }
 
 function syncZmanitSetStatus(): void {
   const set = getZmanitTimeSetById(selectedDefaultZmanitSetId);
   zmanitSetStatus.textContent = `סט פעיל: ${set.title}. תחילה: ${displayZmanitBoundary(set.startTime)}, סוף: ${displayZmanitBoundary(set.endTime)}.`;
+}
+
+function syncZmanitSetEditorControls(): void {
+  const set = getZmanitTimeSetById(selectedEditorZmanitSetId);
+  zmanitSetTitleInput.value = set.title;
+  syncZmanitBoundaryControls("start", set.startTime);
+  syncZmanitBoundaryControls("end", set.endTime);
+  zmanitSetRemoveButton.disabled = zmanitTimeSets.length <= 1;
+  zmanitSetEditorStatus.textContent = `עורך: ${set.title}`;
+}
+
+function syncZmanitBoundaryControls(kind: "start" | "end", boundary: ZmanitSetBoundary): void {
+  const controls = zmanitBoundaryControls(kind);
+  controls.base.value = boundary.base;
+  controls.direction.value = boundary.direction;
+  controls.offset.value = String(boundary.offsetValue);
+  controls.unit.value = boundary.offsetUnit;
+}
+
+function saveEditedZmanitSet(): void {
+  const title = zmanitSetTitleInput.value.trim();
+  if (title === "") {
+    zmanitSetEditorStatus.textContent = "צריך שם לסט.";
+    return;
+  }
+
+  const startTime = readZmanitBoundaryControls("start");
+  const endTime = readZmanitBoundaryControls("end");
+  if (startTime === undefined || endTime === undefined) {
+    zmanitSetEditorStatus.textContent = "אחד מערכי תחילת או סוף הסט לא תקין.";
+    return;
+  }
+
+  zmanitTimeSets = zmanitTimeSets.map((set) =>
+    set.id === selectedEditorZmanitSetId ? { ...set, title, startTime, endTime } : set
+  );
+  renderZmanitSetControls();
+  refreshDayTimeDerivedState();
+  zmanitSetEditorStatus.textContent = `הסט ${title} נשמר.`;
+}
+
+function addZmanitSet(): void {
+  const title = "סט שעות זמניות חדש";
+  const nextSet: ZmanitTimeSetDefinition = {
+    id: createZmanitSetId(),
+    title,
+    startTime: { base: "sunrise", direction: "after", offsetValue: 0, offsetUnit: "minutes" },
+    endTime: { base: "sunset", direction: "after", offsetValue: 0, offsetUnit: "minutes" },
+    fixedEvents: []
+  };
+  zmanitTimeSets = [...zmanitTimeSets, nextSet];
+  selectedEditorZmanitSetId = nextSet.id;
+  selectedDefaultZmanitSetId = nextSet.id;
+  renderZmanitSetControls();
+  refreshDayTimeDerivedState();
+  zmanitSetTitleInput.focus();
+  zmanitSetTitleInput.select();
+}
+
+function deleteEditedZmanitSet(): void {
+  if (zmanitTimeSets.length <= 1) {
+    zmanitSetEditorStatus.textContent = "אי אפשר למחוק את הסט האחרון.";
+    return;
+  }
+
+  const deletedSet = getZmanitTimeSetById(selectedEditorZmanitSetId);
+  zmanitTimeSets = zmanitTimeSets.filter((set) => set.id !== selectedEditorZmanitSetId);
+  ensureSelectedZmanitSetIds();
+  fixedDayTimeEvents = fixedDayTimeEvents.map(removeMissingZmanitSetReference);
+  renderZmanitSetControls();
+  renderFixedDayTimeControls();
+  refreshDayTimeDerivedState();
+  zmanitSetEditorStatus.textContent = `הסט ${deletedSet.title} נמחק.`;
+}
+
+function readZmanitBoundaryControls(kind: "start" | "end"): ZmanitSetBoundary | undefined {
+  const controls = zmanitBoundaryControls(kind);
+  if (
+    !isFixedDayTimeAnchorBase(controls.base.value) ||
+    !isDerivedDirection(controls.direction.value) ||
+    !isEventOffsetUnit(controls.unit.value)
+  ) {
+    return undefined;
+  }
+
+  const offsetValue = Number(controls.offset.value);
+  if (!Number.isFinite(offsetValue) || offsetValue < 0) {
+    return undefined;
+  }
+
+  return {
+    base: controls.base.value,
+    direction: controls.direction.value,
+    offsetValue,
+    offsetUnit: controls.unit.value
+  };
+}
+
+function zmanitBoundaryControls(kind: "start" | "end"): {
+  readonly base: HTMLSelectElement;
+  readonly direction: HTMLSelectElement;
+  readonly offset: HTMLInputElement;
+  readonly unit: HTMLSelectElement;
+} {
+  return kind === "start"
+    ? {
+        base: zmanitStartBaseSelect,
+        direction: zmanitStartDirectionSelect,
+        offset: zmanitStartOffsetInput,
+        unit: zmanitStartUnitSelect
+      }
+    : {
+        base: zmanitEndBaseSelect,
+        direction: zmanitEndDirectionSelect,
+        offset: zmanitEndOffsetInput,
+        unit: zmanitEndUnitSelect
+      };
 }
 
 function refreshDayTimeDerivedState(): void {
@@ -775,6 +951,7 @@ function syncDisplayPreferenceControls(): void {
   displayModeSelect.value = displayPreferences.displayMode;
   displayFontFamilySelect.value = displayPreferences.fontFamily;
   displayFontScaleInput.value = String(displayPreferences.fontScale);
+  displayClockScaleInput.value = String(displayPreferences.clockScale);
   displayBackgroundColorInput.value = displayPreferences.backgroundColor;
   displayPanelColorInput.value = displayPreferences.panelColor;
   displayTextColorInput.value = displayPreferences.textColor;
@@ -793,6 +970,10 @@ function applyDisplayPreferences(): void {
   root.dataset.displayMode = displayPreferences.displayMode;
   root.style.setProperty("--display-font-family", DISPLAY_FONT_STACKS[displayPreferences.fontFamily]);
   root.style.setProperty("--display-font-scale", `${displayPreferences.fontScale / 100}rem`);
+  root.style.setProperty("--display-clock-size", `${round(680 * displayPreferences.clockScale / 100)}px`);
+  root.style.setProperty("--display-clock-only-size", `${round(760 * displayPreferences.clockScale / 100)}px`);
+  root.style.setProperty("--floating-clock-size", `${floatingClockPixelSize()}px`);
+  root.style.setProperty("--clock-font-boost", String(clockFontBoost()));
   root.style.setProperty("--display-background-color", displayPreferences.backgroundColor);
   root.style.setProperty("--display-panel-color", displayPreferences.panelColor);
   root.style.setProperty("--display-text-color", displayPreferences.textColor);
@@ -858,7 +1039,7 @@ async function openFloatingClockWindow(): Promise<void> {
   }
 
   try {
-    const nextWindow = await pictureInPicture.requestWindow({ width: 200, height: 200 });
+    const nextWindow = await pictureInPicture.requestWindow({ width: floatingClockPixelSize(), height: floatingClockPixelSize() });
     floatingClockWindow = nextWindow;
     prepareFloatingClockWindow(nextWindow);
   } catch {
@@ -925,6 +1106,10 @@ function syncFloatingClockWindowStyles(): void {
   for (const property of [
     "--display-font-family",
     "--display-font-scale",
+    "--display-clock-size",
+    "--display-clock-only-size",
+    "--floating-clock-size",
+    "--clock-font-boost",
     "--display-background-color",
     "--display-panel-color",
     "--display-text-color",
@@ -938,6 +1123,11 @@ function syncFloatingClockWindowStyles(): void {
     "--event-custom-color"
   ]) {
     pipRoot.style.setProperty(property, sourceRoot.style.getPropertyValue(property));
+  }
+  try {
+    floatingClockWindow.resizeTo(floatingClockPixelSize(), floatingClockPixelSize());
+  } catch {
+    // Some browsers keep Document Picture-in-Picture window size user-controlled after opening.
   }
 }
 
@@ -958,8 +1148,8 @@ function createFloatingClockWindowStyle(): HTMLStyleElement {
   style.textContent = `
     html[data-floating-clock-window="true"],
     html[data-floating-clock-window="true"] body {
-      width: 200px;
-      height: 200px;
+      width: var(--floating-clock-size);
+      height: var(--floating-clock-size);
       margin: 0;
       overflow: hidden;
       background: transparent;
@@ -967,16 +1157,16 @@ function createFloatingClockWindowStyle(): HTMLStyleElement {
 
     html[data-floating-clock-window="true"] .clock-mount {
       position: static;
-      width: 200px;
-      min-width: 200px;
-      max-width: 200px;
-      height: 200px;
+      width: var(--floating-clock-size);
+      min-width: var(--floating-clock-size);
+      max-width: var(--floating-clock-size);
+      height: var(--floating-clock-size);
       margin: 0;
     }
 
     html[data-floating-clock-window="true"] .clock-mount svg {
-      width: 200px;
-      height: 200px;
+      width: var(--floating-clock-size);
+      height: var(--floating-clock-size);
       filter: none;
     }
 
@@ -993,6 +1183,14 @@ function createFloatingClockWindowStyle(): HTMLStyleElement {
 function documentPictureInPictureApi(): DocumentPictureInPictureApi | undefined {
   return (window as Window & { readonly documentPictureInPicture?: DocumentPictureInPictureApi })
     .documentPictureInPicture;
+}
+
+function floatingClockPixelSize(): number {
+  return Math.max(140, Math.min(260, Math.round(200 * displayPreferences.clockScale / 100)));
+}
+
+function clockFontBoost(): number {
+  return round(1 + Math.max(0, 100 - displayPreferences.clockScale) / 220);
 }
 
 function syncAlertGlobalControls(): void {
@@ -2049,7 +2247,7 @@ function renderFixedDayTimeControls(): void {
       setSelect.dataset.fixedField = "zmanitSetId";
       setSelect.ariaLabel = `${definition.title} סט שעות זמניות`;
       setSelect.append(createOption("", `ברירת מחדל (${getZmanitTimeSetById(selectedDefaultZmanitSetId).title})`));
-      for (const set of ZMANIT_TIME_SETS) {
+      for (const set of zmanitTimeSets) {
         setSelect.append(createOption(set.id, set.title));
       }
       setSelect.value = definition.zmanitSetId ?? "";
@@ -2457,6 +2655,7 @@ function exportDemoState(): void {
     exportedAt: new Date().toISOString(),
     selectedLocationId: selectedLocation.id,
     selectedDefaultZmanitSetId,
+    zmanitTimeSets: zmanitTimeSets.map(cloneZmanitTimeSet),
     personalEvents: personalLayerEvents(),
     derivedEvents,
     fixedDayTimeEvents,
@@ -2510,9 +2709,17 @@ function importDemoState(payload: unknown): void {
     dayTimesCacheKey = "";
   }
 
-  if (typeof state.selectedDefaultZmanitSetId === "string" && isZmanitTimeSetId(state.selectedDefaultZmanitSetId)) {
+  if (Array.isArray(state.zmanitTimeSets)) {
+    const importedSets = state.zmanitTimeSets.filter(isZmanitTimeSetDefinition).map(cloneZmanitTimeSet);
+    if (importedSets.length > 0) {
+      zmanitTimeSets = importedSets;
+    }
+  }
+
+  if (typeof state.selectedDefaultZmanitSetId === "string") {
     selectedDefaultZmanitSetId = state.selectedDefaultZmanitSetId;
   }
+  ensureSelectedZmanitSetIds();
 
   if (Array.isArray(state.personalEvents)) {
     const importedPersonalEvents = state.personalEvents.filter(isInstantEventDefinition);
@@ -2526,7 +2733,7 @@ function importDemoState(payload: unknown): void {
   }
 
   if (Array.isArray(state.fixedDayTimeEvents)) {
-    fixedDayTimeEvents = state.fixedDayTimeEvents.filter(isFixedDayTimeDefinition);
+    fixedDayTimeEvents = state.fixedDayTimeEvents.filter(isFixedDayTimeDefinition).map(removeMissingZmanitSetReference);
   }
 
   if (isDisplayPreferences(state.displayPreferences)) {
@@ -2767,6 +2974,10 @@ function isFixedDayTimeBase(value: string): value is FixedDayTimeBase {
   return value === "sunrise" || value === "sunset" || value === "set-start" || value === "set-end";
 }
 
+function isFixedDayTimeAnchorBase(value: string): value is FixedDayTimeAnchorBase {
+  return value === "sunrise" || value === "sunset";
+}
+
 function isDerivedDirection(value: string): value is DerivedDirection {
   return value === "before" || value === "after";
 }
@@ -2784,7 +2995,7 @@ function isEventAlertOffsetUnit(value: string): value is EventAlertOffsetUnit {
 }
 
 function isZmanitTimeSetId(value: string): value is ZmanitTimeSetId {
-  return ZMANIT_TIME_SETS.some((set) => set.id === value);
+  return zmanitTimeSets.some((set) => set.id === value);
 }
 
 function isDisplayTemplateId(value: string): value is DisplayTemplateId {
@@ -2853,8 +3064,32 @@ function isFixedDayTimeDefinition(value: unknown): value is FixedDayTimeDefiniti
     isDerivedDirection(typeof value.direction === "string" ? value.direction : "") &&
     typeof value.offsetValue === "number" &&
     isEventOffsetUnit(typeof value.offsetUnit === "string" ? value.offsetUnit : "") &&
-    (value.zmanitSetId === undefined ||
-      (typeof value.zmanitSetId === "string" && isZmanitTimeSetId(value.zmanitSetId)))
+    (value.zmanitSetId === undefined || typeof value.zmanitSetId === "string")
+  );
+}
+
+function isZmanitSetBoundary(value: unknown): value is ZmanitSetBoundary {
+  return (
+    isRecord(value) &&
+    typeof value.base === "string" &&
+    isFixedDayTimeAnchorBase(value.base) &&
+    typeof value.direction === "string" &&
+    isDerivedDirection(value.direction) &&
+    typeof value.offsetValue === "number" &&
+    typeof value.offsetUnit === "string" &&
+    isEventOffsetUnit(value.offsetUnit)
+  );
+}
+
+function isZmanitTimeSetDefinition(value: unknown): value is ZmanitTimeSetDefinition {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    value.id.trim() !== "" &&
+    typeof value.title === "string" &&
+    value.title.trim() !== "" &&
+    isZmanitSetBoundary(value.startTime) &&
+    isZmanitSetBoundary(value.endTime)
   );
 }
 
@@ -2898,6 +3133,7 @@ function isDisplayPreferences(value: unknown): value is DisplayPreferences {
     typeof value.fontFamily === "string" &&
     isDisplayFontFamily(value.fontFamily) &&
     typeof value.fontScale === "number" &&
+    (typeof value.clockScale === "number" || value.clockScale === undefined) &&
     typeof value.backgroundColor === "string" &&
     typeof value.panelColor === "string" &&
     typeof value.textColor === "string" &&
@@ -2915,12 +3151,41 @@ function isDisplayPreferences(value: unknown): value is DisplayPreferences {
 function cloneDisplayPreferences(preferences: DisplayPreferences): DisplayPreferences {
   return {
     ...preferences,
+    clockScale: preferences.clockScale ?? 100,
     eventStyles: {
       sunrise: { ...preferences.eventStyles.sunrise },
       sunset: { ...preferences.eventStyles.sunset },
       custom: { ...preferences.eventStyles.custom }
     }
   };
+}
+
+function cloneZmanitTimeSet(set: ZmanitTimeSetDefinition): ZmanitTimeSetDefinition {
+  return {
+    ...set,
+    startTime: { ...set.startTime },
+    endTime: { ...set.endTime },
+    fixedEvents: [...set.fixedEvents]
+  };
+}
+
+function createZmanitSetId(): ZmanitTimeSetId {
+  let index = zmanitTimeSets.length + 1;
+  let candidate = `custom-zmanit-set-${index}`;
+  while (zmanitTimeSets.some((set) => set.id === candidate)) {
+    index += 1;
+    candidate = `custom-zmanit-set-${index}`;
+  }
+  return candidate;
+}
+
+function removeMissingZmanitSetReference(definition: FixedDayTimeDefinition): FixedDayTimeDefinition {
+  if (definition.zmanitSetId === undefined || isZmanitTimeSetId(definition.zmanitSetId)) {
+    return definition;
+  }
+
+  const { zmanitSetId: _removed, ...definitionWithoutSet } = definition;
+  return definitionWithoutSet;
 }
 
 function loadDisplayPreferences(): DisplayPreferences {
@@ -3004,7 +3269,7 @@ function displayOffsetUnit(unit: EventOffsetUnit): string {
 }
 
 function getZmanitTimeSetById(id: ZmanitTimeSetId): ZmanitTimeSetDefinition {
-  const set = ZMANIT_TIME_SETS.find((candidate) => candidate.id === id);
+  const set = zmanitTimeSets.find((candidate) => candidate.id === id);
   if (set === undefined) {
     throw new Error(`חסר סט שעות זמניות: ${id}`);
   }

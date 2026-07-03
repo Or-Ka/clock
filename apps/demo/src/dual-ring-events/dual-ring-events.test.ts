@@ -36,6 +36,10 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain('id="day-times-status"');
     expect(html).toContain('id="zmanit-set"');
     expect(html).toContain('id="zmanit-set-status"');
+    expect(html).toContain('id="zmanit-set-form"');
+    expect(html).toContain('id="zmanit-set-editor"');
+    expect(html).toContain('id="zmanit-set-new"');
+    expect(html).toContain('id="zmanit-set-delete"');
     expect(html).toContain("שעות זמניות");
     expect(html).toContain("data-zmanit-layer-toggle");
     expect(html).toContain('id="derived-event-form"');
@@ -52,7 +56,10 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("refreshDayTimesLayer");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
-    expect(main).toContain("ZMANIT_TIME_SETS");
+    expect(main).toContain("DEFAULT_ZMANIT_TIME_SETS");
+    expect(main).toContain("let zmanitTimeSets");
+    expect(main).toContain("saveEditedZmanitSet");
+    expect(main).toContain("deleteEditedZmanitSet");
     expect(main).toContain("selectedDefaultZmanitSetId");
     expect(main).toContain("resolveZmanitSetRange");
     expect(main).toContain("DEFAULT_FIXED_DAY_TIME_EVENTS");
@@ -89,6 +96,7 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain('value="floatingClock"');
     expect(html).toContain('id="display-font-family"');
     expect(html).toContain('id="display-font-scale"');
+    expect(html).toContain('id="display-clock-scale"');
     expect(html).toContain('id="display-background-color"');
     expect(html).not.toContain('data-event-symbol-control');
     expect(html).not.toContain('data-event-color-control');
@@ -108,7 +116,7 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("displayModeLabel");
     expect(main).toContain("floatingClock");
     expect(main).toContain("documentPictureInPicture");
-    expect(main).toContain("requestWindow({ width: 200, height: 200 })");
+    expect(main).toContain("floatingClockPixelSize");
     expect(main).toContain("openFloatingClockWindow");
     expect(main).toContain("restoreFloatingClockToMainDocument");
     expect(main).toContain("syncFloatingClockWindowStyles");
@@ -134,14 +142,16 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).not.toContain("🐓");
     expect(main).not.toContain("📖");
     expect(css).toContain("--display-font-family");
+    expect(css).toContain("--display-clock-size");
+    expect(css).toContain("--clock-font-boost");
     expect(css).toContain("--event-sunrise-color");
     expect(css).toContain(':root[data-display-mode="clockOnly"] .event-panel');
     expect(css).toContain(':root[data-display-mode="clockOnly"] .clock-toolbar');
     expect(css).toContain(':root[data-display-mode="floatingClock"] .clock-mount');
-    expect(css).toContain("width: 200px");
+    expect(css).toContain("width: var(--floating-clock-size)");
     expect(css).toContain("z-index: 2147483000");
     expect(css).toContain('data-clock-ring="outer"');
-    expect(css).toContain("font-size: 8.7px");
+    expect(css).toContain("calc(8.7px * var(--clock-font-boost))");
     expect(css).toContain("text-rendering: geometricPrecision");
     expect(css).toContain(".clock-context-menu");
     expect(css).toContain('[data-event-kind="sunrise"] line');
@@ -217,7 +227,8 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain('base: "set-start"');
     expect(main).toContain('base: "set-end"');
     expect(main).toContain('zmanitSetId: "alot-tzeit"');
-    expect(main).toContain('zmanitSetId: "tefillin-tefila"');
+    expect(main).not.toContain('zmanitSetId: "tefillin-tefila"');
+    expect(main).not.toContain('id: "tefillin-tefila"');
     expect(main).toContain('id: "sunrise-sunset"');
     expect(main).toContain('fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS');
     expect(main).toContain('setSelect.dataset.fixedField = "zmanitSetId"');

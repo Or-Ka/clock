@@ -71,6 +71,11 @@
             </div>
           </div>
 
+          <div class="control-group">
+            <label for="display-clock-scale">גודל השעון</label>
+            <input id="display-clock-scale" type="range" min="70" max="130" step="5" value="100" />
+          </div>
+
           <div class="display-color-grid" aria-label="צבעי תצוגה">
             <label>
               רקע
@@ -130,6 +135,66 @@
             </div>
 
             <p id="zmanit-set-status" class="helper-text" aria-live="polite"></p>
+
+            <form id="zmanit-set-form" class="zmanit-set-form" aria-labelledby="zmanit-set-editor-title">
+              <h3 id="zmanit-set-editor-title">עריכת סט שעות זמניות</h3>
+
+              <div class="time-fields">
+                <div class="control-group">
+                  <label for="zmanit-set-editor">סט לעריכה</label>
+                  <select id="zmanit-set-editor"></select>
+                </div>
+                <div class="control-group">
+                  <label for="zmanit-set-title-input">שם הסט</label>
+                  <input id="zmanit-set-title-input" type="text" maxlength="42" />
+                </div>
+              </div>
+
+              <div class="zmanit-boundary-grid">
+                <fieldset class="zmanit-boundary-controls">
+                  <legend>תחילה</legend>
+                  <select id="zmanit-start-base" aria-label="בסיס תחילת הסט">
+                    <option value="sunrise">זריחה</option>
+                    <option value="sunset">שקיעה</option>
+                  </select>
+                  <select id="zmanit-start-direction" aria-label="כיוון תחילת הסט">
+                    <option value="before">לפני</option>
+                    <option value="after">אחרי</option>
+                  </select>
+                  <input id="zmanit-start-offset" type="number" min="0" max="720" step="0.25" inputmode="decimal" aria-label="כמות תחילת הסט" />
+                  <select id="zmanit-start-unit" aria-label="יחידת תחילת הסט">
+                    <option value="minutes">דקות</option>
+                    <option value="hours">שעות</option>
+                    <option value="zmanit-hours">שעות זמניות</option>
+                  </select>
+                </fieldset>
+
+                <fieldset class="zmanit-boundary-controls">
+                  <legend>סוף</legend>
+                  <select id="zmanit-end-base" aria-label="בסיס סוף הסט">
+                    <option value="sunrise">זריחה</option>
+                    <option value="sunset">שקיעה</option>
+                  </select>
+                  <select id="zmanit-end-direction" aria-label="כיוון סוף הסט">
+                    <option value="before">לפני</option>
+                    <option value="after">אחרי</option>
+                  </select>
+                  <input id="zmanit-end-offset" type="number" min="0" max="720" step="0.25" inputmode="decimal" aria-label="כמות סוף הסט" />
+                  <select id="zmanit-end-unit" aria-label="יחידת סוף הסט">
+                    <option value="minutes">דקות</option>
+                    <option value="hours">שעות</option>
+                    <option value="zmanit-hours">שעות זמניות</option>
+                  </select>
+                </fieldset>
+              </div>
+
+              <div class="zmanit-set-actions">
+                <button id="zmanit-set-new" type="button">סט חדש</button>
+                <button id="zmanit-set-save" type="submit">שמור</button>
+                <button id="zmanit-set-delete" type="button">מחק</button>
+              </div>
+              <p id="zmanit-set-editor-status" class="helper-text" aria-live="polite"></p>
+            </form>
 
             <fieldset class="layer-controls" aria-label="שכבות תצוגה">
               <legend>שכבות תצוגה</legend>
