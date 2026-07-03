@@ -141,6 +141,11 @@ type AlertFormControls = {
   readonly unit: HTMLSelectElement;
 };
 
+type DocumentPictureInPictureApi = EventTarget & {
+  readonly window?: Window;
+  requestWindow(options: { readonly width: number; readonly height: number }): Promise<Window>;
+};
+
 type DisplayPreferences = {
   readonly templateId: DisplayTemplateId;
   readonly displayMode: DisplayMode;
@@ -368,6 +373,7 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
 
 const mount = getRequiredElement<HTMLElement>("#phase3-clock");
 const status = getRequiredElement<HTMLElement>("#clock-status");
+const clockPanel = getRequiredElement<HTMLElement>(".clock-panel");
 const eventPanel = getRequiredElement<HTMLElement>(".event-panel");
 const timezoneSelect = getRequiredElement<HTMLSelectElement>("#timezone");
 const locationSelect = getRequiredElement<HTMLSelectElement>("#location");
@@ -444,6 +450,7 @@ let eventVisualOverrides: Record<string, EventVisualStyle> = {};
 let alertSettings: EventAlertGlobalSettings = { enabled: true };
 let eventAlertOverrides: Record<string, EventAlertSettings> = {};
 let firedAlertKeys = new Set<string>();
+let floatingClockWindow: Window | undefined;
 let activeVisualEventId: string | undefined;
 let renderedEventsById = new Map<string, VisualEvent>();
 let activeTooltipTarget: CountdownTarget | undefined;
@@ -797,6 +804,7 @@ function applyDisplayPreferences(): void {
   root.style.setProperty("--event-sunrise-color", displayPreferences.eventStyles.sunrise.color);
   root.style.setProperty("--event-sunset-color", displayPreferences.eventStyles.sunset.color);
   root.style.setProperty("--event-custom-color", displayPreferences.eventStyles.custom.color);
+  syncFloatingClockWindowStyles();
   syncCountdownLayer();
   refreshActiveTooltip();
 }
@@ -806,6 +814,7 @@ function setDisplayMode(displayMode: DisplayMode): void {
   persistDisplayMode(displayMode);
   syncDisplayPreferenceControls();
   applyDisplayPreferences();
+  syncFloatingClockMode();
   closeClockContextMenu();
   if (displayMode === "clockOnly" || displayMode === "floatingClock") {
     setDisplayPreferencesOpen(false);
@@ -825,6 +834,165 @@ function handleDisplayColorInput(): void {
   };
   applyDisplayPreferences();
   syncClockEventVisuals();
+}
+
+function syncFloatingClockMode(): void {
+  if (displayPreferences.displayMode === "floatingClock") {
+    void openFloatingClockWindow();
+    return;
+  }
+
+  closeFloatingClockWindow();
+}
+
+async function openFloatingClockWindow(): Promise<void> {
+  if (floatingClockWindow !== undefined && !floatingClockWindow.closed) {
+    syncFloatingClockWindowStyles();
+    return;
+  }
+
+  const pictureInPicture = documentPictureInPictureApi();
+  if (pictureInPicture === undefined) {
+    importExportStatus.textContent = "הדפדפן לא תומך בשעון צף מעל כל החלונות; מוצגת גרסה צפה בתוך העמוד.";
+    return;
+  }
+
+  try {
+    const nextWindow = await pictureInPicture.requestWindow({ width: 200, height: 200 });
+    floatingClockWindow = nextWindow;
+    prepareFloatingClockWindow(nextWindow);
+  } catch {
+    floatingClockWindow = undefined;
+    restoreFloatingClockToMainDocument();
+    importExportStatus.textContent = "כדי לפתוח שעון צף אמיתי צריך לבחור את המצב מתוך פעולה ישירה במסך.";
+  }
+}
+
+function prepareFloatingClockWindow(pipWindow: Window): void {
+  const pipDocument = pipWindow.document;
+  pipDocument.documentElement.lang = document.documentElement.lang;
+  pipDocument.documentElement.dir = document.documentElement.dir;
+  pipDocument.title = "שעון צף";
+  pipDocument.head.replaceChildren(...floatingClockStyleNodes(), createFloatingClockWindowStyle());
+  pipDocument.body.replaceChildren(mount, clockTooltip, timerActionMenu, clockContextMenu);
+  pipDocument.addEventListener("mousemove", handleDocumentClockMouseMove);
+  pipWindow.addEventListener("pagehide", () => handleFloatingClockWindowClosed(pipWindow), { once: true });
+  syncFloatingClockWindowStyles();
+  syncCountdownLayer();
+  refreshActiveTooltip();
+}
+
+function handleFloatingClockWindowClosed(pipWindow: Window): void {
+  pipWindow.document.removeEventListener("mousemove", handleDocumentClockMouseMove);
+  if (floatingClockWindow === pipWindow) {
+    floatingClockWindow = undefined;
+  }
+  restoreFloatingClockToMainDocument();
+  syncCountdownLayer();
+  refreshActiveTooltip();
+}
+
+function closeFloatingClockWindow(): void {
+  const pipWindow = floatingClockWindow;
+  floatingClockWindow = undefined;
+  restoreFloatingClockToMainDocument();
+  if (pipWindow !== undefined && !pipWindow.closed) {
+    pipWindow.close();
+  }
+}
+
+function restoreFloatingClockToMainDocument(): void {
+  if (mount.ownerDocument !== document) {
+    clockPanel.append(mount);
+  }
+  for (const overlay of [clockTooltip, timerActionMenu, clockContextMenu]) {
+    if (overlay.ownerDocument !== document) {
+      document.body.append(overlay);
+    }
+  }
+}
+
+function syncFloatingClockWindowStyles(): void {
+  if (floatingClockWindow === undefined || floatingClockWindow.closed) {
+    return;
+  }
+
+  const pipRoot = floatingClockWindow.document.documentElement;
+  const sourceRoot = document.documentElement;
+  pipRoot.dataset.displayTemplate = displayPreferences.templateId;
+  pipRoot.dataset.displayMode = "floatingClock";
+  pipRoot.dataset.floatingClockWindow = "true";
+  for (const property of [
+    "--display-font-family",
+    "--display-font-scale",
+    "--display-background-color",
+    "--display-panel-color",
+    "--display-text-color",
+    "--display-muted-color",
+    "--display-accent-color",
+    "--display-clock-face-color",
+    "--display-clock-stroke-color",
+    "--display-clock-hand-color",
+    "--event-sunrise-color",
+    "--event-sunset-color",
+    "--event-custom-color"
+  ]) {
+    pipRoot.style.setProperty(property, sourceRoot.style.getPropertyValue(property));
+  }
+}
+
+function floatingClockStyleNodes(): Node[] {
+  return Array.from(document.querySelectorAll<HTMLLinkElement | HTMLStyleElement>('link[rel="stylesheet"], style')).map(
+    (node) => {
+      const clone = node.cloneNode(true);
+      if (node instanceof HTMLLinkElement && clone instanceof HTMLLinkElement) {
+        clone.href = node.href;
+      }
+      return clone;
+    }
+  );
+}
+
+function createFloatingClockWindowStyle(): HTMLStyleElement {
+  const style = document.createElement("style");
+  style.textContent = `
+    html[data-floating-clock-window="true"],
+    html[data-floating-clock-window="true"] body {
+      width: 200px;
+      height: 200px;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    html[data-floating-clock-window="true"] .clock-mount {
+      position: static;
+      width: 200px;
+      min-width: 200px;
+      max-width: 200px;
+      height: 200px;
+      margin: 0;
+    }
+
+    html[data-floating-clock-window="true"] .clock-mount svg {
+      width: 200px;
+      height: 200px;
+      filter: none;
+    }
+
+    html[data-floating-clock-window="true"] .clock-context-menu,
+    html[data-floating-clock-window="true"] .timer-action-menu,
+    html[data-floating-clock-window="true"] .clock-event-tooltip {
+      max-width: calc(100vw - 12px);
+      font-size: 0.74rem;
+    }
+  `;
+  return style;
+}
+
+function documentPictureInPictureApi(): DocumentPictureInPictureApi | undefined {
+  return (window as Window & { readonly documentPictureInPicture?: DocumentPictureInPictureApi })
+    .documentPictureInPicture;
 }
 
 function syncAlertGlobalControls(): void {
@@ -1301,7 +1469,8 @@ function handleClockTooltipPointerMove(event: MouseEvent): void {
 }
 
 function handleDocumentClockMouseMove(event: MouseEvent): void {
-  const element = document.elementFromPoint(event.clientX, event.clientY);
+  const eventDocument = eventDocumentFromMouseEvent(event);
+  const element = eventDocument.elementFromPoint(event.clientX, event.clientY);
   if (element === null || !mount.contains(element)) {
     if (!clockTooltip.hidden) {
       activeTooltipTarget = undefined;
@@ -1389,8 +1558,9 @@ function refreshActiveTooltip(): void {
 function positionClockTooltip(event: MouseEvent): void {
   const margin = 12;
   const tooltipRect = clockTooltip.getBoundingClientRect();
-  const x = Math.min(window.innerWidth - tooltipRect.width - margin, Math.max(margin, event.clientX + margin));
-  const y = Math.min(window.innerHeight - tooltipRect.height - margin, Math.max(margin, event.clientY + margin));
+  const hostWindow = overlayWindow(clockTooltip);
+  const x = Math.min(hostWindow.innerWidth - tooltipRect.width - margin, Math.max(margin, event.clientX + margin));
+  const y = Math.min(hostWindow.innerHeight - tooltipRect.height - margin, Math.max(margin, event.clientY + margin));
   clockTooltip.style.left = `${x}px`;
   clockTooltip.style.top = `${y}px`;
 }
@@ -1463,8 +1633,11 @@ function openClockContextMenu(x: number, y: number): void {
   title.textContent = displayModeLabel(currentMode);
   clockContextMenu.replaceChildren(title, fullMode, clockOnly, floatingClock, preferences);
   clockContextMenu.hidden = false;
-  clockContextMenu.style.left = `${Math.min(window.innerWidth - 220, Math.max(8, x + 10))}px`;
-  clockContextMenu.style.top = `${Math.min(window.innerHeight - 220, Math.max(8, y + 10))}px`;
+  const hostWindow = overlayWindow(clockContextMenu);
+  const menuWidth = Math.min(220, Math.max(120, hostWindow.innerWidth - 12));
+  clockContextMenu.style.width = `${menuWidth}px`;
+  clockContextMenu.style.left = `${Math.min(hostWindow.innerWidth - menuWidth - 6, Math.max(6, x + 10))}px`;
+  clockContextMenu.style.top = `${Math.min(hostWindow.innerHeight - 220, Math.max(8, y + 10))}px`;
   const activeButton =
     currentMode === "fullMode" ? fullMode : currentMode === "clockOnly" ? clockOnly : floatingClock;
   activeButton.disabled = true;
@@ -1523,8 +1696,11 @@ function openTimerActionMenu(target: CountdownTarget, action: "show" | "hide", x
 
   timerActionMenu.replaceChildren(...(action === "show" ? [question, colorControl, actions] : [question, actions]));
   timerActionMenu.hidden = false;
-  timerActionMenu.style.left = `${Math.min(window.innerWidth - 220, Math.max(8, x + 10))}px`;
-  timerActionMenu.style.top = `${Math.min(window.innerHeight - 120, Math.max(8, y + 10))}px`;
+  const hostWindow = overlayWindow(timerActionMenu);
+  const menuWidth = Math.min(220, Math.max(120, hostWindow.innerWidth - 12));
+  timerActionMenu.style.width = `${menuWidth}px`;
+  timerActionMenu.style.left = `${Math.min(hostWindow.innerWidth - menuWidth - 6, Math.max(6, x + 10))}px`;
+  timerActionMenu.style.top = `${Math.min(hostWindow.innerHeight - 120, Math.max(8, y + 10))}px`;
   confirm.focus();
 }
 
@@ -2863,6 +3039,14 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
+function overlayWindow(element: Element): Window {
+  return element.ownerDocument.defaultView ?? window;
+}
+
+function eventDocumentFromMouseEvent(event: MouseEvent): Document {
+  return event.view?.document ?? document;
+}
+
 function getRequiredElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) {
@@ -2880,6 +3064,7 @@ function getRequiredChild<T extends Element>(parent: ParentNode, selector: strin
 }
 
 function destroyClock(): void {
+  closeFloatingClockWindow();
   dayTimesAbortController?.abort();
   window.clearInterval(statusTimer);
   window.clearInterval(visualTimer);
