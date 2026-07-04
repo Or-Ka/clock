@@ -98,6 +98,140 @@
               <input id="display-clock-face-color" type="color" />
             </label>
           </div>
+
+          <details class="user-guide-menu">
+            <summary>מדריך למשתמש</summary>
+
+            <div class="guide-content" aria-label="מדריך שימוש מלא בשעון">
+              <section class="guide-section" aria-labelledby="guide-overview-title">
+                <div>
+                  <h3 id="guide-overview-title">המסך הראשי</h3>
+                  <p>
+                    השעון מציג טבעת יום וטבעת לילה, אירועים על החוגה, זמן נוכחי, תאריך עברי ולועזי,
+                    וסימון לאירוע הבא. מעבר עם העכבר על סימון מציג פרטים וזמן שנותר.
+                  </p>
+                </div>
+                <figure class="guide-shot guide-shot-clock" role="img" aria-label="צילום מסך סכמטי של השעון הראשי עם אירועים">
+                  <span class="guide-shot-toolbar"></span>
+                  <span class="guide-clock-face">
+                    <span class="guide-clock-hand guide-clock-hour"></span>
+                    <span class="guide-clock-hand guide-clock-minute"></span>
+                    <span class="guide-clock-event guide-clock-event-a"></span>
+                    <span class="guide-clock-event guide-clock-event-b"></span>
+                    <span class="guide-clock-event guide-clock-event-c"></span>
+                    <span class="guide-clock-label">אירוע הבא</span>
+                  </span>
+                  <figcaption>שעון חי עם אירועים וזמן שנותר</figcaption>
+                </figure>
+              </section>
+
+              <section class="guide-section" aria-labelledby="guide-display-title">
+                <div>
+                  <h3 id="guide-display-title">אפשרויות תצוגה</h3>
+                  <ul class="guide-list">
+                    <li>סגנונות: קלאסי בהיר, לילה שקט, לוח נייר, פוקוס חד וחגיגי.</li>
+                    <li>מצבים: מצב מלא, שעון בלבד, ושעון צף בגודל 200x200.</li>
+                    <li>פונטים: מערכת, ספרותי, טכני ומעוגל.</li>
+                    <li>גודל טקסט, גודל שעון, צבע רקע, פאנלים, טקסט, הדגשה ופני שעון.</li>
+                  </ul>
+                </div>
+                <figure class="guide-shot guide-shot-preferences" role="img" aria-label="צילום מסך סכמטי של העדפות התצוגה">
+                  <span class="guide-field guide-field-wide"></span>
+                  <span class="guide-field"></span>
+                  <span class="guide-field"></span>
+                  <span class="guide-range"></span>
+                  <span class="guide-swatches">
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </span>
+                  <figcaption>סגנון, מצב, גודל וצבעים</figcaption>
+                </figure>
+              </section>
+
+              <section class="guide-section" aria-labelledby="guide-location-title">
+                <div>
+                  <h3 id="guide-location-title">מיקום ושעות זמניות</h3>
+                  <ul class="guide-list">
+                    <li>בחירת מיקום: ירושלים, תל אביב, חיפה, לונדון או ניו יורק.</li>
+                    <li>אזור הזמן מסתנכרן לפי המיקום שנבחר.</li>
+                    <li>בחירת סט שעות זמניות, עריכת שם הסט, תחילה וסוף לפי זריחה/שקיעה.</li>
+                    <li>אפשר ליצור סט חדש, לשמור שינויים או למחוק סט מותאם.</li>
+                  </ul>
+                </div>
+                <figure class="guide-shot guide-shot-location" role="img" aria-label="צילום מסך סכמטי של הגדרות מיקום וסט שעות זמניות">
+                  <span class="guide-field guide-field-wide"></span>
+                  <span class="guide-field guide-field-wide"></span>
+                  <span class="guide-mini-grid">
+                    <span></span><span></span><span></span><span></span>
+                  </span>
+                  <span class="guide-actions"></span>
+                  <figcaption>מיקום, אזור זמן וסט זמני</figcaption>
+                </figure>
+              </section>
+
+              <section class="guide-section" aria-labelledby="guide-events-title">
+                <div>
+                  <h3 id="guide-events-title">אירועים והתראות</h3>
+                  <ul class="guide-list">
+                    <li>אירוע רגיל: סוג אירוע, שם, שעה, דקה והתראה.</li>
+                    <li>אירוע מיוחד: מבוסס על זריחה, שקיעה או שעה זמנית 1-12, לפני/אחרי וביחידות דקות, שעות או שעות זמניות.</li>
+                    <li>התראה לכל אירוע: הפעלה, צליל, התראת דסקטופ, תזמון לפני/אחרי וכמות.</li>
+                    <li>ברשימת האירועים אפשר למחוק אירועים אישיים ומיוחדים.</li>
+                  </ul>
+                </div>
+                <figure class="guide-shot guide-shot-events" role="img" aria-label="צילום מסך סכמטי של הוספת אירוע ורשימת אירועים">
+                  <span class="guide-two-buttons"></span>
+                  <span class="guide-field guide-field-wide"></span>
+                  <span class="guide-field"></span>
+                  <span class="guide-field"></span>
+                  <span class="guide-event-row"></span>
+                  <span class="guide-event-row guide-event-row-muted"></span>
+                  <figcaption>הוספה, התראות ורשימת אירועים</figcaption>
+                </figure>
+              </section>
+
+              <section class="guide-section" aria-labelledby="guide-layers-title">
+                <div>
+                  <h3 id="guide-layers-title">שכבות, אירועים קבועים ונתונים</h3>
+                  <ul class="guide-list">
+                    <li>שכבות תצוגה: זמני היום, אירועים אישיים, אירועים מיוחדים ושעות זמניות.</li>
+                    <li>אירועים קבועים: עלות השחר, טלית ותפילין, סוף זמן קריאת שמע, סוף זמן תפילה, חצות, פלג המנחה וצאת הכוכבים.</li>
+                    <li>לכל אירוע קבוע אפשר לבחור סט, בסיס, לפני/אחרי, כמות ויחידה.</li>
+                    <li>התראות גלובליות, ייצוא לקובץ JSON וייבוא הגדרות מקובץ JSON.</li>
+                  </ul>
+                </div>
+                <figure class="guide-shot guide-shot-layers" role="img" aria-label="צילום מסך סכמטי של שכבות תצוגה וייבוא ייצוא">
+                  <span class="guide-checkline"></span>
+                  <span class="guide-checkline"></span>
+                  <span class="guide-checkline"></span>
+                  <span class="guide-fixed-row"></span>
+                  <span class="guide-fixed-row"></span>
+                  <span class="guide-two-buttons"></span>
+                  <figcaption>שכבות, זמנים קבועים ונתונים</figcaption>
+                </figure>
+              </section>
+
+              <section class="guide-section" aria-labelledby="guide-interactions-title">
+                <div>
+                  <h3 id="guide-interactions-title">פעולות על השעון</h3>
+                  <ul class="guide-list">
+                    <li>ריחוף על אירוע או שעה זמנית מציג שם, שעה, שכבה וזמן שנותר.</li>
+                    <li>לחיצה על אירוע עתידי או שעה זמנית פותחת תפריט להצגת טיימר בצבע שתבחר.</li>
+                    <li>לחיצה על קשת טיימר קיימת מאפשרת להסתיר אותה.</li>
+                    <li>קליק ימני על השעון פותח מעבר מהיר בין מצב מלא, שעון בלבד, שעון צף והעדפות תצוגה.</li>
+                    <li>לחיצה על סמל אירוע ברשימה מאפשרת לשנות סמל וצבע.</li>
+                  </ul>
+                </div>
+                <figure class="guide-shot guide-shot-actions" role="img" aria-label="צילום מסך סכמטי של תפריט פעולות וטיימר על השעון">
+                  <span class="guide-clock-face guide-clock-face-small">
+                    <span class="guide-countdown-arc"></span>
+                    <span class="guide-clock-event guide-clock-event-a"></span>
+                  </span>
+                  <span class="guide-popover"></span>
+                  <figcaption>טיימר, תפריט הקשר ועריכת סמלים</figcaption>
+                </figure>
+              </section>
+            </div>
+          </details>
         </section>
 
         <aside class="event-panel" aria-label="ניהול אירועים">

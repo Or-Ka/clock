@@ -1,118 +1,53 @@
 # Clock Project Documentation
 
-מסמך זה הוא נקודת הכניסה המחייבת לכל סשן חדש בפרויקט `clock`.
+תיקיית `docs/` היא מקור האמת של פרויקט `clock`: ספריית TypeScript פתוחה ומודולרית להצגת שעון אנלוגי SVG עם שכבת אירועים מבוססי זמן.
 
-## מטרת הפרויקט
+המסמך הזה הוא אינדקס תיעוד. הוראות עבודה למודל ולסשנים נמצאות בנפרד ב-`AGENT_GUIDE.md`.
 
-בניית ספריית TypeScript פתוחה ומודולרית של שעון אנלוגי עם אירועים מבוססי זמן.
+## מהות הפרויקט
 
-המוצר מיועד:
+`clock` מיועד להטמעה באתרים ובאפליקציות Web שרוצים להציג זמן ואירועים על גבי שעון אנלוגי אינטראקטיבי.
 
-- להטמעה באתרים.
-- לשימוש באפליקציות Web.
-- לשימוש עתידי דרך React, Web Component או Vanilla JavaScript.
-- להצגת אירועים על לוח השעון.
-- להצגת אירועים מוחלטים, ובהמשך אירועי עוגן, אירועים נגזרים וטווחי זמן.
-- לחיבור עתידי למקורות נתונים כמו זריחה ושקיעה.
-- להפרדה מלאה בין לוגיקת זמן, אירועים, providers ו-renderer.
+הכיוון המוצרי:
 
-## מסמכי מקור אמת
+- שעון SVG סטטי וחי.
+- API נקי לצריכה דרך Vanilla JavaScript ובהמשך React או Web Component.
+- הצגת אירועים על לוח השעון.
+- תמיכה באירועים מוחלטים ידניים, ובהמשך אירועי עוגן, אירועים נגזרים וטווחי זמן.
+- חיבור עתידי למקורות נתונים כמו זריחה ושקיעה.
+- הפרדה מלאה בין לוגיקת זמן, אירועים, providers ו-renderer.
 
-כל קובצי ה-Markdown תחת `docs/` הם מקור האמת של הפרויקט:
+## מסמכי תכנון ומוצר
 
-- `README.md`
-- `PRODUCT_SPEC.md`
-- `ARCHITECTURE.md`
-- `TIME_MODEL.md`
-- `EVENT_MODEL.md`
-- `RENDERING_STRATEGY.md`
-- `EMBEDDING_API.md`
-- `ROADMAP.md`
-- `TASKS.md`
-- `PROJECT_STATUS.md`
-- `CURRENT_TASK.md`
-- `SESSION_HANDOFF.md`
-- `DECISIONS.md`
-- `TEST_STRATEGY.md`
-- `TEST_STATUS.md`
-- `KNOWN_ISSUES.md`
-- `CHANGELOG.md`
-- `ACCESSIBILITY.md`
-- `RISKS.md`
-- `OPEN_QUESTIONS.md`
+- `PRODUCT_SPEC.md`: חזון, משתמשים מיועדים וגבולות MVP.
+- `ARCHITECTURE.md`: מבנה workspace, מודולים וגבולות אחריות.
+- `TIME_MODEL.md`: מקורות זמן, timezone וייצוגי זמן.
+- `EVENT_MODEL.md`: מודל אירועים, פתרון אירועים ושיוך לטבעות.
+- `RENDERING_STRATEGY.md`: אסטרטגיית ה-SVG וה-renderer.
+- `EMBEDDING_API.md`: API להטמעה וצריכה חיצונית.
+- `ACCESSIBILITY.md`: עקרונות נגישות.
 
-## סדר קריאה מחייב לכל סשן חדש
+## מסמכי ניהול פרויקט
 
-1. `docs/README.md`
-2. `docs/PROJECT_STATUS.md`
-3. `docs/CURRENT_TASK.md`
-4. `docs/SESSION_HANDOFF.md`
-5. המשימה המתאימה ב-`docs/TASKS.md`
-6. `docs/ARCHITECTURE.md`
-7. החלטות רלוונטיות ב-`docs/DECISIONS.md`
-8. מסמכי התחום הרלוונטיים
-9. `git status`
-10. השוואת הקוד לתיעוד
+- `PROJECT_STATUS.md`: תמונת מצב עדכנית.
+- `CURRENT_TASK.md`: המשימה הפעילה.
+- `TASKS.md`: רשימת משימות והחלטות מאושרות.
+- `ROADMAP.md`: כיוון התפתחות.
+- `DECISIONS.md`: החלטות מרכזיות.
+- `CHANGELOG.md`: שינויים שבוצעו.
+- `KNOWN_ISSUES.md`: בעיות ידועות.
+- `RISKS.md`: סיכונים.
+- `OPEN_QUESTIONS.md`: שאלות פתוחות.
 
-## פרוטוקול פתיחת סשן
+## מסמכי בדיקות
 
-1. לקרוא את המסמכים לפי סדר הקריאה המחייב.
-2. להריץ `git status --short --branch`.
-3. להציג את מבנה התיקייה הרלוונטי.
-4. לבדוק שהמשימה הפעילה זהה ב-`TASKS.md`, `CURRENT_TASK.md` ו-`PROJECT_STATUS.md`.
-5. לבדוק האם יש שינויים קיימים שלא נוצרו בסשן הנוכחי.
-6. להמשיך רק מהמשימה הפעילה או מהמשימה הראשונה שאינה הושלמה.
-7. לא להתחיל Spike או קוד מוצר לפני Gate התיעוד.
+- `TEST_STRATEGY.md`: אסטרטגיית בדיקות.
+- `TEST_STATUS.md`: מצב בדיקות עדכני.
 
-## פרוטוקול סיום סשן
+## מסמכי עבודה למודל
 
-1. לעדכן את `PROJECT_STATUS.md`.
-2. לעדכן את `CURRENT_TASK.md`.
-3. לעדכן את `SESSION_HANDOFF.md` עם מצב מדויק והמשך מומלץ.
-4. לעדכן את `TASKS.md` עבור כל משימה שהתקדמה.
-5. לעדכן `TEST_STATUS.md`, `KNOWN_ISSUES.md` ו-`CHANGELOG.md` לפי הצורך.
-6. להריץ בדיקות ו-build כאשר קיימים scripts מתאימים.
-7. להריץ `git status --short --branch`.
-8. לבצע commit רק לאחר בדיקות ועדכון תיעוד, ורק אם זה מתאים למצב העבודה.
-
-## Gate התיעוד
-
-אין להתחיל את ה-SVG Spike לפני ש:
-
-- כל מסמכי מקור האמת קיימים.
-- אין מסמכים ריקים.
-- המשימה הפעילה זהה ב-`TASKS.md`, `CURRENT_TASK.md` ו-`PROJECT_STATUS.md`.
-- קיימים פרוטוקולי פתיחת וסיום סשן.
-- מצב Git מתועד.
-- מצב הבדיקות מתועד.
-- סשן חדש יכול להבין את מצב הפרויקט ללא השיחה המקורית.
-
-## Gate ה-SVG Spike
-
-ה-Spike צריך להוכיח:
-
-- SVG responsive בשלושה גדלים.
-- מחוג שעות ודקות לפי זמן קבוע.
-- marker אחד לפחות.
-- hover.
-- click.
-- keyboard focus.
-- focus ring גלוי.
-- RTL תקין.
-- resize תקין.
-- cleanup של listeners ו-observers.
-- הקוד נשאר רק תחת `apps/demo/src/spikes/svg-clock/`.
-
-ה-Spike אינו API ציבורי ואינו מועבר אוטומטית ל-`packages/clock`.
-
-## כללי Git
-
-- אין push.
-- אין merge.
-- אין rebase.
-- אין Pull Request.
-- הודעות commit מפורטות בעברית.
-- commit רק לאחר בדיקות ועדכון תיעוד.
+- `AGENT_GUIDE.md`: סדר קריאה, פרוטוקולי פתיחת וסיום סשן, Gates וכללי Git.
+- `SESSION_HANDOFF.md`: מצב העברה לסשן הבא.
 
 ## הפעלת דמו Phase 3
 
@@ -128,3 +63,4 @@ npm.cmd run dev
 
 - `npm.cmd run dev:static-clock --workspace @clock/demo`
 - `npm.cmd run dev:live-clock --workspace @clock/demo`
+- `npm.cmd run dev:svg-spike --workspace @clock/demo`
