@@ -255,7 +255,7 @@ const FIXED_EVENT_VISUALS: Readonly<Record<string, FixedEventVisualPreset>> = {
 };
 const DISPLAY_FONT_STACKS: Record<DisplayFontFamily, string> = {
   system: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  serif: "Georgia, 'Times New Roman', serif",
+  serif: "'Suez One', 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif",
   mono: "'Cascadia Mono', 'SFMono-Regular', Consolas, monospace",
   rounded: "'Segoe UI Rounded', 'Arial Rounded MT Bold', system-ui, sans-serif"
 };

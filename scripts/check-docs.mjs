@@ -6,6 +6,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 
 const requiredDocs = [
   "README.md",
+  "AGENT_GUIDE.md",
   "PRODUCT_SPEC.md",
   "ARCHITECTURE.md",
   "TIME_MODEL.md",
@@ -68,13 +69,13 @@ if (uniqueActiveTasks.size !== 1 || uniqueActiveTasks.has(undefined)) {
   failures.push(`Active task mismatch: ${JSON.stringify(activeTasks)}`);
 }
 
-const readme = readDoc("README.md");
-if (!readme.includes("פרוטוקול פתיחת סשן")) {
-  failures.push("README.md is missing session start protocol");
+const agentGuide = readDoc("AGENT_GUIDE.md");
+if (!agentGuide.includes("פרוטוקול פתיחת סשן")) {
+  failures.push("AGENT_GUIDE.md is missing session start protocol");
 }
 
-if (!readme.includes("פרוטוקול סיום סשן")) {
-  failures.push("README.md is missing session end protocol");
+if (!agentGuide.includes("פרוטוקול סיום סשן")) {
+  failures.push("AGENT_GUIDE.md is missing session end protocol");
 }
 
 if (failures.length > 0) {
