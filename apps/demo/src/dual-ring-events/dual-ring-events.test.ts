@@ -54,6 +54,9 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(html).toContain("API זריחה ושקיעה");
     expect(main).toContain("SunriseSunsetEventLayerProvider");
     expect(main).toContain("refreshDayTimesLayer");
+    expect(main).toContain("refreshHebcalDetails");
+    expect(main).toContain("currentParshaRangeStartDateKey");
+    expect(main).toContain("addDaysToDateKey(civilDate, -1)");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
     expect(main).toContain("DEFAULT_ZMANIT_TIME_SETS");

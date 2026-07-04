@@ -45,6 +45,7 @@ export {
 } from "./events/sunrise-sunset-provider.js";
 export {
   createLiveAnalogClock,
+  type ClockDateDisplayDetails,
   type LiveAnalogClock,
   type LiveAnalogClockOptions
 } from "./rendering/live-analog-clock.js";

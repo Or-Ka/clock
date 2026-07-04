@@ -192,6 +192,24 @@ describe("createLiveAnalogClock", () => {
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toContain("אור לי״ח");
   });
 
+  it("adds external calendar details to the center date display", () => {
+    const container = document.createElement("div");
+
+    createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-07-04T09:00:00Z"),
+      timeZone: "Asia/Jerusalem",
+      scheduler: createManualScheduler(),
+      dateDisplayDetails: () => ({
+        torahReading: "פרשת פינחס",
+        observances: ["צום תמוז", "שבת מברכים"]
+      })
+    });
+
+    expect(container.querySelector('[data-clock-part="torah-reading-label"]')?.textContent).toBe("פרשת פינחס");
+    expect(container.querySelector('[data-clock-part="observances-label"]')?.textContent).toBe("צום תמוזשבת מברכים");
+  });
+
   it("updates zmanit ticks without replacing the SVG", () => {
     const container = document.createElement("div");
     const clock = createLiveAnalogClock({

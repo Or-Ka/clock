@@ -1,7 +1,7 @@
 import { resolveEventLayers, type EventLayerDefinition, type InstantEventDefinition } from "../events/event-model.js";
 import type { ClockScheduler } from "../time/clock-scheduler.js";
 import { MinuteBoundaryClockScheduler } from "../time/clock-scheduler.js";
-import type { StaticClockTime } from "../time/static-clock-time.js";
+import type { ClockDateDisplay, StaticClockTime } from "../time/static-clock-time.js";
 import type { TimeSource } from "../time/time-source.js";
 import {
   type ClockDateBoundary,
@@ -23,8 +23,11 @@ export interface LiveAnalogClockOptions {
   readonly events?: readonly InstantEventDefinition[];
   readonly eventLayers?: readonly EventLayerDefinition[];
   readonly zmanitTicks?: readonly ZmanitTick[];
+  readonly dateDisplayDetails?: () => ClockDateDisplayDetails | undefined;
   readonly createRenderer?: ClockRendererFactory;
 }
+
+export type ClockDateDisplayDetails = Pick<ClockDateDisplay, "torahReading" | "observances">;
 
 export interface LiveAnalogClock {
   start(): void;
@@ -45,7 +48,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
   let secondTimer: ReturnType<typeof setInterval> | undefined;
   const scheduler = options.scheduler ?? new MinuteBoundaryClockScheduler();
   const createRenderer = options.createRenderer ?? createStaticAnalogClock;
-  const initialTime = projectCurrentTime(options.timeSource, timeZone, eventLayers);
+  const initialTime = projectCurrentTime(options.timeSource, timeZone, eventLayers, options.dateDisplayDetails);
   const renderer = createRenderer({
     container: options.container,
     time: initialTime,
@@ -61,7 +64,11 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
 
   const refresh = (): void => {
     ensureActive("refresh");
-    applyCurrentState(projectCurrentTime(options.timeSource, timeZone, eventLayers), renderer, eventLayers);
+    applyCurrentState(
+      projectCurrentTime(options.timeSource, timeZone, eventLayers, options.dateDisplayDetails),
+      renderer,
+      eventLayers
+    );
   };
 
   const startSecondTimer = (): void => {
@@ -98,14 +105,14 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
     refresh,
     setTimeZone(nextTimeZone: string) {
       ensureActive("set timezone on");
-      const nextTime = projectCurrentTime(options.timeSource, nextTimeZone, eventLayers);
+      const nextTime = projectCurrentTime(options.timeSource, nextTimeZone, eventLayers, options.dateDisplayDetails);
       timeZone = nextTimeZone;
       applyCurrentState(nextTime, renderer, eventLayers);
     },
     setEvents(nextEvents: readonly InstantEventDefinition[]) {
       ensureActive("set events on");
       const nextLayers = eventsToDefaultLayer(nextEvents);
-      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
+      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers, options.dateDisplayDetails);
       const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
       eventLayers = nextLayers;
       renderer.setTime(currentTime);
@@ -114,7 +121,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
     setEventLayers(nextEventLayers: readonly EventLayerDefinition[]) {
       ensureActive("set event layers on");
       const nextLayers = cloneEventLayers(nextEventLayers);
-      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
+      const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers, options.dateDisplayDetails);
       const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
       eventLayers = nextLayers;
       renderer.setTime(currentTime);
@@ -141,12 +148,31 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
 function projectCurrentTime(
   timeSource: TimeSource,
   timeZone: string,
-  eventLayers: readonly EventLayerDefinition[]
+  eventLayers: readonly EventLayerDefinition[],
+  dateDisplayDetails: (() => ClockDateDisplayDetails | undefined) | undefined
 ): StaticClockTime {
   const dateBoundary = dateBoundaryFromEventLayers(eventLayers);
-  return dateBoundary === undefined
+  const time = dateBoundary === undefined
     ? projectInstantToStaticClockTime(timeSource.now(), timeZone)
     : projectInstantToStaticClockTime(timeSource.now(), timeZone, { dateBoundary });
+  return applyDateDisplayDetails(time, dateDisplayDetails?.());
+}
+
+function applyDateDisplayDetails(
+  time: StaticClockTime,
+  details: ClockDateDisplayDetails | undefined
+): StaticClockTime {
+  if (details === undefined || time.dateDisplay === undefined) {
+    return time;
+  }
+
+  return {
+    ...time,
+    dateDisplay: {
+      ...time.dateDisplay,
+      ...details
+    }
+  };
 }
 
 function dateBoundaryFromEventLayers(eventLayers: readonly EventLayerDefinition[]): ClockDateBoundary | undefined {
