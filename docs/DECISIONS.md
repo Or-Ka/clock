@@ -12,7 +12,7 @@
 - `TimeSource` מחזיר `Temporal.Instant`.
 - `ClockScheduler` נפרד מ-`TimeSource`.
 - `timeZone` ו-`locale` שייכים ל-`ClockContext`.
-- Temporal עם polyfill הוא הכיוון המועדף, בכפוף לבדיקת bundle size ותאימות.
+- Temporal עם polyfill הוא הכיוון המועדף. נמדד (גל 1): הפוליפיל מוסיף כ-52KB gzipped ל-bundle של דמו `live-clock`. החלטה: להשאיר בשלב זה; לבחון בעתיד מעבר ל-`Temporal` מקומי (כשהתמיכה בדפדפנים תתרחב) או ל-subset מצומצם אם המשקל יהפוך לחסם הטמעה.
 - יש הפרדה בין `EventDefinition` לבין `ResolvedClockItem`.
 - ה-renderer מקבל רק אירועים פתורים.
 - MVP כולל רק אירועים מוחלטים ידניים.
@@ -38,12 +38,9 @@
 
 ## החלטות Git
 
-- אין push.
-- אין merge.
-- אין rebase.
-- אין Pull Request.
-- הודעות commit מפורטות בעברית.
-- commit רק לאחר בדיקות ועדכון תיעוד.
+מקור האמת למדיניות ה-Git הוא `CLAUDE.md` (סעיף "מדיניות Git"). בתמצית: עבודה עצמאית בתוך Branch ייעודי (Branch/Commits/בדיקות/PR/הצעת Merge) מותרת; Commit/Push/Merge ישירות ל-`main`, Force Push, `reset --hard`, `rebase` על ענפים משותפים ומחיקת Branch אסורים ללא אישור מפורש. הודעות commit בעברית, רק לאחר בדיקות ועדכון תיעוד.
+
+> הערה: גרסה קודמת אסרה push/merge/PR באופן גורף. הכלל יושר עם `CLAUDE.md` (גל 1) כדי למנוע סתירה.
 
 ## ADR: Phase 3 Dual Ring Events
 

@@ -65,25 +65,7 @@ export function resolveInstantEvents(
   const currentSeconds = secondsOfDay(currentTime.hour, currentTime.minute, currentTime.second ?? 0);
   const nextEventId = findNextEventId(events, currentSeconds);
 
-  return events.map((event) => {
-    const eventSeconds = eventSecondsOfDay(event);
-    const status: InstantEventStatus =
-      event.id === nextEventId ? "next" : eventSeconds < currentSeconds ? "past" : "future";
-
-    return {
-      id: event.id,
-      type: "instant",
-      kind: event.kind ?? "custom",
-      title: event.title,
-      hour: event.hour,
-      minute: event.minute,
-      ...(event.second === undefined ? {} : { second: event.second }),
-      ring: ringForTime(event.hour, event.minute, event.second ?? 0),
-      angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
-      status,
-      ...(event.description === undefined ? {} : { description: event.description })
-    };
-  });
+  return events.map((event) => resolveEvent(event, currentSeconds, nextEventId));
 }
 
 export function resolveEventLayers(
@@ -102,34 +84,46 @@ export function resolveEventLayers(
         }))
   );
   const currentSeconds = secondsOfDay(currentTime.hour, currentTime.minute, currentTime.second ?? 0);
-  const nextEventId = findNextLayerEventId(enabledLayerEvents, currentSeconds);
+  const nextEventId = findNextEventId(
+    enabledLayerEvents.map((entry) => entry.event),
+    currentSeconds
+  );
 
-  return enabledLayerEvents.map(({ event, layer }) => {
-    if (event.type !== "instant") {
-      throw new Error("Only instant events are supported in the current resolver.");
-    }
+  return enabledLayerEvents.map(({ event, layer }) => resolveEvent(event, currentSeconds, nextEventId, layer));
+}
 
-    const eventSeconds = eventSecondsOfDay(event);
-    const status: InstantEventStatus =
-      event.id === nextEventId ? "next" : eventSeconds < currentSeconds ? "past" : "future";
+// Builds a ResolvedInstantEvent for a single event; when a layer is supplied its
+// identity is attached. Shared by resolveInstantEvents and resolveEventLayers.
+function resolveEvent(
+  event: EventDefinition,
+  currentSeconds: number,
+  nextEventId: string | undefined,
+  layer?: EventLayerDefinition
+): ResolvedInstantEvent {
+  if (event.type !== "instant") {
+    throw new Error("Only instant events are supported in the current resolver.");
+  }
 
-    return {
-      id: event.id,
-      type: "instant",
-      kind: event.kind ?? "custom",
-      title: event.title,
-      hour: event.hour,
-      minute: event.minute,
-      ...(event.second === undefined ? {} : { second: event.second }),
-      ring: ringForTime(event.hour, event.minute, event.second ?? 0),
-      angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
-      status,
-      layerId: layer.id,
-      layerTitle: layer.title,
-      layerKind: layer.kind ?? "custom",
-      ...(event.description === undefined ? {} : { description: event.description })
-    };
-  });
+  const eventSeconds = eventSecondsOfDay(event);
+  const status: InstantEventStatus =
+    event.id === nextEventId ? "next" : eventSeconds < currentSeconds ? "past" : "future";
+
+  return {
+    id: event.id,
+    type: "instant",
+    kind: event.kind ?? "custom",
+    title: event.title,
+    hour: event.hour,
+    minute: event.minute,
+    ...(event.second === undefined ? {} : { second: event.second }),
+    ring: ringForTime(event.hour, event.minute, event.second ?? 0),
+    angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
+    status,
+    ...(layer === undefined
+      ? {}
+      : { layerId: layer.id, layerTitle: layer.title, layerKind: layer.kind ?? "custom" }),
+    ...(event.description === undefined ? {} : { description: event.description })
+  };
 }
 
 function validateInstantEvents(events: readonly InstantEventDefinition[]): void {
@@ -181,31 +175,13 @@ function validateEventLayers(layers: readonly EventLayerDefinition[]): void {
   }
 }
 
-function findNextEventId(events: readonly InstantEventDefinition[], currentSeconds: number): string | undefined {
-  let nextEvent: InstantEventDefinition | undefined;
-  let nextSeconds = Number.POSITIVE_INFINITY;
-
-  for (const event of events) {
-    const eventSeconds = eventSecondsOfDay(event);
-    if (eventSeconds < currentSeconds || eventSeconds >= nextSeconds) {
-      continue;
-    }
-
-    nextEvent = event;
-    nextSeconds = eventSeconds;
-  }
-
-  return nextEvent?.id;
-}
-
-function findNextLayerEventId(
-  entries: readonly { readonly event: EventDefinition; readonly layer: EventLayerDefinition }[],
-  currentSeconds: number
-): string | undefined {
+// Returns the id of the earliest event at or after the current time; skips
+// non-instant events (none exist yet, but the resolver stays forward-compatible).
+function findNextEventId(events: readonly EventDefinition[], currentSeconds: number): string | undefined {
   let nextEvent: EventDefinition | undefined;
   let nextSeconds = Number.POSITIVE_INFINITY;
 
-  for (const { event } of entries) {
+  for (const event of events) {
     if (event.type !== "instant") {
       continue;
     }
