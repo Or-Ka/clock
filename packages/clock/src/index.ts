@@ -48,6 +48,7 @@ export {
   type LiveAnalogClock,
   type LiveAnalogClockOptions
 } from "./rendering/live-analog-clock.js";
+export { defaultClockColors, type ClockColors } from "./themes/clock-theme.js";
 export {
   createStaticAnalogClock,
   type ClockRenderer,

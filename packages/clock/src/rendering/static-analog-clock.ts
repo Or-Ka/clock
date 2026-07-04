@@ -1,27 +1,11 @@
 import { clockHandAngles } from "../time/clock-angles.js";
 import type { ClockRing, ResolvedInstantEvent } from "../events/event-model.js";
 import { assertValidStaticClockTime, type StaticClockTime } from "../time/static-clock-time.js";
+import { defaultClockColors } from "../themes/clock-theme.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const activeClockContainers = new WeakMap<HTMLElement, SVGSVGElement>();
-const CLOCK_COLORS = {
-  faceFill: "#101b26",
-  faceStroke: "#6f879b",
-  hand: "#eef5fb",
-  secondHand: "#ff8d78",
-  innerRing: "#8fb6e8",
-  hourTick: "#d8e4ef",
-  minuteTick: "#7890a3",
-  outerLabel: "#f7f1de",
-  innerLabel: "#b9c7d5",
-  textHalo: "#101b26",
-  dateMuted: "#b7c6d6",
-  dateStrong: "#f2f7fb",
-  zmanitTick: "#ff1f1f",
-  sunrise: "#ffd400",
-  sunset: "#ff4fd8",
-  custom: "#00e5ff"
-} as const;
+const CLOCK_COLORS = defaultClockColors;
 const OUTER_TIME_MARKER_RADIUS = 92;
 const INNER_TIME_MARKER_RADIUS = 74;
 const DATE_LABEL_FONT_FAMILY = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
