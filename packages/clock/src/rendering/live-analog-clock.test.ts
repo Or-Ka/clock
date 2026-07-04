@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ClockScheduler } from "../time/clock-scheduler.js";
 import type { TimeSource } from "../time/time-source.js";
 import { createLiveAnalogClock } from "./live-analog-clock.js";
+import type { ClockRenderer } from "./static-analog-clock.js";
 
 describe("createLiveAnalogClock", () => {
   it("renders once on creation without starting the scheduler", () => {
@@ -21,6 +22,33 @@ describe("createLiveAnalogClock", () => {
 
     expect(container.querySelectorAll("svg")).toHaveLength(1);
     expect(scheduler.start).not.toHaveBeenCalled();
+  });
+
+  it("delegates rendering to an injected renderer factory (headless)", () => {
+    const calls: string[] = [];
+    const fakeRenderer: ClockRenderer = {
+      setTime: () => calls.push("setTime"),
+      setEvents: () => calls.push("setEvents"),
+      setZmanitTicks: () => calls.push("setZmanitTicks"),
+      destroy: () => calls.push("destroy")
+    };
+    const container = document.createElement("div");
+    const clock = createLiveAnalogClock({
+      container,
+      timeSource: createMutableTimeSource("2026-06-30T10:00:00Z"),
+      timeZone: "UTC",
+      scheduler: createManualScheduler(),
+      createRenderer: () => fakeRenderer
+    });
+
+    // The injected renderer owns rendering, so no real SVG is created.
+    expect(container.querySelectorAll("svg")).toHaveLength(0);
+
+    clock.setEvents([]);
+    clock.destroy();
+
+    expect(calls).toContain("setEvents");
+    expect(calls).toContain("destroy");
   });
 
   it("starts, stops and refreshes manually while stopped", () => {
