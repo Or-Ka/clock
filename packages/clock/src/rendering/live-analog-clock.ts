@@ -8,7 +8,12 @@ import {
   type ClockDateBoundaryTime,
   projectInstantToStaticClockTime
 } from "../time/timezone-projection.js";
-import { createStaticAnalogClock, type StaticAnalogClock, type ZmanitTick } from "./static-analog-clock.js";
+import {
+  createStaticAnalogClock,
+  type ClockRenderer,
+  type ClockRendererFactory,
+  type ZmanitTick
+} from "./static-analog-clock.js";
 
 export interface LiveAnalogClockOptions {
   readonly container: HTMLElement;
@@ -18,6 +23,7 @@ export interface LiveAnalogClockOptions {
   readonly events?: readonly InstantEventDefinition[];
   readonly eventLayers?: readonly EventLayerDefinition[];
   readonly zmanitTicks?: readonly ZmanitTick[];
+  readonly createRenderer?: ClockRendererFactory;
 }
 
 export interface LiveAnalogClock {
@@ -38,8 +44,9 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
   let destroyed = false;
   let secondTimer: ReturnType<typeof setInterval> | undefined;
   const scheduler = options.scheduler ?? new MinuteBoundaryClockScheduler();
+  const createRenderer = options.createRenderer ?? createStaticAnalogClock;
   const initialTime = projectCurrentTime(options.timeSource, timeZone, eventLayers);
-  const staticClock = createStaticAnalogClock({
+  const renderer = createRenderer({
     container: options.container,
     time: initialTime,
     events: resolveEventLayers(eventLayers, initialTime),
@@ -54,7 +61,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
 
   const refresh = (): void => {
     ensureActive("refresh");
-    applyCurrentState(projectCurrentTime(options.timeSource, timeZone, eventLayers), staticClock, eventLayers);
+    applyCurrentState(projectCurrentTime(options.timeSource, timeZone, eventLayers), renderer, eventLayers);
   };
 
   const startSecondTimer = (): void => {
@@ -93,7 +100,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
       ensureActive("set timezone on");
       const nextTime = projectCurrentTime(options.timeSource, nextTimeZone, eventLayers);
       timeZone = nextTimeZone;
-      applyCurrentState(nextTime, staticClock, eventLayers);
+      applyCurrentState(nextTime, renderer, eventLayers);
     },
     setEvents(nextEvents: readonly InstantEventDefinition[]) {
       ensureActive("set events on");
@@ -101,8 +108,8 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
       const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
       const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
       eventLayers = nextLayers;
-      staticClock.setTime(currentTime);
-      staticClock.setEvents(resolvedEvents);
+      renderer.setTime(currentTime);
+      renderer.setEvents(resolvedEvents);
     },
     setEventLayers(nextEventLayers: readonly EventLayerDefinition[]) {
       ensureActive("set event layers on");
@@ -110,13 +117,13 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
       const currentTime = projectCurrentTime(options.timeSource, timeZone, nextLayers);
       const resolvedEvents = resolveEventLayers(nextLayers, currentTime);
       eventLayers = nextLayers;
-      staticClock.setTime(currentTime);
-      staticClock.setEvents(resolvedEvents);
+      renderer.setTime(currentTime);
+      renderer.setEvents(resolvedEvents);
     },
     setZmanitTicks(nextTicks: readonly ZmanitTick[]) {
       ensureActive("set zmanit ticks on");
       zmanitTicks = [...nextTicks];
-      staticClock.setZmanitTicks(zmanitTicks);
+      renderer.setZmanitTicks(zmanitTicks);
     },
     destroy() {
       if (destroyed) {
@@ -125,7 +132,7 @@ export function createLiveAnalogClock(options: LiveAnalogClockOptions): LiveAnal
 
       scheduler.destroy();
       stopSecondTimer();
-      staticClock.destroy();
+      renderer.destroy();
       destroyed = true;
     }
   };
@@ -167,11 +174,11 @@ function clockDateBoundaryTimeFromEvent(event: InstantEventDefinition): ClockDat
 
 function applyCurrentState(
   currentTime: StaticClockTime,
-  staticClock: StaticAnalogClock,
+  renderer: ClockRenderer,
   eventLayers: readonly EventLayerDefinition[]
 ): void {
-  staticClock.setTime(currentTime);
-  staticClock.setEvents(resolveEventLayers(eventLayers, currentTime));
+  renderer.setTime(currentTime);
+  renderer.setEvents(resolveEventLayers(eventLayers, currentTime));
 }
 
 function initialEventLayers(options: LiveAnalogClockOptions): EventLayerDefinition[] {

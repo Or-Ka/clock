@@ -40,6 +40,14 @@ export interface StaticAnalogClock {
   destroy(): void;
 }
 
+// The rendering contract the live clock consumes. `createStaticAnalogClock` is
+// the default implementation, but any factory of this shape can be injected —
+// a headless fake in tests, or a future non-SVG renderer — without the live
+// clock depending on a concrete renderer.
+export type ClockRenderer = StaticAnalogClock;
+export type ClockRendererOptions = StaticAnalogClockOptions;
+export type ClockRendererFactory = (options: ClockRendererOptions) => ClockRenderer;
+
 export interface ZmanitTick {
   readonly index: number;
   readonly hour: number;

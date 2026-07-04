@@ -50,6 +50,9 @@ export {
 } from "./rendering/live-analog-clock.js";
 export {
   createStaticAnalogClock,
+  type ClockRenderer,
+  type ClockRendererFactory,
+  type ClockRendererOptions,
   type StaticAnalogClock,
   type StaticAnalogClockOptions,
   type ZmanitTick
