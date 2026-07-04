@@ -201,7 +201,9 @@ describe("createStaticAnalogClock", () => {
         minute: 0,
         dateDisplay: {
           weekday: "חמישי",
+          torahReading: "פרשת פינחס",
           hebrewDate: "י״ז בתמוז תשפ״ו",
+          observances: ["צום תמוז", "ג׳ בעומר"],
           gregorianDate: "2 ביולי 2026"
         }
       }
@@ -209,10 +211,14 @@ describe("createStaticAnalogClock", () => {
 
     expect(container.querySelector('[data-clock-part="date-display"]')).not.toBeNull();
     expect(container.querySelector('[data-clock-part="weekday-label"]')?.textContent).toBe("חמישי");
+    expect(container.querySelector('[data-clock-part="torah-reading-label"]')?.textContent).toBe("פרשת פינחס");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toBe("י״ז בתמוז תשפ״ו");
+    expect(container.querySelector('[data-clock-part="observances-label"]')?.textContent).toBe("צום תמוזג׳ בעומר");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.textContent).toBe("2 ביולי 2026");
     expect(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="torah-reading-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="observances-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-weight")).toBe("700");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-weight")).toBe("700");

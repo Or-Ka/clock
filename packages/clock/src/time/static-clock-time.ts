@@ -7,7 +7,9 @@ export interface StaticClockTime {
 
 export interface ClockDateDisplay {
   readonly weekday: string;
+  readonly torahReading?: string;
   readonly hebrewDate: string;
+  readonly observances?: readonly string[];
   readonly gregorianDate: string;
 }
 

@@ -5,6 +5,7 @@ import {
   ringForTime,
   SunriseSunsetEventLayerProvider,
   SystemTimeSource,
+  type ClockDateDisplayDetails,
   type EventLayerDefinition,
   type EventLayerKind,
   type InstantEventDefinition,
@@ -18,6 +19,19 @@ type DemoLocation = {
   readonly latitude: number;
   readonly longitude: number;
   readonly timeZone: string;
+};
+
+type HebcalCalendarItem = {
+  readonly date?: string;
+  readonly category?: string;
+  readonly subcat?: string;
+  readonly title?: string;
+  readonly hebrew?: string;
+  readonly title_orig?: string;
+};
+
+type HebcalCalendarPayload = {
+  readonly items?: readonly HebcalCalendarItem[];
 };
 
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
@@ -181,6 +195,7 @@ type DemoExportState = {
 const DAY_TIMES_LAYER_ID = "day-times";
 const PERSONAL_LAYER_ID = "personal";
 const SPECIAL_LAYER_ID = "special";
+const HEBCAL_VISIBLE_CATEGORIES = new Set(["holiday", "omer", "roshchodesh"]);
 const LOCATION_OPTIONS: readonly DemoLocation[] = [
   { id: "jerusalem", title: "ירושלים", latitude: 31.7683, longitude: 35.2137, timeZone: "Asia/Jerusalem" },
   { id: "tel-aviv", title: "תל אביב", latitude: 32.0853, longitude: 34.7818, timeZone: "Asia/Jerusalem" },
@@ -457,6 +472,9 @@ const timeSource = new SystemTimeSource();
 let selectedLocation = getLocationById(locationSelect.value);
 let dayTimesAbortController: AbortController | undefined;
 let dayTimesCacheKey = "";
+let hebcalAbortController: AbortController | undefined;
+let hebcalCacheKey = "";
+let jewishDateDetails: ClockDateDisplayDetails = { observances: [] };
 let zmanitTicks: ZmanitTick[] = [];
 let zmanitTimeSets: ZmanitTimeSetDefinition[] = DEFAULT_ZMANIT_TIME_SETS.map(cloneZmanitTimeSet);
 let selectedDefaultZmanitSetId: ZmanitTimeSetId = DEFAULT_ZMANIT_SET_ID;
@@ -501,7 +519,8 @@ const clock = createLiveAnalogClock({
   container: mount,
   timeSource,
   timeZone: timezoneSelect.value,
-  eventLayers
+  eventLayers,
+  dateDisplayDetails: () => jewishDateDetails
 });
 const clockEventObserver = new MutationObserver(scheduleClockEventVisualSync);
 clockEventObserver.observe(mount, { childList: true, subtree: true });
@@ -510,13 +529,16 @@ clock.start();
 syncEventList();
 syncClockEventVisuals();
 void refreshDayTimesLayer(true);
+void refreshHebcalDetails(true);
 
 locationSelect.addEventListener("change", () => {
   selectedLocation = getLocationById(locationSelect.value);
   syncTimeZoneToLocation();
   clock.setTimeZone(timezoneSelect.value);
   dayTimesCacheKey = "";
+  hebcalCacheKey = "";
   void refreshDayTimesLayer(true);
+  void refreshHebcalDetails(true);
 });
 
 for (const toggle of layerToggles) {
@@ -778,6 +800,7 @@ document.addEventListener("pointerdown", (event) => {
 const statusTimer = window.setInterval(() => {
   syncEventList();
   void refreshDayTimesLayer();
+  void refreshHebcalDetails();
 }, 30_000);
 const visualTimer = window.setInterval(() => {
   syncCountdownLayer();
@@ -2216,6 +2239,7 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
     refreshSpecialLayer();
     applyEventLayers();
+    void refreshHebcalDetails();
   } catch (error) {
     if (isAbortError(error)) {
       return;
@@ -2230,7 +2254,153 @@ async function refreshDayTimesLayer(force = false): Promise<void> {
     syncFixedDayTimeStatus();
     refreshSpecialLayer();
     applyEventLayers();
+    void refreshHebcalDetails();
   }
+}
+
+async function refreshHebcalDetails(force = false): Promise<void> {
+  const civilDate = currentDateKey();
+  const hebcalDate = currentHebcalDateKey();
+  const parshaStartDate = currentParshaRangeStartDateKey(civilDate);
+  const nextCacheKey = `${selectedLocation.id}:${civilDate}:${hebcalDate}:${parshaStartDate}`;
+  if (!force && nextCacheKey === hebcalCacheKey) {
+    return;
+  }
+
+  hebcalAbortController?.abort();
+  hebcalAbortController = new AbortController();
+
+  try {
+    const response = await fetch(hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7)), {
+      signal: hebcalAbortController.signal
+    });
+    if (!response.ok) {
+      throw new Error(`Hebcal request failed with status ${response.status}.`);
+    }
+
+    jewishDateDetails = parseHebcalDetails(await response.json(), hebcalDate);
+    hebcalCacheKey = nextCacheKey;
+    clock.refresh();
+  } catch (error) {
+    if (isAbortError(error)) {
+      return;
+    }
+
+    jewishDateDetails = { observances: [] };
+    hebcalCacheKey = "";
+    clock.refresh();
+  }
+}
+
+function hebcalUrlForDate(start: string, end: string): string {
+  const params = new URLSearchParams({
+    v: "1",
+    cfg: "json",
+    start,
+    end,
+    maj: "on",
+    min: "on",
+    mod: "on",
+    nx: "on",
+    mf: "on",
+    ss: "on",
+    s: "on",
+    o: "on",
+    d: "on",
+    leyning: "off",
+    lg: "he-x-NoNikud",
+    hdp: "1"
+  });
+
+  if (selectedLocation.timeZone === "Asia/Jerusalem") {
+    params.set("i", "on");
+  }
+
+  return `https://www.hebcal.com/hebcal?${params}`;
+}
+
+function parseHebcalDetails(payload: unknown, date: string): ClockDateDisplayDetails {
+  const items = isHebcalCalendarPayload(payload) ? payload.items ?? [] : [];
+  const torahReading = items.find((item) => item.category === "parashat");
+  const observances = uniqueStrings(
+    items
+      .filter((item) => hebcalItemDateKey(item) === date)
+      .flatMap(hebcalObservanceTitle)
+  );
+
+  return {
+    ...(torahReading === undefined ? {} : { torahReading: hebcalItemTitle(torahReading) }),
+    observances
+  };
+}
+
+function hebcalObservanceTitle(item: HebcalCalendarItem): readonly string[] {
+  if (item.category === undefined || item.category === "hebdate" || item.category === "parashat") {
+    return [];
+  }
+
+  if (!HEBCAL_VISIBLE_CATEGORIES.has(item.category) && !isSpecialShabbatItem(item)) {
+    return [];
+  }
+
+  const title = hebcalItemTitle(item);
+  return title === "" ? [] : [title];
+}
+
+function isSpecialShabbatItem(item: HebcalCalendarItem): boolean {
+  const title = hebcalItemTitle(item);
+  return item.subcat === "shabbat" || title.startsWith("שבת ");
+}
+
+function hebcalItemTitle(item: HebcalCalendarItem): string {
+  return (item.title ?? item.hebrew ?? item.title_orig ?? "").trim();
+}
+
+function hebcalItemDateKey(item: HebcalCalendarItem): string | undefined {
+  return item.date?.slice(0, 10);
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function isHebcalCalendarPayload(payload: unknown): payload is HebcalCalendarPayload {
+  return isRecord(payload) && (payload.items === undefined || Array.isArray(payload.items));
+}
+
+function currentHebcalDateKey(): string {
+  const date = currentDateKey();
+  const sunset = eventLayers
+    .find((layer) => layer.id === DAY_TIMES_LAYER_ID)
+    ?.events.find((event) => event.kind === "sunset");
+  if (sunset === undefined) {
+    return date;
+  }
+
+  const current = projectInstantToStaticClockTime(timeSource.now(), selectedLocation.timeZone);
+  return eventSecondOfDay(current) >= eventSecondOfDay(sunset) ? addDaysToDateKey(date, 1) : date;
+}
+
+function currentParshaRangeStartDateKey(civilDate: string): string {
+  if (weekdayIndexForDateKey(civilDate) !== 0) {
+    return civilDate;
+  }
+
+  const sunrise = eventLayers
+    .find((layer) => layer.id === DAY_TIMES_LAYER_ID)
+    ?.events.find((event) => event.kind === "sunrise");
+  if (sunrise === undefined) {
+    return civilDate;
+  }
+
+  const current = projectInstantToStaticClockTime(timeSource.now(), selectedLocation.timeZone);
+  return eventSecondOfDay(current) < eventSecondOfDay(sunrise) ? addDaysToDateKey(civilDate, -1) : civilDate;
+}
+
+function addDaysToDateKey(date: string, days: number): string {
+  const value = new Date(`${date}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
 }
 
 function renderFixedDayTimeControls(): void {
@@ -2350,7 +2520,7 @@ function addFixedDayTimeEventsToLayer(layer: EventLayerDefinition): EventLayerDe
   const sourceEvents = layer.events.filter((event) => !event.id.startsWith("fixed-"));
   return {
     ...layer,
-    events: [...sourceEvents, ...resolveFixedDayTimeEvents(sourceEvents), ...resolveAutomaticShabbatEvents(sourceEvents)]
+    events: [...sourceEvents, ...resolveFixedDayTimeEvents(sourceEvents)]
   };
 }
 
@@ -3332,6 +3502,7 @@ function getRequiredChild<T extends Element>(parent: ParentNode, selector: strin
 function destroyClock(): void {
   closeFloatingClockWindow();
   dayTimesAbortController?.abort();
+  hebcalAbortController?.abort();
   window.clearInterval(statusTimer);
   window.clearInterval(visualTimer);
   window.removeEventListener("beforeunload", destroyClock);

@@ -46,7 +46,9 @@ interface ClockDom {
   readonly currentTimeMarker: SVGGElement;
   readonly dateDisplay: SVGGElement;
   readonly weekdayLabel: SVGTextElement;
+  readonly torahReadingLabel: SVGTextElement;
   readonly hebrewDateLabel: SVGTextElement;
+  readonly observancesLabel: SVGTextElement;
   readonly gregorianDateLabel: SVGTextElement;
   readonly hourHand: SVGLineElement;
   readonly minuteHand: SVGLineElement;
@@ -202,7 +204,9 @@ function createClockDom(): ClockDom {
     currentTimeMarker,
     dateDisplay: dateDisplay.group,
     weekdayLabel: dateDisplay.weekdayLabel,
+    torahReadingLabel: dateDisplay.torahReadingLabel,
     hebrewDateLabel: dateDisplay.hebrewDateLabel,
+    observancesLabel: dateDisplay.observancesLabel,
     gregorianDateLabel: dateDisplay.gregorianDateLabel,
     hourHand,
     minuteHand,
@@ -362,19 +366,23 @@ function createHand(part: string, length: number, width: number, stroke: string)
 function createDateDisplay(): {
   group: SVGGElement;
   weekdayLabel: SVGTextElement;
+  torahReadingLabel: SVGTextElement;
   hebrewDateLabel: SVGTextElement;
+  observancesLabel: SVGTextElement;
   gregorianDateLabel: SVGTextElement;
 } {
   const group = createSvgElement("g");
   group.dataset.clockPart = "date-display";
   group.setAttribute("direction", "rtl");
 
-  const weekdayLabel = createDateLine("weekday-label", 66, "5.4", "700", CLOCK_COLORS.dateMuted);
-  const hebrewDateLabel = createDateLine("hebrew-date-label", 82, "5.9", "700", CLOCK_COLORS.dateStrong);
+  const weekdayLabel = createDateLine("weekday-label", 61, "5.25", "750", CLOCK_COLORS.dateMuted);
+  const torahReadingLabel = createDateLine("torah-reading-label", 69, "5.2", "750", CLOCK_COLORS.dateStrong);
+  const hebrewDateLabel = createDateLine("hebrew-date-label", 79, "5.65", "700", CLOCK_COLORS.dateStrong);
+  const observancesLabel = createDateLine("observances-label", 88, "4.55", "700", CLOCK_COLORS.dateMuted);
   const gregorianDateLabel = createDateLine("gregorian-date-label", 124, "5.7", "700", CLOCK_COLORS.dateStrong);
 
-  group.append(weekdayLabel, hebrewDateLabel, gregorianDateLabel);
-  return { group, weekdayLabel, hebrewDateLabel, gregorianDateLabel };
+  group.append(weekdayLabel, torahReadingLabel, hebrewDateLabel, observancesLabel, gregorianDateLabel);
+  return { group, weekdayLabel, torahReadingLabel, hebrewDateLabel, observancesLabel, gregorianDateLabel };
 }
 
 function createDateLine(part: string, y: number, fontSize: string, fontWeight: string, fill: string): SVGTextElement {
@@ -446,7 +454,9 @@ function ringTimeAngle(hour: number, minute: number, second: number): number {
 function applyDateDisplay(dom: ClockDom, time: StaticClockTime): void {
   const display = time.dateDisplay;
   applyWeekdayLabel(dom.weekdayLabel, display?.weekday ?? "");
+  dom.torahReadingLabel.textContent = display?.torahReading ?? "";
   dom.hebrewDateLabel.textContent = display?.hebrewDate ?? "";
+  applyObservancesLabel(dom.observancesLabel, display?.observances ?? []);
   dom.gregorianDateLabel.textContent = display?.gregorianDate ?? "";
 }
 
@@ -471,6 +481,38 @@ function applyWeekdayLabel(label: SVGTextElement, weekday: string): void {
   nightLine.setAttribute("font-weight", "700");
 
   label.replaceChildren(weekdayLine, nightLine);
+}
+
+function applyObservancesLabel(label: SVGTextElement, observances: readonly string[]): void {
+  const lines = compactObservanceLines(observances);
+  if (lines.length === 0) {
+    label.replaceChildren();
+    return;
+  }
+
+  if (lines.length === 1) {
+    label.textContent = lines[0] ?? "";
+    return;
+  }
+
+  label.replaceChildren(
+    ...lines.map((line, index) => {
+      const tspan = createSvgElement("tspan");
+      tspan.textContent = line;
+      tspan.setAttribute("x", "100");
+      tspan.setAttribute("dy", index === 0 ? "0" : "5.6");
+      return tspan;
+    })
+  );
+}
+
+function compactObservanceLines(observances: readonly string[]): string[] {
+  const lines = observances.map((item) => item.trim()).filter(Boolean);
+  if (lines.length <= 2) {
+    return lines;
+  }
+
+  return [lines[0] ?? "", lines.slice(1).join(" · ")];
 }
 
 function applyEvents(dom: ClockDom, events: readonly ResolvedInstantEvent[]): void {
