@@ -238,7 +238,6 @@ function buildHebrewNumeral(value: number): string {
   for (const [amount, letter] of ones) {
     if (remaining >= amount) {
       parts.push(letter);
-      remaining -= amount;
       break;
     }
   }

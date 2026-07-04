@@ -602,10 +602,6 @@ function eventColor(kind: ResolvedInstantEvent["kind"]): string {
   return CLOCK_COLORS.custom;
 }
 
-function displayRing(ring: ClockRing): string {
-  return ring === "outer" ? "טבעת יום" : "טבעת לילה";
-}
-
 function displayStatus(status: ResolvedInstantEvent["status"]): string {
   if (status === "past") {
     return "עבר";
