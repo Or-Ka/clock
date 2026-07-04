@@ -55,6 +55,30 @@ describe("projectInstantToStaticClockTime", () => {
     expect(projected.dateDisplay?.gregorianDate).toContain("יולי");
   });
 
+  it("shows Motzaei Shabbat instead of Shabbat night Sunday after Saturday sunset", () => {
+    const instant = Temporal.Instant.from("2026-07-04T18:00:00Z");
+    const projected = projectInstantToStaticClockTime(instant, "Asia/Jerusalem", {
+      dateBoundary: {
+        sunrise: { hour: 6, minute: 0 },
+        sunset: { hour: 19, minute: 45 }
+      }
+    });
+
+    expect(projected.dateDisplay?.weekday).toBe("מוצאי שבת");
+  });
+
+  it("keeps Motzaei Shabbat after midnight until Sunday sunrise", () => {
+    const instant = Temporal.Instant.from("2026-07-05T02:00:00Z");
+    const projected = projectInstantToStaticClockTime(instant, "Asia/Jerusalem", {
+      dateBoundary: {
+        sunrise: { hour: 6, minute: 0 },
+        sunset: { hour: 19, minute: 45 }
+      }
+    });
+
+    expect(projected.dateDisplay?.weekday).toBe("מוצאי שבת");
+  });
+
   it("removes Or Le and advances the weekday at sunrise", () => {
     const instant = Temporal.Instant.from("2026-07-03T03:00:00Z");
     const projected = projectInstantToStaticClockTime(instant, "Asia/Jerusalem", {

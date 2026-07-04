@@ -94,6 +94,10 @@ function formatNightWeekday(
       ? formatWeekday(zonedDateTime, timeZone)
       : formatWeekday(zonedDateTime.add({ days: 1 }), timeZone);
 
+  if (civilWeekday === "שבת" && nightWeekday === "ראשון") {
+    return "מוצאי שבת";
+  }
+
   return `${civilWeekday} (ליל ${nightWeekday})`;
 }
 
