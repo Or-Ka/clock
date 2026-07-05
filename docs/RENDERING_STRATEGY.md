@@ -1,119 +1,24 @@
 # Rendering Strategy
 
-## renderer ראשי
+## Primary Renderer
 
-ה-renderer הראשי יהיה SVG.
+The primary renderer is SVG.
 
-## עקרונות
+## Principles
 
-- renderer אינו פותר אירועים בעצמו.
-- renderer מקבל זמן, context, theme ו-`ResolvedClockItem[]`.
-- renderer צריך לתמוך ב-responsive layout.
-- renderer צריך לתמוך באינטראקציה ובנגישות.
+- Rendering receives resolved time and event data.
+- Rendering does not fetch providers or own application state.
+- SVG output must remain responsive.
+- Interactive marker accessibility will be improved in a later library phase.
 
-## SVG Spike
+## Current Product Use
 
-לפני מימוש renderer מוצרי יבוצע Spike תחת:
+The official web application under `apps/web` uses the live analog clock and event-ring renderer from `packages/clock`.
 
-```text
-apps/demo/src/spikes/svg-clock/
-```
+## Historical Screens
 
-ה-Spike צריך להוכיח:
+Earlier prototype screens and spike implementations are archived under `archive/legacy-app-screens` and are excluded from active builds.
 
-- SVG responsive בשלושה גדלים.
-- מחוג שעות ודקות לפי זמן קבוע.
-- marker אחד לפחות.
-- hover.
-- click.
-- keyboard focus.
-- focus ring גלוי.
-- RTL תקין.
-- resize תקין.
-- cleanup של listeners ו-observers.
+## Migration Constraint
 
-## תוצאות Spike
-
-סטטוס: הושלם ב-2026-06-30.
-
-Phase 1 אושר לאחר ביקורת ה-Spike. תוצאות ה-Spike שימשו ללמידה בלבד; קוד המוצר נבנה בנפרד תחת `packages/clock`.
-
-מיקום:
-
-```text
-apps/demo/src/spikes/svg-clock/
-```
-
-אימות שבוצע:
-
-- שלושה SVGים נטענים בדף.
-- viewBox קבוע `0 0 200 200`.
-- מחוגים מציגים זמן קבוע 10:10.
-- marker מוצג ומוגדר כ-`role="button"` עם `tabindex="0"`.
-- click מעדכן status.
-- Enter מפעיל marker בפוקוס.
-- focus ring גלוי.
-- `dir="rtl"` פעיל.
-- responsive נבדק ב-1200px, 760px ו-390px.
-- `ResizeObserver` ו-listeners מנוקים דרך `destroy()`.
-
-## Phase 1: Static SVG Clock
-
-Phase 1 מוסיף renderer מוצרי בסיסי תחת `packages/clock/src/rendering/static-analog-clock.ts`.
-
-ה-renderer:
-
-- יוצר SVG עם `viewBox="0 0 200 200"`.
-- מצייר לוח שעון.
-- מצייר 12 סימוני שעות.
-- מצייר מחוג שעות ומחוג דקות.
-- מקבל שעה ודקה מפורשות בלבד.
-- אינו קורא את שעת המערכת.
-- אינו מפעיל timer או scheduler.
-- אינו מציג events או markers.
-- משתמש ב-`ResizeObserver` כדי לעקוב אחר גודל ה-container ולנתק אותו ב-`destroy()`.
-- מחליף את תוכן ה-container בזמן יצירה.
-- מאפשר מופע פעיל אחד בלבד לכל container.
-- מגן מפני עדכון SVG שנותק חיצונית.
-
-הדמו המוצרי נמצא תחת:
-
-```text
-apps/demo/src/product-static-clock/
-```
-
-הדמו נפרד מה-Spike ואינו משתמש בקוד ה-Spike.
-
-### תוצאות בדיקת דפדפן Phase 1
-
-הדמו נבדק מול `http://127.0.0.1:5174/`.
-
-תוצאות:
-
-- שלושה SVGים נטענו.
-- לכל SVG קיימים 12 סימוני שעות.
-- לכל SVG קיים מחוג שעות ומחוג דקות.
-- הזמן ההתחלתי `15:45` הניב `hourAngle=112.5` ו-`minuteAngle=270`.
-- כפתור `00:00` עדכן את כל השעונים ל-`hourAngle=0` ו-`minuteAngle=0`.
-- כפתור `06:30` עדכן את כל השעונים ל-`hourAngle=195` ו-`minuteAngle=180`.
-- מספר ה-SVGים נשאר 3 אחרי עדכון זמן.
-- responsive נבדק ב-1200px, 760px ו-390px.
-- console errors/warnings: אין.
-
-## Phase 3: Dual Ring Event Rendering
-
-ה-renderer המוצרי מתרחב כך שאותו SVG מציג גם שכבת אירועים:
-
-- שתי טבעות מוצגות בו-זמנית.
-- הטבעת החיצונית מציגה תוויות שעה `06` עד `17`.
-- הטבעת הפנימית מציגה תוויות שעה `18` עד `05`.
-- מחוג השעות ומחוג הדקות נשארים שעון אנלוגי רגיל ואינם משתמשים בנוסחת הזווית של האירועים.
-- לוח השעון המרכזי משתמש בכיוון אנלוגי רגיל: 12 למעלה, 3 מימין, 6 למטה ו-9 משמאל.
-- שנתות השעון נמצאות במעגל החיצוני ביותר: 60 שנתות דקות ומתוכן 12 שנתות שעה בולטות.
-- סדר השכבות מבחוץ פנימה הוא שנתות, טבעת אירועים חיצונית, טבעת אירועים פנימית, מספרי שעון ומחוגים.
-- כל אירוע פתור מוצג בטבעת שלו בנקודה או קו קטן.
-- יש הבחנה חזותית בין `sunrise`, `sunset` ו-`custom`.
-- יש הבחנה חזותית בין `past`, `next` ו-`future`.
-- כאשר כמה אירועים נמצאים באותה זווית, הם מוצגים בשכבות רדיוס דטרמיניסטיות בתוך אותה טבעת.
-- `setEvents()` מעדכן, מוסיף ומסיר סמנים בלי ליצור מחדש את ה-SVG.
-- מעבר יום/לילה מוצג באמצעות צבע טבעת חם לטבעת היום, צבע קריר לטבעת הלילה, ושני סימוני מעבר עדינים ב-05:59-06:00 וב-17:59-18:00. זהו סימון חזותי בלבד ואינו קשור לנתוני זריחה או שקיעה אמיתיים.
+The current migration does not change renderer behavior.

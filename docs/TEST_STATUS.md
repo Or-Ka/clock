@@ -1,137 +1,42 @@
 # Test Status
 
-עודכן: 2026-07-02
+עודכן: 2026-07-05
 
-## מצב נוכחי
+## Baseline Before Migration
 
-קיים test runner בסיסי: Vitest. Phase 3 מוסיף בדיקות דטרמיניסטיות לטבעות, זוויות dual-ring, resolver אירועים, renderer ו-live clock עם `setEvents()`. סבב תיקוני התצוגה מוסיף בדיקות לשנתות, מספרי שעון, סימוני מעבר וממשק עברי.
+Passed before renaming:
 
-## ריצות אחרונות
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
 
-```text
-npm.cmd run docs:check
-PASS: Documentation gate passed for 20 docs.
+Browser baseline passed on desktop and mobile:
 
-npm.cmd run typecheck
-PASS: tsc -b tsconfig.json --pretty false
+- Hebrew `lang` and RTL `dir`.
+- One active clock SVG.
+- Default events visible.
+- Display mode starts in `fullMode`.
+- No console errors or warnings.
+- No horizontal mobile overflow.
 
-npm.cmd test
-PASS: 9 test files, 84 tests
+## Migration Tests Added
 
-npm.cmd run build
-PASS: tsc -b tsconfig.json, Vite build for SVG Spike, product static clock demo, live clock demo, and dual ring events demo
+- App test file renamed to `apps/web/src/analog-event-clock.test.ts`.
+- Tests now read the official app entrypoint.
+- Added coverage for the new app export filename prefix.
+- Added coverage for legacy display-mode localStorage migration.
+- Kept JSON export schema at version `1` for compatibility.
 
-npm.cmd run build --workspace @clock/clock
-PASS: tsc -p tsconfig.build.json
-```
+## Final Gate
 
-## בדיקות Phase 3
+Final verification must run:
 
-נוספו בדיקות:
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
 
-- `packages/clock/src/events/event-model.test.ts`: בחירת טבעת, נוסחת זווית, שיוך זריחה/שקיעה לפי זמן בפועל, חישוב `past`/`next`/`future`, דחיית IDs כפולים וקלט זמן לא תקין.
-- `packages/clock/src/rendering/static-analog-clock.test.ts`: שתי טבעות, 24 תוויות שעה, סמני אירועים, `setEvents()` ללא החלפת SVG ו-`setEvents()` לאחר destroy.
-- `packages/clock/src/rendering/live-analog-clock.test.ts`: אירועים התחלתיים, `setEvents()`, דחיית קלט לא תקין בלי לשנות את התצוגה, חישוב סטטוסים מחדש בשינוי timezone ו-`setEvents()` לאחר destroy.
-- `packages/clock/src/rendering/static-analog-clock.test.ts`: 12 מספרי שעון בכיוון רגיל, 60 שנתות חיצוניות, 12 שנתות שעה, מיקום שנתות 12/3/6/9, וסימוני מעבר בוקר/ערב.
-- `apps/demo/src/dual-ring-events/dual-ring-events.test.ts`: `lang="he"`, `dir="rtl"`, כותרות/כפתורים בעברית, והודעות validation בעברית.
-
-## בדיקת דפדפן ל-Phase 3
-
-בוצעה מול `http://127.0.0.1:5173/`.
-
-תוצאות:
-
-- `npm.cmd run dev` הפעיל את דמו Phase 3.
-- ב-1200px: SVG יחיד, גודל שעון 620px, 12 תוויות בטבעת החיצונית, 12 תוויות בטבעת הפנימית, 5 אירועים, ללא overflow.
-- ב-760px: SVG יחיד, גודל שעון 620px, 12 תוויות בכל טבעת, 5 אירועים, ללא overflow.
-- ב-390px: SVG יחיד, גודל שעון 310px, 12 תוויות בכל טבעת, 5 אירועים, ללא overflow.
-- אירועים הופיעו בשתי הטבעות: 2 אירועים ב-`outer` ו-3 אירועים ב-`inner`.
-- סומן אירוע `next` אחד.
-- הוספת אירוע `00:15` שייכה אותו ל-`inner`.
-- הוספה ומחיקה שמרו על SVG יחיד.
-- console errors/warnings מהאפליקציה: אין.
-
-### בדיקת דפדפן לסבב תיקוני התצוגה
-
-בוצעה מול `http://127.0.0.1:5173/`.
-
-תוצאות:
-
-- ב-1200px, 760px ו-390px: SVG יחיד, ללא overflow בטקסטים המרכזיים, `lang="he"` ו-`dir="rtl"`.
-- 12 ממוקם למעלה, 3 מימין, 6 למטה ו-9 משמאל.
-- 60 שנתות קיימות במעגל החיצוני ביותר, עם 12 שנתות שעה בולטות.
-- שנתת 12 למעלה, שנתת 3 מימין, שנתת 6 למטה ושנתת 9 משמאל.
-- שתי טבעות האירועים נשארו קיימות, עם אירועים גם ב-`outer` וגם ב-`inner`.
-- סימוני מעבר קיימים עבור 05:59-06:00 ועבור 17:59-18:00.
-- המחוגים המשיכו להתעדכן לפי `clockHandAngles` ולא שונו.
-- הממשק הגלוי בעברית, למעט מזהי timezone טכניים.
-- הודעת validation עברית הוצגה עבור שעה לא תקינה: `השעה חייבת להיות מספר שלם בין 0 ל-23.`
-- הוספת אירוע `00:15` המשיכה לשייך אותו ל-`inner` ושמרה על SVG יחיד.
-- console errors/warnings מהאפליקציה: אין.
-
-## בדיקות Phase 2
-
-נוספו בדיקות:
-
-- `packages/clock/src/time/time-source.test.ts`: `SystemTimeSource`, `FixedTimeSource`, `SimulatedTimeSource`, pause/resume ושינוי מהירות.
-- `packages/clock/src/time/clock-scheduler.test.ts`: start מיידי, חישוב גבול דקה, start כפול, stop כפול, start לאחר stop, destroy כפול וניקוי timers.
-- `packages/clock/src/time/timezone-projection.test.ts`: timezone תקין ולא תקין, כולל מעבר לחצות וליום אחר.
-- `packages/clock/src/rendering/live-analog-clock.test.ts`: יצירה ללא start אוטומטי, start/stop/refresh, שינוי timezone, setTimeZone אחרי destroy, destroy כפול, ושמירה על SVG יחיד.
-
-## בדיקת דפדפן ל-Phase 2
-
-בוצעה מול `http://127.0.0.1:5174/`.
-
-תוצאות:
-
-- `npm.cmd run dev` הפעיל את דמו השעון החי. פורט 5173 היה תפוס ולכן Vite עבר ל-5174.
-- ב-1200px: SVG יחיד, גודל שעון 520px, ללא overflow.
-- ב-760px: SVG יחיד, גודל שעון 520px, ללא overflow.
-- ב-390px: SVG יחיד, גודל שעון 300px, ללא overflow.
-- Stop ולאחר מכן Refresh עבדו כשהשעון עצור.
-- Fixed Time הציג `12:30` ב-`Asia/Jerusalem` עבור fixed UTC של `09:30`.
-- שינוי timezone ל-`UTC` עדכן את השעון ל-`09:30`.
-- Simulated Time עם מהירות `120x` התקדם אוטומטית מ-`18:39` ל-`18:43` בתוך 1.6 שניות ונשאר עם SVG יחיד.
-- console errors/warnings מהאפליקציה: אין.
-
-## בדיקות Phase 1
-
-נוספו בדיקות:
-
-- `packages/clock/src/time/clock-angles.test.ts`: מיפוי זמנים לזוויות עבור `00:00`, `03:00`, `06:30`, `11:59`, `12:00`, `15:45` וקלט לא תקין.
-- `packages/clock/src/time/clock-angles.test.ts`: כולל שעה שלילית, שעה מעל 23, דקה שלילית, דקה מעל 59, ערכים עשרוניים, `NaN`, `Infinity` ו-`-Infinity`.
-- `packages/clock/src/rendering/static-analog-clock.test.ts`: יצירת SVG, 12 סימוני שעות, `setTime`, קלט לא תקין, `ResizeObserver`, `destroy`, `destroy` כפול, SVG שנותק, יותר ממופע אחד באותו document, דחיית מופע שני באותו container ושחזור תוכן container כאשר יצירה נכשלת.
-
-## בדיקת דפדפן ל-Phase 1
-
-בוצעה מול `http://127.0.0.1:5174/`.
-
-תוצאות:
-
-- שלושה SVGים נטענו.
-- לכל SVG קיימים 12 סימוני שעות.
-- `15:45`: `hourAngle=112.5`, `minuteAngle=270`.
-- `00:00`: `hourAngle=0`, `minuteAngle=0`.
-- `06:30`: `hourAngle=195`, `minuteAngle=180`.
-- `setTime` דרך כפתורי הדמו עדכן את כל השעונים וספירת ה-SVGים נשארה 3.
-- responsive נבדק ב-1200px, 760px ו-390px.
-- console errors/warnings מהאפליקציה: אין.
-
-## בדיקת דפדפן ל-SVG Spike
-
-בוצעה מול `http://127.0.0.1:5173/`.
-
-תוצאות:
-
-- שלושה SVGים נטענו.
-- שלושה markers נמצאו.
-- click על marker עדכן status ל-`פגישה: 11:20`.
-- Enter על marker בפוקוס הפעיל את marker.
-- focus ring גלוי נמדד בצבע `rgb(123, 44, 191)`.
-- RTL פעיל דרך `document.documentElement.dir === "rtl"`.
-- responsive נבדק ב-1200px, 760px ו-390px.
-- console errors/warnings מהאפליקציה: אין.
-
-## מגבלות
-
-- עדיין אין browser tests אוטומטיים כחלק מ-CI; בדיקות הדפדפן בוצעו דרך כלי הדפדפן בסשן.
+Final browser verification must cover desktop and mobile with no console errors or warnings.

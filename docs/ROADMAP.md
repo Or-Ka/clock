@@ -1,40 +1,28 @@
 # Roadmap
 
-## שלב 1: Bootstrap
+## Completed
 
-- תיעוד מקור אמת.
-- Git repository.
-- npm workspace.
-- TypeScript strict.
-- Test runner.
-- Build בסיסי.
+- Workspace and documentation bootstrap.
+- SVG renderer spike.
+- Product static analog clock.
+- Live analog clock.
+- Dual-ring event model.
+- Hebrew/RTL application UI.
+- Promotion plan from prototype-era web surface to official Beta application.
 
-## שלב 2: SVG Spike
+## Current
 
-- Spike תחת `apps/demo/src/spikes/svg-clock/`.
-- הוכחת responsive, interaction, keyboard focus, RTL ו-cleanup.
-- תיעוד תוצאות.
+T068: Promote the existing web product to `apps/web` as the official Analog Event Clock Beta application.
 
-סטטוס: הושלם.
+## Next
 
-## שלב 3: MVP Library
+T069: Frontend Architecture Refactor.
 
-- חוזי core/time/events/rendering.
-- resolver לאירועים מוחלטים.
-- SVG renderer מוצרי.
-- API `createAnalogClock`.
+The refactor must happen after the migration and in a separate branch. It should split the current app implementation into focused modules without changing behavior.
 
-## Phase 3: Dual Ring Events
+## Later
 
-- שתי טבעות קבועות לכל 24 השעות.
-- אירועים ידניים מיידיים מסוג זריחה, שקיעה ומותאם.
-- API `events` ו-`setEvents()` ב-`LiveAnalogClock`.
-- דמו Phase 3 נפרד עם טופס הוספה, מחיקה, timezone ורשימת אירועים.
-
-## שלב 4: הרחבות
-
-- anchors.
-- derived events.
-- ranges.
-- providers לזריחה ושקיעה.
-- React/Web Component wrappers.
+- CSS split with cascade layers.
+- Marker accessibility improvements in `packages/clock`.
+- UX redesign for the Beta application.
+- Public embedding polish and adapter planning.

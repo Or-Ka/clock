@@ -62,7 +62,7 @@
 - RTL תקין.
 - resize תקין.
 - cleanup של listeners ו-observers.
-- הקוד נשאר רק תחת `apps/demo/src/spikes/svg-clock/`.
+- הקוד נשאר רק תחת `archive/legacy-app-screens/spikes/svg-clock/`.
 
 ה-Spike אינו API ציבורי ואינו מועבר אוטומטית ל-`packages/clock`.
 

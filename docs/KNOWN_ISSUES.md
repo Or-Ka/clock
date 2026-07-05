@@ -1,27 +1,15 @@
 # Known Issues
 
-עודכן: 2026-07-02
+עודכן: 2026-07-05
 
-## בעיות ידועות פתוחות
+## Open
 
-אין בעיות ידועות פתוחות בסגירת T001-T025.
+- `apps/web/src/main.ts` remains a large controller. This is intentionally deferred to the Frontend Architecture Refactor.
+- `apps/web/src/styles.css` remains a single stylesheet. CSS splitting is deferred.
+- The current app layout still exposes many management controls on the main page. UX redesign is deferred.
+- The developer stamp still ships with the active app pending a separate production cleanup decision.
 
-אין בעיות ידועות פתוחות בסגירת Phase 1.
+## Not Regressions
 
-אין בעיות ידועות פתוחות לאחר ביקורת Phase 1.
-
-אין בעיות ידועות פתוחות לאחר מימוש Phase 2.
-
-אין בעיות ידועות פתוחות לאחר מימוש Phase 3.
-
-אין בעיות ידועות פתוחות לאחר סבב תיקוני התצוגה של Phase 3.
-
-## מגבלות ועבודת המשך שאינן בעיות פתוחות
-
-- אין עדיין browser tests אוטומטיים ל-SVG; בוצעה בדיקת דפדפן ידנית/כלית ל-Spike.
-- יש לבדוק בהמשך bundle size ותאימות של `@js-temporal/polyfill`.
-- Phase 3 אינו כולל provider אמיתי לזריחה/שקיעה, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE.
-
-## נפתרו
-
-- בתחילת הסשן לא היה Git repository; נפתר באמצעות `git init`.
+- Historical prototype screens are archived under `archive/legacy-app-screens` and are not part of the official app build.
+- The previous display-mode localStorage key is intentionally retained in code as a legacy read path.

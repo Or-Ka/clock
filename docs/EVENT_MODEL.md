@@ -1,100 +1,28 @@
 # Event Model
 
-## הפרדה מרכזית
+## Current Scope
 
-יש הפרדה בין:
+The library supports instant event definitions and resolves them into display-ready clock events.
 
-- `EventDefinition`: הקלט שהמשתמש או provider מגדירים.
-- `ResolvedClockItem`: פריט פתור להצגה על החוגה.
+The official web application uses event layers for:
 
-ה-renderer מקבל רק אירועים פתורים.
+- `day-times`: sunrise/sunset-derived day times.
+- `personal`: user-created events.
+- `special`: derived/special application events.
 
-## MVP המקורי
+## Resolution Rules
 
-ה-MVP כולל רק אירועים מוחלטים ידניים:
+- Event resolution happens before rendering.
+- The renderer receives resolved events.
+- A disabled layer is not displayed and does not participate in `next` status.
+- Resolved events may include `layerId`, `layerTitle` and `layerKind` so the application can render labels and controls.
 
-```ts
-type EventDefinition = {
-  id: string;
-  kind: "absolute";
-  instant: Temporal.Instant;
-  title: string;
-};
-```
+## Ring Model
 
-## מתוכנן אך לא ממומש ב-MVP
+- Outer ring: 06:00-17:59.
+- Inner ring: 18:00-05:59.
+- Events are assigned to rings by local event time.
 
-- `anchor`: אירוע שמבוסס על עוגן כמו זריחה.
-- `derived`: אירוע שנגזר מאירוע אחר או מעוגן.
-- `range`: טווח זמן על החוגה.
+## Future Work
 
-## כלל תצוגה ב-MVP
-
-Superseded: אם אירוע אינו נמצא במחזור 12 השעות הנוכחי, הוא לא מוצג על החוגה.
-
-## Phase 3: אירועים ידניים מיידיים
-
-Phase 3 מממש רק אירועים ידניים בזמן מקומי:
-
-```ts
-interface InstantEventDefinition {
-  id: string;
-  type: "instant";
-  kind?: "sunrise" | "sunset" | "custom";
-  title: string;
-  hour: number;
-  minute: number;
-  description?: string;
-}
-```
-
-המודל הפתור:
-
-```ts
-interface ResolvedInstantEvent {
-  id: string;
-  type: "instant";
-  kind: "sunrise" | "sunset" | "custom";
-  title: string;
-  hour: number;
-  minute: number;
-  ring: "outer" | "inner";
-  angle: number;
-  status: "past" | "next" | "future";
-  description?: string;
-}
-```
-
-כללים:
-
-- 06:00 עד לפני 18:00 משויך ל-`outer`.
-- 18:00 עד לפני 06:00 משויך ל-`inner`.
-- זווית האירוע מחושבת לפי מחזור 12 שעות שמתחיל ב-06:00.
-- אירועי `sunrise` ו-`sunset` משויכים לטבעת לפי הזמן שלהם בלבד.
-- `next` מחושב מכל אירועי היום שנותרו אחרי הזמן המקומי הנוכחי. אם אין אירוע מאוחר יותר היום, אין מעבר אוטומטי לאירוע של מחר ב-Phase 3.
-- `past`, `next` ו-`future` מחושבים מחדש בעת refresh או שינוי timezone.
-- IDs כפולים, שעה לא תקינה או דקה לא תקינה נדחים.
-- resolver אינו משנה את מערך הקלט.
-
-## שכבות תצוגה לאירועים
-
-אירועי Phase 3 יכולים להגיע גם דרך שכבות תצוגה:
-
-```ts
-interface EventLayerDefinition {
-  readonly id: string;
-  readonly title: string;
-  readonly kind?: "day-times" | "personal" | "api" | "custom";
-  readonly enabled?: boolean;
-  readonly events: readonly EventDefinition[];
-}
-```
-
-`resolveEventLayers()` פותר רק שכבות פעילות. שכבה עם `enabled: false` אינה מוצגת ואינה משתתפת בחישוב `next`. כל `ResolvedInstantEvent` כולל `layerId`, `layerTitle` ו-`layerKind`, כדי שה-renderer וה-demo יוכלו להציג ולסנן אירועים לפי שכבה בלי לשנות את מודל הטבעות.
-
-שכבות קיימות בדמו:
-
-- `day-times`: אירועי זמני היום הידניים של Phase 3.
-- `personal`: אירועים אישיים שהמשתמש מוסיף בדמו.
-
-שכבת `api` נתמכת בתשתית provider, אך חיבור API אמיתי חסום עד שיוגדרו endpoint, סכמה ונתוני מיקום/תאריך נדרשים. סוגים עתידיים כמו ranges או אירועים מבוססי שנים צריכים להיכנס דרך שכבת תצוגה ייעודית לפני פתרון ל-renderer.
+Future phases may formalize richer event types, ranges, derived events and external providers as public library APIs.

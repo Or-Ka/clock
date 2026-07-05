@@ -1,30 +1,24 @@
 # Accessibility
 
-## עקרונות
+## Current Application
 
-- שעון אינטראקטיבי חייב להיות ניתן לניווט במקלדת.
-- focus ring חייב להיות גלוי.
-- markers אינטראקטיביים צריכים לקבל label נגיש.
-- RTL צריך להיבדק כחלק מה-Spike.
+- The official web application uses `lang="he"` and `dir="rtl"`.
+- Visible UI text is Hebrew-first, with technical timezone identifiers kept as IANA strings.
+- Buttons, inputs, selects and links use visible focus outlines.
+- Validation messages are shown in Hebrew.
+- The current marker interaction model is still application-managed and should be improved in `packages/clock` in a later phase.
 
-## דרישות SVG Spike
+## Required Future Work
 
-- marker אחד לפחות עם hover.
-- marker אחד לפחות עם click.
-- marker אחד לפחות עם keyboard focus.
-- focus ring גלוי.
-- RTL תקין.
+Marker accessibility in the library should support an explicit opt-in mode:
 
-## שאלות להמשך
+```ts
+markerInteraction?: "none" | "focusable";
+onMarkerActivate?: (event: ResolvedInstantEvent) => void;
+```
 
-- האם האירועים יוצגו גם כרשימה טקסטואלית לצד החוגה.
-- איך להכריז שינוי זמן או אירוע לקוראי מסך בלי רעש מיותר.
+When enabled, markers must support focus, Enter, Space, visible focus rings and cleanup.
 
-## Phase 3 UI polish
+## Migration Note
 
-- דמו Phase 3 מוגדר עם `lang="he"` ו-`dir="rtl"`.
-- כל הטקסטים הגלויים בדמו תורגמו לעברית, למעט מזהי timezone טכניים.
-- שדות שעה ודקה נשארים מספריים וקריאים ב-RTL.
-- משמעות מעבר היום/לילה אינה מועברת בצבע בלבד: קיימים גם סימוני מעבר גיאומטריים בנקודות 05:59-06:00 ו-17:59-18:00.
-- מצב focus נשאר גלוי דרך outline ברור על קישורים, כפתורים ושדות.
-- הודעות validation בדמו מוצגות בעברית.
+The app migration does not change marker behavior. It preserves existing behavior and documents the accessibility work for a separate phase.
