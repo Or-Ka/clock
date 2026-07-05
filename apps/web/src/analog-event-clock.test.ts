@@ -4,14 +4,15 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-const demoDir = dirname(fileURLToPath(import.meta.url));
+const appSrcDir = dirname(fileURLToPath(import.meta.url));
+const appRootDir = join(appSrcDir, "..");
 
-describe("Phase 3 demo Hebrew UI", () => {
+describe("Analog Event Clock Hebrew UI", () => {
   it("uses Hebrew document metadata, RTL layout and a clean clock-first shell", () => {
-    const html = readDemoFile("index.html");
+    const html = readAppFile("index.html");
 
     expect(html).toContain('<html lang="he" dir="rtl">');
-    expect(html).toContain("<title>שעון יומי</title>");
+    expect(html).toContain("<title>שעון אירועים אנלוגי Beta</title>");
     expect(html).not.toContain("<h1>");
     expect(html).not.toContain("<nav");
     expect(html).not.toContain("שלב 1");
@@ -26,8 +27,8 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("includes a location selector and day-times API status text", () => {
-    const html = readDemoFile("index.html");
-    const main = readDemoFile("main.ts");
+    const html = readAppFile("index.html");
+    const main = readAppFile("main.ts");
 
     expect(html).toContain('<select id="location">');
     expect(html).toContain("ירושלים");
@@ -72,8 +73,8 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("derivedOffsetSeconds");
   });
 
-  it("keeps the demo event model layer-based while sourcing day-times from the API", () => {
-    const main = readDemoFile("main.ts");
+  it("keeps the application event model layer-based while sourcing day-times from the API", () => {
+    const main = readAppFile("main.ts");
 
     expect(main).toContain("let eventLayers: EventLayerDefinition[]");
     expect(main).toContain("clock.setEventLayers(eventLayers)");
@@ -84,9 +85,9 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("adds collapsible display preferences and in-list event visual editing", () => {
-    const html = readDemoFile("index.html");
-    const main = readDemoFile("main.ts");
-    const css = readDemoFile("styles.css");
+    const html = readAppFile("index.html");
+    const main = readAppFile("main.ts");
+    const css = readAppFile("styles.css");
 
     expect(html).toContain("העדפות תצוגה");
     expect(html).toContain('id="display-preferences-toggle"');
@@ -163,13 +164,13 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("adds a no-print developer stamp with a hover gif tooltip", () => {
-    const html = readDemoFile("index.html");
-    const css = readDemoFile("styles.css");
+    const html = readAppFile("index.html");
+    const css = readAppFile("styles.css");
 
     expect(html).toContain("dev-stamp no-print");
     expect(html).toContain("dev by Orka");
     expect(html).toContain("https://github.com/Or-Ka");
-    expect(html).toContain('src="./dev.gif"');
+    expect(html).toContain('src="./src/dev.gif"');
     expect(css).toContain(".dev-stamp");
     expect(css).toContain("position: fixed");
     expect(css).toContain("z-index: 1300");
@@ -180,14 +181,14 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("adds per-event alerts with global disable and import export controls", () => {
-    const html = readDemoFile("index.html");
-    const main = readDemoFile("main.ts");
-    const css = readDemoFile("styles.css");
+    const html = readAppFile("index.html");
+    const main = readAppFile("main.ts");
+    const css = readAppFile("styles.css");
 
     expect(html).toContain('id="alerts-enabled"');
-    expect(html).toContain('id="export-demo-state"');
-    expect(html).toContain('id="import-demo-state"');
-    expect(html).toContain('id="import-demo-state-file"');
+    expect(html).toContain('id="export-app-state"');
+    expect(html).toContain('id="import-app-state"');
+    expect(html).toContain('id="import-app-state-file"');
     expect(html).toContain('id="event-alert-enabled"');
     expect(html).toContain('id="derived-event-alert-enabled"');
     expect(html).toContain('data-alert-form-settings="regular"');
@@ -200,9 +201,9 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("playAlertSound");
     expect(main).toContain("showDesktopAlert");
     expect(main).toContain("Notification.requestPermission");
-    expect(main).toContain("exportDemoState");
-    expect(main).toContain("importDemoState");
-    expect(main).toContain("DemoExportState");
+    expect(main).toContain("exportAppState");
+    expect(main).toContain("importAppState");
+    expect(main).toContain("AppExportState");
     expect(main).toContain("dataset.eventAlertId");
 
     expect(css).toContain(".event-alert-controls");
@@ -211,7 +212,7 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("defines configurable fixed day-time events from sunrise and sunset anchors", () => {
-    const main = readDemoFile("main.ts");
+    const main = readAppFile("main.ts");
 
     for (const label of [
       "עלות השחר",
@@ -241,7 +242,7 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("keeps add-event forms collapsed behind explicit event-type choices", () => {
-    const html = readDemoFile("index.html");
+    const html = readAppFile("index.html");
 
     expect(html).toContain("הוספת אירוע");
     expect(html).toContain("אירוע רגיל");
@@ -254,7 +255,7 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 
   it("adds automatic Shabbat times only for Friday and Saturday", () => {
-    const main = readDemoFile("main.ts");
+    const main = readAppFile("main.ts");
 
     expect(main).toContain("הדלקת נרות");
     expect(main).toContain('id: "candle-lighting"');
@@ -265,8 +266,20 @@ describe("Phase 3 demo Hebrew UI", () => {
     expect(main).toContain("resolveAutomaticShabbatEvents");
   });
 
-  it("does not leave the previous visible English demo labels in place", () => {
-    const visibleTextSources = `${readDemoFile("index.html")}\n${readDemoFile("main.ts")}`;
+  it("keeps legacy export and storage compatibility while writing new product names", () => {
+    const main = readAppFile("main.ts");
+
+    expect(main).toContain('const DISPLAY_MODE_STORAGE_KEY = "analog-event-clock-display-mode"');
+    expect(main).toContain('const LEGACY_DISPLAY_MODE_STORAGE_KEY = "dual-ring-events-display-mode"');
+    expect(main).toContain("localStorage.getItem(LEGACY_DISPLAY_MODE_STORAGE_KEY)");
+    expect(main).toContain("localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, legacySavedMode)");
+    expect(main).toContain("version: 1");
+    expect(main).toContain("analog-event-clock-${currentDateKey()}.json");
+    expect(main).not.toContain("dual-ring-events-${currentDateKey()}.json");
+  });
+
+  it("does not leave previous visible English legacy labels in place", () => {
+    const visibleTextSources = `${readAppFile("index.html")}\n${readAppFile("main.ts")}`;
 
     for (const englishText of [
       "Dual Ring Events",
@@ -283,6 +296,6 @@ describe("Phase 3 demo Hebrew UI", () => {
   });
 });
 
-function readDemoFile(name: string): string {
-  return readFileSync(join(demoDir, name), "utf8");
+function readAppFile(name: string): string {
+  return readFileSync(name === "index.html" ? join(appRootDir, name) : join(appSrcDir, name), "utf8");
 }

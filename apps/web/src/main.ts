@@ -13,7 +13,7 @@ import {
   type ZmanitTick
 } from "@clock/clock";
 
-type DemoLocation = {
+type AppLocation = {
   readonly id: string;
   readonly title: string;
   readonly latitude: number;
@@ -177,7 +177,7 @@ type DisplayPreferences = {
   readonly eventStyles: Record<InstantEventKind, EventVisualStyle>;
 };
 
-type DemoExportState = {
+type AppExportState = {
   readonly version: 1;
   readonly exportedAt: string;
   readonly selectedLocationId: string;
@@ -196,7 +196,7 @@ const DAY_TIMES_LAYER_ID = "day-times";
 const PERSONAL_LAYER_ID = "personal";
 const SPECIAL_LAYER_ID = "special";
 const HEBCAL_VISIBLE_CATEGORIES = new Set(["holiday", "omer", "roshchodesh"]);
-const LOCATION_OPTIONS: readonly DemoLocation[] = [
+const LOCATION_OPTIONS: readonly AppLocation[] = [
   { id: "jerusalem", title: "ירושלים", latitude: 31.7683, longitude: 35.2137, timeZone: "Asia/Jerusalem" },
   { id: "tel-aviv", title: "תל אביב", latitude: 32.0853, longitude: 34.7818, timeZone: "Asia/Jerusalem" },
   { id: "haifa", title: "חיפה", latitude: 32.794, longitude: 34.9896, timeZone: "Asia/Jerusalem" },
@@ -274,7 +274,8 @@ const DISPLAY_FONT_STACKS: Record<DisplayFontFamily, string> = {
   mono: "'Cascadia Mono', 'SFMono-Regular', Consolas, monospace",
   rounded: "'Segoe UI Rounded', 'Arial Rounded MT Bold', system-ui, sans-serif"
 };
-const DISPLAY_MODE_STORAGE_KEY = "dual-ring-events-display-mode";
+const DISPLAY_MODE_STORAGE_KEY = "analog-event-clock-display-mode";
+const LEGACY_DISPLAY_MODE_STORAGE_KEY = "dual-ring-events-display-mode";
 const DEFAULT_EVENT_ALERT_SETTINGS: EventAlertSettings = {
   enabled: false,
   sound: true,
@@ -445,9 +446,9 @@ const zmanitSetEditorStatus = getRequiredElement<HTMLElement>("#zmanit-set-edito
 const eventList = getRequiredElement<HTMLUListElement>("#event-list");
 const eventError = getRequiredElement<HTMLElement>("#event-error");
 const alertsEnabledInput = getRequiredElement<HTMLInputElement>("#alerts-enabled");
-const exportDemoStateButton = getRequiredElement<HTMLButtonElement>("#export-demo-state");
-const importDemoStateButton = getRequiredElement<HTMLButtonElement>("#import-demo-state");
-const importDemoStateFileInput = getRequiredElement<HTMLInputElement>("#import-demo-state-file");
+const exportAppStateButton = getRequiredElement<HTMLButtonElement>("#export-app-state");
+const importAppStateButton = getRequiredElement<HTMLButtonElement>("#import-app-state");
+const importAppStateFileInput = getRequiredElement<HTMLInputElement>("#import-app-state-file");
 const importExportStatus = getRequiredElement<HTMLElement>("#import-export-status");
 const layerToggles = Array.from(document.querySelectorAll<HTMLInputElement>("[data-layer-toggle]"));
 const zmanitLayerToggle = getRequiredElement<HTMLInputElement>("[data-zmanit-layer-toggle]");
@@ -500,9 +501,9 @@ let eventLayers: EventLayerDefinition[] = [
     kind: "personal",
     enabled: true,
     events: [
-      { id: "standup-demo", type: "instant", kind: "custom", title: "עמידה", hour: 9, minute: 15 },
-      { id: "review-demo", type: "instant", kind: "custom", title: "סקירה", hour: 15, minute: 0 },
-      { id: "handoff-demo", type: "instant", kind: "custom", title: "העברה", hour: 21, minute: 0 }
+      { id: "standup-app", type: "instant", kind: "custom", title: "עמידה", hour: 9, minute: 15 },
+      { id: "review-app", type: "instant", kind: "custom", title: "סקירה", hour: 15, minute: 0 },
+      { id: "handoff-app", type: "instant", kind: "custom", title: "העברה", hour: 21, minute: 0 }
     ]
   },
   emptySpecialLayer()
@@ -618,14 +619,14 @@ alertsEnabledInput.addEventListener("change", () => {
   syncEventList();
 });
 
-exportDemoStateButton.addEventListener("click", exportDemoState);
+exportAppStateButton.addEventListener("click", exportAppState);
 
-importDemoStateButton.addEventListener("click", () => {
-  importDemoStateFileInput.click();
+importAppStateButton.addEventListener("click", () => {
+  importAppStateFileInput.click();
 });
 
-importDemoStateFileInput.addEventListener("change", (event) => {
-  void importDemoStateFromInput(event);
+importAppStateFileInput.addEventListener("change", (event) => {
+  void importAppStateFromInput(event);
 });
 
 displayFontFamilySelect.addEventListener("change", () => {
@@ -2820,8 +2821,8 @@ function requestDesktopPermissionIfNeeded(settings: EventAlertSettings): void {
   void Notification.requestPermission();
 }
 
-function exportDemoState(): void {
-  const state: DemoExportState = {
+function exportAppState(): void {
+  const state: AppExportState = {
     version: 1,
     exportedAt: new Date().toISOString(),
     selectedLocationId: selectedLocation.id,
@@ -2839,13 +2840,13 @@ function exportDemoState(): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `dual-ring-events-${currentDateKey()}.json`;
+  link.download = `analog-event-clock-${currentDateKey()}.json`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
   importExportStatus.textContent = "הייצוא נשמר כקובץ JSON.";
 }
 
-async function importDemoStateFromInput(event: Event): Promise<void> {
+async function importAppStateFromInput(event: Event): Promise<void> {
   const input = event.target;
   if (!(input instanceof HTMLInputElement)) {
     return;
@@ -2857,7 +2858,7 @@ async function importDemoStateFromInput(event: Event): Promise<void> {
   }
 
   try {
-    importDemoState(JSON.parse(await file.text()));
+    importAppState(JSON.parse(await file.text()));
     importExportStatus.textContent = "הייבוא הושלם.";
   } catch (error) {
     importExportStatus.textContent = error instanceof Error ? error.message : "לא ניתן לייבא את הקובץ.";
@@ -2866,12 +2867,12 @@ async function importDemoStateFromInput(event: Event): Promise<void> {
   }
 }
 
-function importDemoState(payload: unknown): void {
+function importAppState(payload: unknown): void {
   if (!isRecord(payload)) {
     throw new Error("קובץ הייבוא לא נראה תקין.");
   }
 
-  const state = payload as Partial<DemoExportState>;
+  const state = payload as Partial<AppExportState>;
   if (typeof state.selectedLocationId === "string" && LOCATION_OPTIONS.some((item) => item.id === state.selectedLocationId)) {
     selectedLocation = getLocationById(state.selectedLocationId);
     locationSelect.value = selectedLocation.id;
@@ -3365,6 +3366,11 @@ function loadDisplayPreferences(): DisplayPreferences {
   if (savedMode !== null && isDisplayMode(savedMode)) {
     return { ...preferences, displayMode: savedMode };
   }
+  const legacySavedMode = localStorage.getItem(LEGACY_DISPLAY_MODE_STORAGE_KEY);
+  if (legacySavedMode !== null && isDisplayMode(legacySavedMode)) {
+    localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, legacySavedMode);
+    return { ...preferences, displayMode: legacySavedMode };
+  }
   return preferences;
 }
 
@@ -3387,7 +3393,7 @@ function syncTimeZoneToLocation(): void {
   timezoneSelect.value = selectedLocation.timeZone;
 }
 
-function getLocationById(locationId: string): DemoLocation {
+function getLocationById(locationId: string): AppLocation {
   const location = LOCATION_OPTIONS.find((option) => option.id === locationId);
   if (!location) {
     throw new Error(`מיקום לא נתמך: ${locationId}`);
@@ -3486,7 +3492,7 @@ function eventDocumentFromMouseEvent(event: MouseEvent): Document {
 function getRequiredElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`חסר רכיב דמו נדרש: ${selector}`);
+    throw new Error(`חסר רכיב אפליקציה נדרש: ${selector}`);
   }
   return element;
 }
@@ -3494,7 +3500,7 @@ function getRequiredElement<T extends Element>(selector: string): T {
 function getRequiredChild<T extends Element>(parent: ParentNode, selector: string): T {
   const element = parent.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`חסר רכיב דמו פנימי נדרש: ${selector}`);
+    throw new Error(`חסר רכיב אפליקציה פנימי נדרש: ${selector}`);
   }
   return element;
 }
