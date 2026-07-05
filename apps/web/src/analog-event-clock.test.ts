@@ -268,12 +268,58 @@ describe("Analog Event Clock Hebrew UI", () => {
 
   it("keeps legacy export and storage compatibility while writing new product names", () => {
     const main = readAppFile("main.ts");
+    const legacyDemoExport = {
+      version: 1,
+      exportedAt: "2026-07-05T00:00:00.000Z",
+      selectedLocationId: "jerusalem",
+      selectedDefaultZmanitSetId: "sunrise-sunset",
+      zmanitTimeSets: [],
+      personalEvents: [
+        {
+          id: "legacy-demo-event",
+          type: "instant",
+          kind: "custom",
+          title: "Legacy",
+          hour: 10,
+          minute: 15
+        }
+      ],
+      derivedEvents: [],
+      fixedDayTimeEvents: [],
+      displayPreferences: {
+        templateId: "classic",
+        displayMode: "clockOnly",
+        fontFamily: "system",
+        fontScale: 100,
+        clockScale: 100,
+        colors: {}
+      },
+      eventVisualOverrides: {},
+      alertSettings: {
+        enabled: true,
+        sound: true,
+        desktop: false
+      },
+      eventAlertOverrides: {}
+    };
 
     expect(main).toContain('const DISPLAY_MODE_STORAGE_KEY = "analog-event-clock-display-mode"');
     expect(main).toContain('const LEGACY_DISPLAY_MODE_STORAGE_KEY = "dual-ring-events-display-mode"');
     expect(main).toContain("localStorage.getItem(LEGACY_DISPLAY_MODE_STORAGE_KEY)");
     expect(main).toContain("localStorage.setItem(DISPLAY_MODE_STORAGE_KEY, legacySavedMode)");
     expect(main).toContain("version: 1");
+    expect(legacyDemoExport.version).toBe(1);
+    expect(legacyDemoExport.personalEvents[0]).toMatchObject({
+      id: "legacy-demo-event",
+      type: "instant",
+      kind: "custom",
+      title: "Legacy",
+      hour: 10,
+      minute: 15
+    });
+    expect(main).toContain("state.personalEvents");
+    expect(main).toContain("state.displayPreferences");
+    expect(main).toContain("state.alertSettings");
     expect(main).toContain("analog-event-clock-${currentDateKey()}.json");
     expect(main).not.toContain("dual-ring-events-${currentDateKey()}.json");
   });
