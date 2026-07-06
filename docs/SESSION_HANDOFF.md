@@ -4,7 +4,7 @@
 
 ## Current Branch
 
-`refactor/promote-demo-to-beta-app`
+`refactor/frontend-architecture-app`
 
 ## Completed Task
 
@@ -36,4 +36,12 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 
 ## Next Recommended Work
 
-Start T069: Frontend Architecture Refactor in a new branch. Preserve behavior, keep `packages/clock` unchanged, and do not combine the refactor with CSS splitting or UX redesign.
+T069 has started. Foundation modules were extracted without behavior changes:
+
+- `apps/web/src/app/app-elements.ts`
+- `apps/web/src/data/locations.ts`
+- `apps/web/src/data/hebcal-service.ts`
+- `apps/web/src/ui/event-icons.ts`
+- `apps/web/src/event-editor/event-validation.ts`
+
+Next recommended work: decide whether to continue with shallow controller extraction around the current `main.ts` state, or introduce a deeper `createClockApp` boundary with explicit state/domain APIs.

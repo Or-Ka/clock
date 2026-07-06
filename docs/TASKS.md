@@ -31,13 +31,22 @@ T069 must be done in a separate branch and must not be mixed into T068.
 
 ## T069 Checklist
 
-- `[ ]` Create a separate branch for the architecture refactor.
-- `[ ]` Run baseline docs/typecheck/tests/build before code movement.
-- `[ ]` Map responsibilities inside `apps/web/src/main.ts`.
-- `[ ]` Extract typed DOM binders by domain without changing behavior.
+- `[x]` Create a separate branch for the architecture refactor.
+- `[x]` Run baseline docs/typecheck/tests/build before code movement.
+- `[x]` Map responsibilities inside `apps/web/src/main.ts`.
+- `[x]` Extract typed DOM binders by domain without changing behavior.
 - `[ ]` Extract app lifecycle cleanup boundaries.
 - `[ ]` Extract event-editor logic behind a narrow API.
 - `[ ]` Extract settings logic behind a narrow API.
-- `[ ]` Extract data/import/export/provider helpers behind a narrow API.
+- `[x]` Extract data/import/export/provider helpers behind a narrow API.
 - `[ ]` Keep `packages/clock` behavior unchanged.
 - `[ ]` Run final docs/typecheck/tests/build and browser verification.
+
+## T069 Progress Notes
+
+- Added `app/app-elements.ts` as the first typed DOM binder.
+- Added `data/locations.ts` and `data/hebcal-service.ts`.
+- Added `ui/event-icons.ts`.
+- Added `event-editor/event-validation.ts`.
+- `main.ts` still owns state, lifecycle, event handlers and rendering coordination.
+- The next step needs an architectural choice between shallow controller extraction and a deeper `createClockApp` boundary with explicit state/domain APIs.

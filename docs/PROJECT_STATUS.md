@@ -17,7 +17,7 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 
 ## Current Branch
 
-`refactor/promote-demo-to-beta-app`
+`refactor/frontend-architecture-app`
 
 ## Migration Status
 
@@ -43,4 +43,4 @@ T069 must run:
 
 ## Next Task
 
-Begin the Frontend Architecture Refactor in a separate branch from the completed migration state.
+Continue T069 after choosing the next extraction strategy for `main.ts`: shallow controller modules around the current state, or a deeper `createClockApp` boundary with explicit state/domain APIs.

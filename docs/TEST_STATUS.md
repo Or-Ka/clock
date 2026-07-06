@@ -44,3 +44,15 @@ Final browser verification covered desktop and mobile with no console errors or 
 ## Known QA Note
 
 The in-app browser automation did not successfully trigger the regular event form submit, although the page reported no console errors. Because T068 was migration-only, no behavior change was made for this. T069 should preserve existing behavior and may add stronger interaction tests around event creation before extracting the event editor.
+
+## T069 Baseline And Foundation Checks
+
+Baseline before T069 code movement passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+After extracting the first `app`, `data`, `ui`, and `event-editor` modules, the same gate passed again.
