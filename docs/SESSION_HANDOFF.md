@@ -6,7 +6,7 @@
 
 `refactor/promote-demo-to-beta-app`
 
-## Current Task
+## Completed Task
 
 T068: Promote the web surface to the official Analog Event Clock Beta application.
 
@@ -23,6 +23,8 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 - Added localStorage compatibility for the previous display-mode key.
 - Kept JSON export schema at version `1` for import compatibility.
 - Added `docs/APP_MIGRATION.md`.
+- Ran the final migration gate.
+- Created logical migration commits.
 
 ## Not Done In This Migration
 
@@ -34,4 +36,4 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 
 ## Next Recommended Work
 
-After review and merge, start T069: Frontend Architecture Refactor in a new branch.
+Start T069: Frontend Architecture Refactor in a new branch. Preserve behavior, keep `packages/clock` unchanged, and do not combine the refactor with CSS splitting or UX redesign.

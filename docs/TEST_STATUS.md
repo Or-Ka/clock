@@ -31,7 +31,7 @@ Browser baseline passed on desktop and mobile:
 
 ## Final Gate
 
-Final verification must run:
+Final migration verification passed:
 
 - `npm.cmd run docs:check`
 - `npm.cmd run typecheck`
@@ -39,4 +39,8 @@ Final verification must run:
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-Final browser verification must cover desktop and mobile with no console errors or warnings.
+Final browser verification covered desktop and mobile with no console errors or warnings.
+
+## Known QA Note
+
+The in-app browser automation did not successfully trigger the regular event form submit, although the page reported no console errors. Because T068 was migration-only, no behavior change was made for this. T069 should preserve existing behavior and may add stronger interaction tests around event creation before extracting the event editor.

@@ -4,7 +4,7 @@
 
 ## משימה פעילה
 
-T068: Promote the web surface to the official Analog Event Clock Beta application.
+T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
 
 ## T068 Checklist
 
@@ -20,11 +20,24 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 - `[x]` Keep exported JSON schema compatible with previous version `1`.
 - `[x]` Update active product documentation.
 - `[x]` Add `docs/APP_MIGRATION.md`.
-- `[ ]` Run final checks and browser verification.
-- `[ ]` Create logical commits.
+- `[x]` Run final checks and browser verification.
+- `[x]` Create logical commits.
 
 ## Next Task
 
 T069: Frontend Architecture Refactor for the official Beta application.
 
 T069 must be done in a separate branch and must not be mixed into T068.
+
+## T069 Checklist
+
+- `[ ]` Create a separate branch for the architecture refactor.
+- `[ ]` Run baseline docs/typecheck/tests/build before code movement.
+- `[ ]` Map responsibilities inside `apps/web/src/main.ts`.
+- `[ ]` Extract typed DOM binders by domain without changing behavior.
+- `[ ]` Extract app lifecycle cleanup boundaries.
+- `[ ]` Extract event-editor logic behind a narrow API.
+- `[ ]` Extract settings logic behind a narrow API.
+- `[ ]` Extract data/import/export/provider helpers behind a narrow API.
+- `[ ]` Keep `packages/clock` behavior unchanged.
+- `[ ]` Run final docs/typecheck/tests/build and browser verification.
