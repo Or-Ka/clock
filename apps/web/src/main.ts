@@ -16,6 +16,7 @@ import {
 import { bindAppElements } from "./app/app-elements.js";
 import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "./data/hebcal-service.js";
 import { LOCATION_OPTIONS, getLocationById } from "./data/locations.js";
+import { validateEventTime, validateNonNegativeOffset } from "./event-editor/event-validation.js";
 import { EVENT_ICON_OPTIONS, createClockIcon, createHtmlIcon, type EventIconId } from "./ui/event-icons.js";
 
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
@@ -2718,16 +2719,14 @@ function validateEventForm(): string {
   hourInput.setCustomValidity("");
   minuteInput.setCustomValidity("");
 
-  if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-    const message = "השעה חייבת להיות מספר שלם בין 0 ל-23.";
-    hourInput.setCustomValidity(message);
-    return message;
-  }
-
-  if (!Number.isInteger(minute) || minute < 0 || minute > 59) {
-    const message = "הדקה חייבת להיות מספר שלם בין 0 ל-59.";
-    minuteInput.setCustomValidity(message);
-    return message;
+  const result = validateEventTime(hour, minute);
+  if (!result.valid) {
+    if (result.field === "hour") {
+      hourInput.setCustomValidity(result.message);
+    } else {
+      minuteInput.setCustomValidity(result.message);
+    }
+    return result.message;
   }
 
   return "";
@@ -2738,10 +2737,10 @@ function validateDerivedEventForm(): string {
 
   derivedOffsetInput.setCustomValidity("");
 
-  if (!Number.isFinite(offsetValue) || offsetValue < 0) {
-    const message = "הכמות חייבת להיות מספר חיובי.";
-    derivedOffsetInput.setCustomValidity(message);
-    return message;
+  const result = validateNonNegativeOffset(offsetValue);
+  if (!result.valid) {
+    derivedOffsetInput.setCustomValidity(result.message);
+    return result.message;
   }
 
   return "";
