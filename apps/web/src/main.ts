@@ -13,26 +13,10 @@ import {
   type ZmanitTick
 } from "@clock/clock";
 
-type AppLocation = {
-  readonly id: string;
-  readonly title: string;
-  readonly latitude: number;
-  readonly longitude: number;
-  readonly timeZone: string;
-};
-
-type HebcalCalendarItem = {
-  readonly date?: string;
-  readonly category?: string;
-  readonly subcat?: string;
-  readonly title?: string;
-  readonly hebrew?: string;
-  readonly title_orig?: string;
-};
-
-type HebcalCalendarPayload = {
-  readonly items?: readonly HebcalCalendarItem[];
-};
+import { bindAppElements } from "./app/app-elements.js";
+import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "./data/hebcal-service.js";
+import { LOCATION_OPTIONS, getLocationById } from "./data/locations.js";
+import { EVENT_ICON_OPTIONS, createClockIcon, createHtmlIcon, type EventIconId } from "./ui/event-icons.js";
 
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
 type DerivedDirection = "before" | "after";
@@ -47,20 +31,6 @@ type DisplayMode = "fullMode" | "clockOnly" | "floatingClock";
 type DisplayTemplateId = "classic" | "night" | "paper" | "focus" | "festival";
 type DisplayFontFamily = "system" | "serif" | "mono" | "rounded";
 type EventVisualTone = "sunrise" | "sunset" | "custom";
-type EventIconId =
-  | "sunrise"
-  | "moon"
-  | "dawn"
-  | "tefillin"
-  | "open-book"
-  | "half-disc"
-  | "stars"
-  | "candles"
-  | "spark"
-  | "dot"
-  | "diamond"
-  | "target";
-
 type DerivedEventDefinition = {
   readonly id: string;
   readonly title: string;
@@ -195,20 +165,6 @@ type AppExportState = {
 const DAY_TIMES_LAYER_ID = "day-times";
 const PERSONAL_LAYER_ID = "personal";
 const SPECIAL_LAYER_ID = "special";
-const HEBCAL_VISIBLE_CATEGORIES = new Set(["holiday", "omer", "roshchodesh"]);
-const LOCATION_OPTIONS: readonly AppLocation[] = [
-  { id: "jerusalem", title: "ירושלים", latitude: 31.7683, longitude: 35.2137, timeZone: "Asia/Jerusalem" },
-  { id: "tel-aviv", title: "תל אביב", latitude: 32.0853, longitude: 34.7818, timeZone: "Asia/Jerusalem" },
-  { id: "haifa", title: "חיפה", latitude: 32.794, longitude: 34.9896, timeZone: "Asia/Jerusalem" },
-  { id: "london", title: "לונדון", latitude: 51.5072, longitude: -0.1276, timeZone: "Europe/London" },
-  {
-    id: "new-york",
-    title: "ניו יורק",
-    latitude: 40.7128,
-    longitude: -74.006,
-    timeZone: "America/New_York"
-  }
-];
 const DEFAULT_FIXED_DAY_TIME_EVENTS: readonly FixedDayTimeDefinition[] = [
   { id: "alot-hashachar", title: "עלות השחר", base: "sunrise", direction: "before", offsetValue: 72, offsetUnit: "minutes" },
   { id: "talit-tefillin", title: "טלית ותפילין", base: "sunrise", direction: "before", offsetValue: 50, offsetUnit: "minutes" },
@@ -240,20 +196,6 @@ const DEFAULT_ZMANIT_TIME_SETS: readonly ZmanitTimeSetDefinition[] = [
 const AUTOMATIC_SHABBAT_EVENTS: readonly (FixedDayTimeDefinition & { readonly weekdays: readonly number[] })[] = [
   { id: "candle-lighting", title: "הדלקת נרות", base: "sunset", direction: "before", offsetValue: 18, offsetUnit: "minutes", weekdays: [5] },
   { id: "shabbat-exit", title: "יציאת שבת", base: "sunset", direction: "after", offsetValue: 42, offsetUnit: "minutes", weekdays: [6] }
-];
-const EVENT_ICON_OPTIONS: readonly { readonly id: EventIconId; readonly label: string }[] = [
-  { id: "sunrise", label: "זריחה" },
-  { id: "moon", label: "ירח" },
-  { id: "dawn", label: "שחר" },
-  { id: "tefillin", label: "תפילין" },
-  { id: "open-book", label: "ספר פתוח" },
-  { id: "half-disc", label: "חצות" },
-  { id: "stars", label: "כוכבים" },
-  { id: "candles", label: "נרות" },
-  { id: "spark", label: "ניצוץ" },
-  { id: "dot", label: "נקודה" },
-  { id: "diamond", label: "מעוין" },
-  { id: "target", label: "יעד" }
 ];
 const FIXED_EVENT_VISUALS: Readonly<Record<string, FixedEventVisualPreset>> = {
   "api-sunrise": { icon: "sunrise", tone: "sunrise" },
@@ -387,83 +329,69 @@ const DISPLAY_TEMPLATES: Record<DisplayTemplateId, DisplayPreferences> = {
   }
 };
 
-const mount = getRequiredElement<HTMLElement>("#phase3-clock");
-const status = getRequiredElement<HTMLElement>("#clock-status");
-const clockPanel = getRequiredElement<HTMLElement>(".clock-panel");
-// Presence is required by the layout; the reference itself is unused.
-getRequiredElement<HTMLElement>(".event-panel");
-const timezoneSelect = getRequiredElement<HTMLSelectElement>("#timezone");
-const locationSelect = getRequiredElement<HTMLSelectElement>("#location");
-const dayTimesStatus = getRequiredElement<HTMLElement>("#day-times-status");
-const eventFormToggles = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-event-form-toggle]"));
-const addEventForms = Array.from(document.querySelectorAll<HTMLFormElement>("[data-add-event-form]"));
-const eventForm = getRequiredElement<HTMLFormElement>("#event-form");
-const kindSelect = getRequiredElement<HTMLSelectElement>("#event-kind");
-const titleInput = getRequiredElement<HTMLInputElement>("#event-title");
-const hourInput = getRequiredElement<HTMLInputElement>("#event-hour");
-const minuteInput = getRequiredElement<HTMLInputElement>("#event-minute");
-const eventAlertControls: AlertFormControls = {
-  enabled: getRequiredElement<HTMLInputElement>("#event-alert-enabled"),
-  sound: getRequiredElement<HTMLInputElement>("#event-alert-sound"),
-  desktop: getRequiredElement<HTMLInputElement>("#event-alert-desktop"),
-  direction: getRequiredElement<HTMLSelectElement>("#event-alert-direction"),
-  offset: getRequiredElement<HTMLInputElement>("#event-alert-offset"),
-  unit: getRequiredElement<HTMLSelectElement>("#event-alert-offset-unit")
-};
-const derivedForm = getRequiredElement<HTMLFormElement>("#derived-event-form");
-const derivedTitleInput = getRequiredElement<HTMLInputElement>("#derived-event-title");
-const derivedBaseSelect = getRequiredElement<HTMLSelectElement>("#derived-event-base");
-const derivedDirectionSelect = getRequiredElement<HTMLSelectElement>("#derived-event-direction");
-const derivedOffsetInput = getRequiredElement<HTMLInputElement>("#derived-event-offset");
-const derivedOffsetUnitSelect = getRequiredElement<HTMLSelectElement>("#derived-event-offset-unit");
-const derivedEventAlertControls: AlertFormControls = {
-  enabled: getRequiredElement<HTMLInputElement>("#derived-event-alert-enabled"),
-  sound: getRequiredElement<HTMLInputElement>("#derived-event-alert-sound"),
-  desktop: getRequiredElement<HTMLInputElement>("#derived-event-alert-desktop"),
-  direction: getRequiredElement<HTMLSelectElement>("#derived-event-alert-direction"),
-  offset: getRequiredElement<HTMLInputElement>("#derived-event-alert-offset"),
-  unit: getRequiredElement<HTMLSelectElement>("#derived-event-alert-offset-unit")
-};
-const derivedError = getRequiredElement<HTMLElement>("#derived-event-error");
-const fixedDayTimeList = getRequiredElement<HTMLElement>("#fixed-day-time-list");
-const fixedDayTimeStatus = getRequiredElement<HTMLElement>("#fixed-day-time-status");
-const zmanitSetSelect = getRequiredElement<HTMLSelectElement>("#zmanit-set");
-const zmanitSetStatus = getRequiredElement<HTMLElement>("#zmanit-set-status");
-const zmanitSetForm = getRequiredElement<HTMLFormElement>("#zmanit-set-form");
-const zmanitSetEditorSelect = getRequiredElement<HTMLSelectElement>("#zmanit-set-editor");
-const zmanitSetTitleInput = getRequiredElement<HTMLInputElement>("#zmanit-set-title-input");
-const zmanitStartBaseSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-base");
-const zmanitStartDirectionSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-direction");
-const zmanitStartOffsetInput = getRequiredElement<HTMLInputElement>("#zmanit-start-offset");
-const zmanitStartUnitSelect = getRequiredElement<HTMLSelectElement>("#zmanit-start-unit");
-const zmanitEndBaseSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-base");
-const zmanitEndDirectionSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-direction");
-const zmanitEndOffsetInput = getRequiredElement<HTMLInputElement>("#zmanit-end-offset");
-const zmanitEndUnitSelect = getRequiredElement<HTMLSelectElement>("#zmanit-end-unit");
-const zmanitSetNewButton = getRequiredElement<HTMLButtonElement>("#zmanit-set-new");
-const zmanitSetRemoveButton = getRequiredElement<HTMLButtonElement>("#zmanit-set-delete");
-const zmanitSetEditorStatus = getRequiredElement<HTMLElement>("#zmanit-set-editor-status");
-const eventList = getRequiredElement<HTMLUListElement>("#event-list");
-const eventError = getRequiredElement<HTMLElement>("#event-error");
-const alertsEnabledInput = getRequiredElement<HTMLInputElement>("#alerts-enabled");
-const exportAppStateButton = getRequiredElement<HTMLButtonElement>("#export-app-state");
-const importAppStateButton = getRequiredElement<HTMLButtonElement>("#import-app-state");
-const importAppStateFileInput = getRequiredElement<HTMLInputElement>("#import-app-state-file");
-const importExportStatus = getRequiredElement<HTMLElement>("#import-export-status");
-const layerToggles = Array.from(document.querySelectorAll<HTMLInputElement>("[data-layer-toggle]"));
-const zmanitLayerToggle = getRequiredElement<HTMLInputElement>("[data-zmanit-layer-toggle]");
-const displayPreferencesToggle = getRequiredElement<HTMLButtonElement>("#display-preferences-toggle");
-const displayPreferencesPanel = getRequiredElement<HTMLElement>("#display-preferences-panel");
-const displayTemplateSelect = getRequiredElement<HTMLSelectElement>("#display-template");
-const displayModeSelect = getRequiredElement<HTMLSelectElement>("#display-mode");
-const displayFontFamilySelect = getRequiredElement<HTMLSelectElement>("#display-font-family");
-const displayFontScaleInput = getRequiredElement<HTMLInputElement>("#display-font-scale");
-const displayClockScaleInput = getRequiredElement<HTMLInputElement>("#display-clock-scale");
-const displayBackgroundColorInput = getRequiredElement<HTMLInputElement>("#display-background-color");
-const displayPanelColorInput = getRequiredElement<HTMLInputElement>("#display-panel-color");
-const displayTextColorInput = getRequiredElement<HTMLInputElement>("#display-text-color");
-const displayAccentColorInput = getRequiredElement<HTMLInputElement>("#display-accent-color");
-const displayClockFaceColorInput = getRequiredElement<HTMLInputElement>("#display-clock-face-color");
+const {
+  mount,
+  status,
+  clockPanel,
+  timezoneSelect,
+  locationSelect,
+  dayTimesStatus,
+  eventFormToggles,
+  addEventForms,
+  eventForm,
+  kindSelect,
+  titleInput,
+  hourInput,
+  minuteInput,
+  eventAlertControls,
+  derivedForm,
+  derivedTitleInput,
+  derivedBaseSelect,
+  derivedDirectionSelect,
+  derivedOffsetInput,
+  derivedOffsetUnitSelect,
+  derivedEventAlertControls,
+  derivedError,
+  fixedDayTimeList,
+  fixedDayTimeStatus,
+  zmanitSetSelect,
+  zmanitSetStatus,
+  zmanitSetForm,
+  zmanitSetEditorSelect,
+  zmanitSetTitleInput,
+  zmanitStartBaseSelect,
+  zmanitStartDirectionSelect,
+  zmanitStartOffsetInput,
+  zmanitStartUnitSelect,
+  zmanitEndBaseSelect,
+  zmanitEndDirectionSelect,
+  zmanitEndOffsetInput,
+  zmanitEndUnitSelect,
+  zmanitSetNewButton,
+  zmanitSetRemoveButton,
+  zmanitSetEditorStatus,
+  eventList,
+  eventError,
+  alertsEnabledInput,
+  exportAppStateButton,
+  importAppStateButton,
+  importAppStateFileInput,
+  importExportStatus,
+  layerToggles,
+  zmanitLayerToggle,
+  displayPreferencesToggle,
+  displayPreferencesPanel,
+  displayTemplateSelect,
+  displayModeSelect,
+  displayFontFamilySelect,
+  displayFontScaleInput,
+  displayClockScaleInput,
+  displayBackgroundColorInput,
+  displayPanelColorInput,
+  displayTextColorInput,
+  displayAccentColorInput,
+  displayClockFaceColorInput
+} = bindAppElements(document);
 const eventVisualEditor = createEventVisualEditor();
 const clockTooltip = createClockTooltip();
 const timerActionMenu = createTimerActionMenu();
@@ -1379,151 +1307,6 @@ function colorForEventTone(tone: EventVisualTone): string {
   return displayPreferences.eventStyles.custom.color;
 }
 
-function createHtmlIcon(icon: EventIconId): SVGSVGElement {
-  const svg = createSvgIconShell();
-  svg.classList.add("event-icon");
-  appendIconPaths(svg, icon);
-  return svg;
-}
-
-function createClockIcon(icon: EventIconId, x: string, y: string, color: string): SVGGElement {
-  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  group.dataset.clockPart = "event-symbol";
-  group.setAttribute("transform", `translate(${x} ${y}) scale(0.34) translate(-12 -12)`);
-  group.setAttribute("color", color);
-  group.setAttribute("stroke", "currentColor");
-  group.setAttribute("fill", "none");
-  group.setAttribute("stroke-width", "1.9");
-  group.setAttribute("stroke-linecap", "round");
-  group.setAttribute("stroke-linejoin", "round");
-  appendIconPaths(group, icon);
-  return group;
-}
-
-function createSvgIconShell(): SVGSVGElement {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("focusable", "false");
-  return svg;
-}
-
-function appendIconPaths(parent: SVGElement, icon: EventIconId): void {
-  for (const part of iconParts(icon)) {
-    if (part.tag === "circle") {
-      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttribute("cx", part.cx);
-      circle.setAttribute("cy", part.cy);
-      circle.setAttribute("r", part.r);
-      if (part.fill !== undefined) {
-        circle.setAttribute("fill", part.fill);
-      }
-      parent.append(circle);
-      continue;
-    }
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", part.d);
-    if (part.fill !== undefined) {
-      path.setAttribute("fill", part.fill);
-    }
-    parent.append(path);
-  }
-}
-
-function iconParts(icon: EventIconId): readonly (
-  | { readonly tag: "path"; readonly d: string; readonly fill?: string }
-  | { readonly tag: "circle"; readonly cx: string; readonly cy: string; readonly r: string; readonly fill?: string }
-)[] {
-  if (icon === "sunrise") {
-    return [
-      { tag: "path", d: "M4 17h16" },
-      { tag: "path", d: "M7 17a5 5 0 0 1 10 0" },
-      { tag: "path", d: "M12 4v3" },
-      { tag: "path", d: "m5.8 8.2 2.1 2.1" },
-      { tag: "path", d: "m18.2 8.2-2.1 2.1" }
-    ];
-  }
-  if (icon === "moon") {
-    return [{ tag: "path", d: "M18.5 15.5A7 7 0 0 1 8.6 5.6 8 8 0 1 0 18.5 15.5Z" }];
-  }
-  if (icon === "dawn") {
-    return [
-      { tag: "path", d: "M4 18h16" },
-      { tag: "path", d: "M7 15h10" },
-      { tag: "path", d: "M9 15a3 3 0 0 1 6 0" },
-      { tag: "path", d: "M12 7v3" },
-      { tag: "path", d: "M5.5 11.5h2" },
-      { tag: "path", d: "M16.5 11.5h2" }
-    ];
-  }
-  if (icon === "tefillin") {
-    return [
-      { tag: "path", d: "M8 7h8v8H8z" },
-      { tag: "path", d: "M10 5h4" },
-      { tag: "path", d: "M12 15v5" },
-      { tag: "path", d: "M8 18c-2 0-3-1-3-2.5S6.4 13 8 13" },
-      { tag: "path", d: "M16 18c2 0 3-1 3-2.5S17.6 13 16 13" }
-    ];
-  }
-  if (icon === "open-book") {
-    return [
-      { tag: "path", d: "M4 6.5c2.7-.8 5.2-.2 8 1.5v11c-2.8-1.7-5.3-2.3-8-1.5z" },
-      { tag: "path", d: "M20 6.5c-2.7-.8-5.2-.2-8 1.5v11c2.8-1.7 5.3-2.3 8-1.5z" },
-      { tag: "path", d: "M12 8v11" }
-    ];
-  }
-  if (icon === "half-disc") {
-    return [
-      { tag: "circle", cx: "12", cy: "12", r: "7" },
-      { tag: "path", d: "M12 5a7 7 0 0 1 0 14Z", fill: "currentColor" }
-    ];
-  }
-  if (icon === "stars") {
-    return [
-      { tag: "path", d: "M12 3v5" },
-      { tag: "path", d: "M9.5 5.5h5" },
-      { tag: "path", d: "m10.4 4.4 3.2 3.2" },
-      { tag: "path", d: "m13.6 4.4-3.2 3.2" },
-      { tag: "path", d: "M6 14v3" },
-      { tag: "path", d: "M4.5 15.5h3" },
-      { tag: "path", d: "M18 13v4" },
-      { tag: "path", d: "M16 15h4" }
-    ];
-  }
-  if (icon === "candles") {
-    return [
-      { tag: "path", d: "M8 10h3v9H8z" },
-      { tag: "path", d: "M13 9h3v10h-3z" },
-      { tag: "path", d: "M9.5 6c1.2 1 1.2 2.3 0 3.2C8.3 8.3 8.3 7 9.5 6Z" },
-      { tag: "path", d: "M14.5 5c1.2 1 1.2 2.3 0 3.2-1.2-.9-1.2-2.2 0-3.2Z" },
-      { tag: "path", d: "M6 19h12" }
-    ];
-  }
-  if (icon === "spark") {
-    return [
-      { tag: "path", d: "M12 3v6" },
-      { tag: "path", d: "M12 15v6" },
-      { tag: "path", d: "M3 12h6" },
-      { tag: "path", d: "M15 12h6" },
-      { tag: "path", d: "m7 7 3 3" },
-      { tag: "path", d: "m14 14 3 3" },
-      { tag: "path", d: "m17 7-3 3" },
-      { tag: "path", d: "m10 14-3 3" }
-    ];
-  }
-  if (icon === "dot") {
-    return [{ tag: "circle", cx: "12", cy: "12", r: "5", fill: "currentColor" }];
-  }
-  if (icon === "diamond") {
-    return [{ tag: "path", d: "m12 4 8 8-8 8-8-8z" }];
-  }
-  return [
-    { tag: "circle", cx: "12", cy: "12", r: "7" },
-    { tag: "circle", cx: "12", cy: "12", r: "2", fill: "currentColor" }
-  ];
-}
-
 function createEventVisualEditor(): HTMLDivElement {
   const editor = document.createElement("div");
   editor.className = "event-visual-editor";
@@ -2272,9 +2055,12 @@ async function refreshHebcalDetails(force = false): Promise<void> {
   hebcalAbortController = new AbortController();
 
   try {
-    const response = await fetch(hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7)), {
-      signal: hebcalAbortController.signal
-    });
+    const response = await fetch(
+      hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7), selectedLocation.timeZone),
+      {
+        signal: hebcalAbortController.signal
+      }
+    );
     if (!response.ok) {
       throw new Error(`Hebcal request failed with status ${response.status}.`);
     }
@@ -2291,82 +2077,6 @@ async function refreshHebcalDetails(force = false): Promise<void> {
     hebcalCacheKey = "";
     clock.refresh();
   }
-}
-
-function hebcalUrlForDate(start: string, end: string): string {
-  const params = new URLSearchParams({
-    v: "1",
-    cfg: "json",
-    start,
-    end,
-    maj: "on",
-    min: "on",
-    mod: "on",
-    nx: "on",
-    mf: "on",
-    ss: "on",
-    s: "on",
-    o: "on",
-    d: "on",
-    leyning: "off",
-    lg: "he-x-NoNikud",
-    hdp: "1"
-  });
-
-  if (selectedLocation.timeZone === "Asia/Jerusalem") {
-    params.set("i", "on");
-  }
-
-  return `https://www.hebcal.com/hebcal?${params}`;
-}
-
-function parseHebcalDetails(payload: unknown, date: string): ClockDateDisplayDetails {
-  const items = isHebcalCalendarPayload(payload) ? payload.items ?? [] : [];
-  const torahReading = items.find((item) => item.category === "parashat");
-  const observances = uniqueStrings(
-    items
-      .filter((item) => hebcalItemDateKey(item) === date)
-      .flatMap(hebcalObservanceTitle)
-  );
-
-  return {
-    ...(torahReading === undefined ? {} : { torahReading: hebcalItemTitle(torahReading) }),
-    observances
-  };
-}
-
-function hebcalObservanceTitle(item: HebcalCalendarItem): readonly string[] {
-  if (item.category === undefined || item.category === "hebdate" || item.category === "parashat") {
-    return [];
-  }
-
-  if (!HEBCAL_VISIBLE_CATEGORIES.has(item.category) && !isSpecialShabbatItem(item)) {
-    return [];
-  }
-
-  const title = hebcalItemTitle(item);
-  return title === "" ? [] : [title];
-}
-
-function isSpecialShabbatItem(item: HebcalCalendarItem): boolean {
-  const title = hebcalItemTitle(item);
-  return item.subcat === "shabbat" || title.startsWith("שבת ");
-}
-
-function hebcalItemTitle(item: HebcalCalendarItem): string {
-  return (item.title ?? item.hebrew ?? item.title_orig ?? "").trim();
-}
-
-function hebcalItemDateKey(item: HebcalCalendarItem): string | undefined {
-  return item.date?.slice(0, 10);
-}
-
-function uniqueStrings(values: readonly string[]): string[] {
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
-}
-
-function isHebcalCalendarPayload(payload: unknown): payload is HebcalCalendarPayload {
-  return isRecord(payload) && (payload.items === undefined || Array.isArray(payload.items));
 }
 
 function currentHebcalDateKey(): string {
@@ -2396,12 +2106,6 @@ function currentParshaRangeStartDateKey(civilDate: string): string {
 
   const current = projectInstantToStaticClockTime(timeSource.now(), selectedLocation.timeZone);
   return eventSecondOfDay(current) < eventSecondOfDay(sunrise) ? addDaysToDateKey(civilDate, -1) : civilDate;
-}
-
-function addDaysToDateKey(date: string, days: number): string {
-  const value = new Date(`${date}T12:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + days);
-  return value.toISOString().slice(0, 10);
 }
 
 function renderFixedDayTimeControls(): void {
@@ -3393,14 +3097,6 @@ function syncTimeZoneToLocation(): void {
   timezoneSelect.value = selectedLocation.timeZone;
 }
 
-function getLocationById(locationId: string): AppLocation {
-  const location = LOCATION_OPTIONS.find((option) => option.id === locationId);
-  if (!location) {
-    throw new Error(`מיקום לא נתמך: ${locationId}`);
-  }
-  return location;
-}
-
 function displayLayerKind(kind: EventLayerKind | undefined): string {
   if (kind === "day-times" || kind === "api") {
     return "זמני היום";
@@ -3487,14 +3183,6 @@ function overlayWindow(element: Element): Window {
 
 function eventDocumentFromMouseEvent(event: MouseEvent): Document {
   return event.view?.document ?? document;
-}
-
-function getRequiredElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector);
-  if (!element) {
-    throw new Error(`חסר רכיב אפליקציה נדרש: ${selector}`);
-  }
-  return element;
 }
 
 function getRequiredChild<T extends Element>(parent: ParentNode, selector: string): T {
