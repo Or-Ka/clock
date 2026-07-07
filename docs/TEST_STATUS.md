@@ -97,3 +97,38 @@ Codex browser tooling could not complete this browser gate because of environmen
 - Vite dev server startup from Codex failed with `EPERM` on `D:\Oriya\Projects`.
 - The in-app browser blocked `localhost` / `127.0.0.1` with `ERR_BLOCKED_BY_CLIENT`.
 - `file://` verification is blocked by browser-tool policy.
+
+## T071 Settings Boundary Checks
+
+Added focused tests:
+
+- `apps/web/src/settings/settings-controller.test.ts`
+
+The settings-controller tests cover:
+
+- Opening and closing the display preferences panel.
+- Changing display mode to `fullMode`, `clockOnly` and `floatingClock`.
+- Location change callback and timezone select update through the app-owned callback.
+- Display template, font, scale and color preference changes.
+- Listener cleanup and repeated `start()` guarding.
+
+Final T071 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+T071 browser verification passed in the Codex in-app browser against the built app served locally:
+
+- The application loads.
+- The clock is displayed.
+- Existing events are displayed.
+- The display preferences panel opens.
+- The display preferences panel closes by outside click.
+- Display mode changes work for `fullMode`, `clockOnly` and `floatingClock`.
+- Location/timezone change works.
+- Adding an event still works.
+- Deleting the added event still works.
+- No console errors or warnings were observed.

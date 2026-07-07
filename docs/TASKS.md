@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Active Task
 
-T070: Introduce createClockApp application boundary
+T071: Extract settings controller / settings binder
 
 ## T068 Checklist
 
@@ -60,3 +60,14 @@ T070: Introduce createClockApp application boundary
 - `[x]` Add focused tests for the boundary and entrypoint.
 - `[ ]` Run final docs/typecheck/tests/build and browser verification.
 - `[ ]` Create T070 commit.
+
+## T071 Checklist
+
+- `[x]` Create a narrow settings controller/binder.
+- `[x]` Move location and display preference listeners out of `create-clock-app.ts`.
+- `[x]` Keep settings state ownership in `create-clock-app.ts`.
+- `[x]` Add explicit dependencies through controller callbacks.
+- `[x]` Add cleanup for moved listeners.
+- `[x]` Add focused settings-controller tests.
+- `[x]` Run final docs/typecheck/tests/build and browser verification.
+- `[x]` Create T071 commit.

@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Scope
 
-T069/T070 refactor the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, or the app state shape.
+T069-T071 refactor the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, or the app state shape.
 
 ## Current Branch
 
@@ -15,6 +15,8 @@ T069/T070 refactor the official Analog Event Clock Beta application under `apps/
 - `apps/web/src/app/app-elements.ts`: typed application DOM binding.
 - `apps/web/src/app/lifecycle.ts`: cleanup registry for app-owned listeners, timers and observers.
 - `apps/web/src/app/create-clock-app.ts`: temporary application boundary with `ClockApp.start()` and `ClockApp.destroy()`.
+- `apps/web/src/settings/settings-elements.ts`: settings-focused element subset from the app DOM binding.
+- `apps/web/src/settings/settings-controller.ts`: shallow settings listener/controller boundary.
 - `apps/web/src/data/locations.ts`: location metadata and lookup.
 - `apps/web/src/data/hebcal-service.ts`: Hebcal URL/date/detail helpers.
 - `apps/web/src/ui/event-icons.ts`: event icon options and SVG/HTML icon helpers.
@@ -84,7 +86,7 @@ This keeps the extraction shallow and avoids changing application state ownershi
 
 ## Still In The Application Boundary
 
-- Settings controls and display preferences.
+- Settings state, display preference persistence helpers and display rendering side effects.
 - Import/export persistence.
 - Clock shell interactions and context menus.
 - Event list rendering and visual editing.
@@ -93,6 +95,35 @@ This keeps the extraction shallow and avoids changing application state ownershi
 - Floating clock and Picture-in-Picture orchestration.
 - The current state shape and orchestration callbacks.
 
+## Settings Boundary
+
+T071 moved these concerns from `create-clock-app.ts` into `settings/settings-controller.ts`:
+
+- Location select change listener.
+- Display preferences panel toggle listener.
+- Display template select listener.
+- Display mode select listener for `fullMode`, `clockOnly` and `floatingClock`.
+- Display font family, font scale and clock scale listeners.
+- Basic display color input listeners.
+- Settings listener cleanup.
+- Display preference control syncing and panel open/close helpers.
+
+Still intentionally kept in `create-clock-app.ts`:
+
+- The `displayPreferences` state object.
+- Display template definitions and validation helpers.
+- `loadDisplayPreferences()` and `persistDisplayMode()`.
+- `applyDisplayPreferences()` because it currently coordinates document CSS variables, floating clock styles, countdown layer and tooltip refresh.
+- `syncFloatingClockMode()` and floating clock/Picture-in-Picture behavior.
+- Layer toggles, because they directly mutate event layer state.
+- The document `pointerdown` listener, because it closes settings, event visual editor, timer menu and clock context menu together.
+
+Current awkward dependencies:
+
+- Settings display mode changes still need clock-shell callbacks for floating clock and menu cleanup.
+- Appearance changes still trigger clock visual sync and event list refresh callbacks.
+- Import state restore still needs to call back into settings control syncing after replacing display preferences.
+
 ## Next Recommended Step
 
-Continue with a narrow settings extraction inside `create-clock-app.ts`: start with display preferences controls or alert settings controls, keeping state updates in the application boundary through callbacks. After that, consider a clock-shell controller. State/domain APIs should wait until the UI controller boundaries are smaller.
+Prefer a clock-shell controller next. Data/provider extraction is also possible later, but the clock shell currently owns the densest remaining UI/event-listener cluster. State/domain APIs should wait until clock-shell and import/export boundaries are smaller.

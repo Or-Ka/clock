@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extracted a shallow settings controller for location and display-preference listeners.
+- Added settings controller cleanup and focused settings tests.
 - Introduced `createClockApp` as the web app application boundary with `start()` and `destroy()`.
 - Reduced `main.ts` to the official style import, app creation/start and HMR disposal entrypoint.
 - Routed top-level startup listeners through lifecycle cleanup inside the new app boundary.

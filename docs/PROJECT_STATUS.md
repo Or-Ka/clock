@@ -13,7 +13,7 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T070: Introduce createClockApp application boundary
+T071: Extract settings controller / settings binder
 
 ## Current Branch
 
@@ -38,17 +38,19 @@ Extracted so far:
 - `app/app-elements.ts`
 - `app/lifecycle.ts`
 - `app/create-clock-app.ts`
+- `settings/settings-elements.ts`
+- `settings/settings-controller.ts`
 - `data/locations.ts`
 - `data/hebcal-service.ts`
 - `ui/event-icons.ts`
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. This is intentionally a large temporary application boundary; internal decomposition is deferred to later focused extractions.
+`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. T071 moves the first settings listeners into a narrow settings controller while keeping state ownership in `create-clock-app.ts`.
 
-## T070 Gate
+## T071 Gate
 
-T070 CLI gate passed:
+T071 CLI gate passed:
 
 - `npm.cmd run docs:check`
 - `npm.cmd run typecheck`
@@ -56,6 +58,4 @@ T070 CLI gate passed:
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-Browser gate was completed manually outside Codex in a regular browser. The app loaded, the clock and existing events were displayed, adding and deleting an event worked, display preferences opened, and no console errors were observed.
-
-Codex browser tooling was blocked by environment constraints only, not by an app failure: Vite failed from Codex with `EPERM` on `D:\Oriya\Projects`, localhost was blocked with `ERR_BLOCKED_BY_CLIENT`, and `file://` is blocked by browser-tool policy.
+Browser gate passed in the Codex in-app browser against the built app served locally. Verification covered app load, clock display, existing events, display preferences open/close, display mode changes, location/timezone change, adding an event, deleting the added event and no console errors or warnings.
