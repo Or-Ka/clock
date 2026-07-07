@@ -1,8 +1,8 @@
 # Current Task
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
-## משימה פעילה
+## Active Task
 
 T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
 
@@ -10,13 +10,15 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 
 T068 promoted the existing web product to the official Beta application under `apps/web`. The next step is to split the application architecture while preserving behavior and keeping `packages/clock` as the reusable embeddable library.
 
-The application still intentionally has the pre-refactor shape:
+T069 is progressing through conservative extraction sessions. The current branch keeps the legacy state shape and control flow while extracting narrow module boundaries around existing responsibilities.
 
-- `apps/web/index.html`
-- `apps/web/src/main.ts`
-- `apps/web/src/styles.css`
+Completed in the current shallow extraction pass:
 
-T069 should begin by creating clear application modules around existing responsibilities, without redesigning the UI and without changing the state shape unless a small local adapter is unavoidable.
+- `apps/web/src/app/lifecycle.ts`: lifecycle cleanup registry.
+- `apps/web/src/event-editor/event-editor-controller.ts`: regular/special event form toggles, validation and submit event creation behind callbacks.
+- Focused tests for the new lifecycle and event-editor boundaries.
+
+The app still intentionally keeps `main.ts` as the owner of application state and orchestration until a later, explicit `createClockApp` step is approved.
 
 ## Out Of Scope
 
@@ -25,6 +27,7 @@ T069 should begin by creating clear application modules around existing responsi
 - No behavior change in `packages/clock`.
 - No marker accessibility API changes yet.
 - No production cleanup for the dev stamp yet.
+- No `createClockApp` boundary in this shallow extraction pass.
 
 ## Gate
 

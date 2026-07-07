@@ -1,8 +1,8 @@
 # Tasks
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
-## משימה פעילה
+## Active Task
 
 T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
 
@@ -23,23 +23,17 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 - `[x]` Run final checks and browser verification.
 - `[x]` Create logical commits.
 
-## Next Task
-
-T069: Frontend Architecture Refactor for the official Beta application.
-
-T069 must be done in a separate branch and must not be mixed into T068.
-
 ## T069 Checklist
 
 - `[x]` Create a separate branch for the architecture refactor.
 - `[x]` Run baseline docs/typecheck/tests/build before code movement.
 - `[x]` Map responsibilities inside `apps/web/src/main.ts`.
 - `[x]` Extract typed DOM binders by domain without changing behavior.
-- `[ ]` Extract app lifecycle cleanup boundaries.
-- `[ ]` Extract event-editor logic behind a narrow API.
+- `[x]` Extract app lifecycle cleanup boundaries.
+- `[x]` Extract event-editor logic behind a narrow API.
 - `[ ]` Extract settings logic behind a narrow API.
 - `[x]` Extract data/import/export/provider helpers behind a narrow API.
-- `[ ]` Keep `packages/clock` behavior unchanged.
+- `[x]` Keep `packages/clock` behavior unchanged.
 - `[ ]` Run final docs/typecheck/tests/build and browser verification.
 
 ## T069 Progress Notes
@@ -48,5 +42,8 @@ T069 must be done in a separate branch and must not be mixed into T068.
 - Added `data/locations.ts` and `data/hebcal-service.ts`.
 - Added `ui/event-icons.ts`.
 - Added `event-editor/event-validation.ts`.
-- `main.ts` still owns state, lifecycle, event handlers and rendering coordination.
-- The next step needs an architectural choice between shallow controller extraction and a deeper `createClockApp` boundary with explicit state/domain APIs.
+- Added `app/lifecycle.ts` and routed observer/timer/listener cleanup through it.
+- Added `event-editor/event-editor-controller.ts` for event form toggles and regular/special event submits.
+- Added focused tests for lifecycle cleanup and event-editor submit behavior.
+- `main.ts` still owns state, settings, import/export, clock-shell interactions and rendering coordination.
+- The next step should continue with shallow settings extraction before reconsidering a deeper `createClockApp` boundary.

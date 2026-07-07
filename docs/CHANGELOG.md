@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Continued T069 with a conservative frontend architecture extraction.
+- Added a lifecycle cleanup registry for app listeners, timers and observers.
+- Added a narrow event-editor controller for event form toggles and regular/special event submit handling.
+- Added focused tests for the new lifecycle and event-editor boundaries.
+
 ## 0.1.0-beta.1 - 2026-07-05
 
 - Promoted the web product to the official Analog Event Clock Beta application.

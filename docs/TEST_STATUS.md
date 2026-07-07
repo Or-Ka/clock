@@ -1,6 +1,6 @@
 # Test Status
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
 ## Baseline Before Migration
 
@@ -29,7 +29,7 @@ Browser baseline passed on desktop and mobile:
 - Added coverage for legacy display-mode localStorage migration.
 - Kept JSON export schema at version `1` for compatibility.
 
-## Final Gate
+## Final Migration Gate
 
 Final migration verification passed:
 
@@ -43,7 +43,7 @@ Final browser verification covered desktop and mobile with no console errors or 
 
 ## Known QA Note
 
-The in-app browser automation did not successfully trigger the regular event form submit, although the page reported no console errors. Because T068 was migration-only, no behavior change was made for this. T069 should preserve existing behavior and may add stronger interaction tests around event creation before extracting the event editor.
+The in-app browser automation did not successfully trigger the regular event form submit during T068, although the page reported no console errors. T069 added focused event-editor controller tests around event creation before extracting more of the editor.
 
 ## T069 Baseline And Foundation Checks
 
@@ -56,3 +56,12 @@ Baseline before T069 code movement passed:
 - `npm.cmd run build --workspace @clock/clock`
 
 After extracting the first `app`, `data`, `ui`, and `event-editor` modules, the same gate passed again.
+
+## T069 Shallow Extraction Checks
+
+Added focused tests:
+
+- `apps/web/src/app/lifecycle.test.ts`
+- `apps/web/src/event-editor/event-editor-controller.test.ts`
+
+The new tests cover lifecycle cleanup ordering/idempotency, immediate cleanup after destroy, regular event form submission, invalid regular event validation, derived event submission, and listener removal on controller destroy.

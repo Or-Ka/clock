@@ -1,10 +1,10 @@
 # Known Issues
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
 ## Open
 
-- `apps/web/src/main.ts` remains a large controller. This is intentionally deferred to the Frontend Architecture Refactor.
+- `apps/web/src/main.ts` remains a large controller. T069 has reduced it with lifecycle and event-editor boundaries, but settings, import/export, clock-shell interactions and rendering coordination still need extraction.
 - `apps/web/src/styles.css` remains a single stylesheet. CSS splitting is deferred.
 - The current app layout still exposes many management controls on the main page. UX redesign is deferred.
 - The developer stamp still ships with the active app pending a separate production cleanup decision.

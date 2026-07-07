@@ -1,16 +1,16 @@
 # Session Handoff
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
 ## Current Branch
 
 `refactor/frontend-architecture-app`
 
-## Completed Task
+## Completed Migration Task
 
 T068: Promote the web surface to the official Analog Event Clock Beta application.
 
-## Completed In This Migration
+## Completed In T068
 
 - Confirmed `main` was clean and up to date with `origin/main`.
 - Ran baseline docs/typecheck/tests/build before migration.
@@ -26,7 +26,7 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 - Ran the final migration gate.
 - Created logical migration commits.
 
-## Not Done In This Migration
+## Not Done In T068
 
 - No `main.ts` refactor.
 - No state model refactor.
@@ -34,14 +34,20 @@ T068: Promote the web surface to the official Analog Event Clock Beta applicatio
 - No UX redesign.
 - No `packages/clock` behavior change.
 
-## Next Recommended Work
+## T069 Progress
 
-T069 has started. Foundation modules were extracted without behavior changes:
+Foundation and shallow controller modules were extracted without intended behavior changes:
 
 - `apps/web/src/app/app-elements.ts`
+- `apps/web/src/app/lifecycle.ts`
 - `apps/web/src/data/locations.ts`
 - `apps/web/src/data/hebcal-service.ts`
 - `apps/web/src/ui/event-icons.ts`
 - `apps/web/src/event-editor/event-validation.ts`
+- `apps/web/src/event-editor/event-editor-controller.ts`
 
-Next recommended work: decide whether to continue with shallow controller extraction around the current `main.ts` state, or introduce a deeper `createClockApp` boundary with explicit state/domain APIs.
+The latest shallow extraction pass moved lifecycle cleanup and event form submit/toggle behavior behind narrow APIs. `main.ts` still owns state updates through callbacks, so this is not yet a deep app-controller refactor.
+
+## Next Recommended Work
+
+Continue with a narrow settings extraction. Do not introduce `createClockApp` until the current settings/import-export/clock-shell responsibilities are smaller and documented.

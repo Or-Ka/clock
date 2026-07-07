@@ -1,17 +1,17 @@
 # Project Status
 
-עודכן: 2026-07-05
+Updated: 2026-07-06
 
-## מצב נוכחי
+## Current State
 
-The project now has two active product surfaces:
+The project has two active product surfaces:
 
 - `packages/clock`: the reusable TypeScript/SVG clock library.
 - `apps/web`: the official Analog Event Clock Beta web application.
 
-The previous web surface under `apps/demo` has been promoted rather than rewritten. Historical prototype screens are preserved under `archive/legacy-app-screens` and are not part of the active Vite or TypeScript build.
+The previous web surface under `apps/demo` was promoted rather than rewritten. Historical prototype screens are preserved under `archive/legacy-app-screens` and are not part of the active Vite or TypeScript build.
 
-## משימה פעילה
+## Active Task
 
 T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
 
@@ -29,6 +29,22 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 - T068 final gate passed.
 - T068 commits were created.
 
+## T069 Current Progress
+
+Current extraction strategy: shallow controller modules around the existing `main.ts` state.
+
+Extracted so far:
+
+- `app/app-elements.ts`
+- `app/lifecycle.ts`
+- `data/locations.ts`
+- `data/hebcal-service.ts`
+- `ui/event-icons.ts`
+- `event-editor/event-validation.ts`
+- `event-editor/event-editor-controller.ts`
+
+`main.ts` still owns application state and orchestration. The next recommended extraction is a narrow settings controller/binder, not a deep `createClockApp` boundary yet.
+
 ## Next Gate
 
 T069 must run:
@@ -40,7 +56,3 @@ T069 must run:
 - `npm.cmd run build --workspace @clock/clock`
 - Desktop and mobile browser verification.
 - Clean working tree after logical commits.
-
-## Next Task
-
-Continue T069 after choosing the next extraction strategy for `main.ts`: shallow controller modules around the current state, or a deeper `createClockApp` boundary with explicit state/domain APIs.
