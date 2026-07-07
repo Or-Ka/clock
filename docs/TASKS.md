@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Active Task
 
-T071: Extract settings controller / settings binder
+T072: Extract clock shell controller
 
 ## T068 Checklist
 
@@ -71,3 +71,17 @@ T071: Extract settings controller / settings binder
 - `[x]` Add focused settings-controller tests.
 - `[x]` Run final docs/typecheck/tests/build and browser verification.
 - `[x]` Create T071 commit.
+
+## T072 Checklist
+
+- `[x]` Create a narrow clock-shell controller.
+- `[x]` Move live clock creation out of `create-clock-app.ts`.
+- `[x]` Move clock mount listeners out of `create-clock-app.ts`.
+- `[x]` Move clock marker visual sync and mutation observer into the clock-shell controller.
+- `[x]` Move the visual timer into the clock-shell controller.
+- `[x]` Keep state ownership and provider/data flow in `create-clock-app.ts`.
+- `[x]` Add explicit callbacks for event lookup, visuals, tooltip/menu handlers and visual timer work.
+- `[x]` Add cleanup for moved listeners, timers and observer.
+- `[x]` Add focused clock-shell controller tests.
+- `[x]` Run final docs/typecheck/tests/build and browser verification.
+- `[x]` Create T072 commit.

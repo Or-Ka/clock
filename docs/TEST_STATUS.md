@@ -132,3 +132,39 @@ T071 browser verification passed in the Codex in-app browser against the built a
 - Adding an event still works.
 - Deleting the added event still works.
 - No console errors or warnings were observed.
+
+## T072 Clock Shell Boundary Checks
+
+Added focused tests:
+
+- `apps/web/src/clock-shell/clock-shell-controller.test.ts`
+
+The clock-shell controller tests cover:
+
+- Creating the live clock shell with one SVG.
+- Refreshing without creating an extra SVG.
+- Listener, visual timer and mutation observer cleanup.
+- Idempotent `destroy()`.
+- Marker visual sync after event-layer updates.
+
+The source-level app tests now assert that `create-clock-app.ts` delegates event-layer updates through the clock-shell controller and that clock mount contextmenu wiring lives in `clock-shell/clock-shell-controller.ts`.
+
+Final T072 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Final T072 browser verification passed in the Codex in-app browser against the built app served locally from `apps/web/dist`:
+
+- The application loads.
+- Exactly one clock SVG is active.
+- Existing events and markers are displayed.
+- The display preferences panel opens and closes.
+- Location/timezone change keeps the clock working without creating another SVG.
+- Adding an event works and adds one event/marker.
+- Deleting the added event works and returns to the original event/marker count.
+- Marker tooltip, timer menu and clock context menu open.
+- No console errors or warnings were observed.

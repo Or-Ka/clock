@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Scope
 
-T069-T071 refactor the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, or the app state shape.
+T069-T072 refactor the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, or the app state shape.
 
 ## Current Branch
 
@@ -17,6 +17,7 @@ T069-T071 refactor the official Analog Event Clock Beta application under `apps/
 - `apps/web/src/app/create-clock-app.ts`: temporary application boundary with `ClockApp.start()` and `ClockApp.destroy()`.
 - `apps/web/src/settings/settings-elements.ts`: settings-focused element subset from the app DOM binding.
 - `apps/web/src/settings/settings-controller.ts`: shallow settings listener/controller boundary.
+- `apps/web/src/clock-shell/clock-shell-controller.ts`: shallow live clock shell wiring/controller boundary.
 - `apps/web/src/data/locations.ts`: location metadata and lookup.
 - `apps/web/src/data/hebcal-service.ts`: Hebcal URL/date/detail helpers.
 - `apps/web/src/ui/event-icons.ts`: event icon options and SVG/HTML icon helpers.
@@ -48,18 +49,17 @@ Remaining in `main.ts`:
 
 ## Lifecycle Cleanup Moved
 
-The application boundary registers these resources with the lifecycle registry:
+After T072, the application boundary registers these resources with the lifecycle registry:
 
-- Clock mutation observer cleanup.
+- Clock-shell controller cleanup.
 - Event-editor controller cleanup.
-- Clock tooltip and marker interaction listeners on the clock mount.
-- Document `mousemove` and `pointerdown` listeners used by app menus.
-- Status and visual timers.
+- Document `pointerdown` listener used by app menus.
+- Status timer.
 - `beforeunload` listener.
 
-T070 also routes the top-level app startup listeners through a small lifecycle helper, so `destroy()` has one cleanup path for the listeners created by `start()`.
+T070 also routes the top-level app startup listeners through a small lifecycle helper, so `destroy()` has one cleanup path for the listeners created by `start()`. T072 moves clock mount listener cleanup, the clock mutation observer and the visual timer cleanup into the clock-shell controller.
 
-`destroyClock()` still owns non-listener teardown: aborting active fetches, closing floating clock windows, cancelling pending animation frames, removing generated UI nodes and destroying the live clock instance.
+`destroyClock()` still owns non-listener teardown for app-owned state: aborting active fetches, closing floating clock windows and removing generated UI nodes. The live clock instance is destroyed by the clock-shell controller.
 
 ## Event Editor Boundary
 
@@ -88,7 +88,7 @@ This keeps the extraction shallow and avoids changing application state ownershi
 
 - Settings state, display preference persistence helpers and display rendering side effects.
 - Import/export persistence.
-- Clock shell interactions and context menus.
+- Tooltip, timer menu, context menu and countdown state/rendering callbacks.
 - Event list rendering and visual editing.
 - Zmanit/fixed day-time editing.
 - Alert runtime checks.
@@ -124,6 +124,32 @@ Current awkward dependencies:
 - Appearance changes still trigger clock visual sync and event list refresh callbacks.
 - Import state restore still needs to call back into settings control syncing after replacing display preferences.
 
+## Clock Shell Boundary
+
+T072 moved these concerns from `create-clock-app.ts` into `clock-shell/clock-shell-controller.ts`:
+
+- `createLiveAnalogClock()` creation and `clock.start()`.
+- Clock time-zone, event-layer, zmanit-tick and refresh forwarding.
+- Clock marker SVG visual sync.
+- Clock mount pointer/mouse/click/contextmenu listener registration and cleanup.
+- The document `mousemove` listener used while the clock can live in the main document or floating window.
+- The clock mutation observer.
+- The visual timer cleanup and tick callback.
+
+Still intentionally kept in `create-clock-app.ts`:
+
+- `eventLayers`, `renderedEventsById`, `activeTooltipTarget`, `activeCountdowns` and other app-owned state.
+- Tooltip, timer action menu, context menu and countdown arc rendering.
+- Floating clock/Picture-in-Picture window creation and mount restoration.
+- Provider/data refreshes, import/export and storage.
+- The document `pointerdown` listener because it coordinates settings, event visual editor, timer menu and clock context menu closing.
+
+Current awkward dependencies:
+
+- The clock-shell controller receives callbacks for tooltip/menu behavior instead of owning that state directly.
+- Floating clock restoration still moves shell-owned overlay elements from `create-clock-app.ts`.
+- Countdown rendering still reaches into the clock SVG because countdown state remains app-owned.
+
 ## Next Recommended Step
 
-Prefer a clock-shell controller next. Data/provider extraction is also possible later, but the clock shell currently owns the densest remaining UI/event-listener cluster. State/domain APIs should wait until clock-shell and import/export boundaries are smaller.
+After T072, prefer either a conservative follow-up clock-shell pass for tooltip/timer/context/floating responsibilities or state/domain APIs if those responsibilities remain too state-coupled. Data/provider and import/export extraction should wait until the state/domain boundary is clearer.

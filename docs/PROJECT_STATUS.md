@@ -13,7 +13,7 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T071: Extract settings controller / settings binder
+T072: Extract clock shell controller
 
 ## Current Branch
 
@@ -40,13 +40,14 @@ Extracted so far:
 - `app/create-clock-app.ts`
 - `settings/settings-elements.ts`
 - `settings/settings-controller.ts`
+- `clock-shell/clock-shell-controller.ts`
 - `data/locations.ts`
 - `data/hebcal-service.ts`
 - `ui/event-icons.ts`
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. T071 moves the first settings listeners into a narrow settings controller while keeping state ownership in `create-clock-app.ts`.
+`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. T071 moved the first settings listeners into a narrow settings controller while keeping state ownership in `create-clock-app.ts`. T072 moves the live clock shell wiring into `clock-shell/clock-shell-controller.ts` while keeping event/state ownership in `create-clock-app.ts`.
 
 ## T071 Gate
 
@@ -59,3 +60,15 @@ T071 CLI gate passed:
 - `npm.cmd run build --workspace @clock/clock`
 
 Browser gate passed in the Codex in-app browser against the built app served locally. Verification covered app load, clock display, existing events, display preferences open/close, display mode changes, location/timezone change, adding an event, deleting the added event and no console errors or warnings.
+
+## T072 Gate
+
+T072 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser gate passed in the Codex in-app browser against the built app served locally from `apps/web/dist`. Verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding an event, deleting the added event, marker tooltip, timer menu, clock context menu and no console errors or warnings.

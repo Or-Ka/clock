@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extracted a shallow clock-shell controller for live clock creation, mount listeners, marker visual sync, clock mutation observer and visual timer cleanup.
+- Added focused clock-shell controller tests for single-SVG rendering, refresh behavior, cleanup and marker visual updates.
 - Extracted a shallow settings controller for location and display-preference listeners.
 - Added settings controller cleanup and focused settings tests.
 - Introduced `createClockApp` as the web app application boundary with `start()` and `destroy()`.

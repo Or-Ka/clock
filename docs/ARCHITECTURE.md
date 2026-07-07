@@ -39,7 +39,7 @@ Responsibilities:
 
 ## Application Structure
 
-After T071, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, and shallow UI controller boundaries:
+After T072, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, and shallow UI controller boundaries:
 
 ```text
 apps/web/
@@ -52,6 +52,8 @@ apps/web/
     settings/
       settings-controller.ts
       settings-elements.ts
+    clock-shell/
+      clock-shell-controller.ts
     data/
       hebcal-service.ts
       locations.ts
@@ -68,7 +70,7 @@ apps/web/
 
 `main.ts` imports styles, creates `createClockApp({ document, window })`, starts it and disposes it during HMR. `create-clock-app.ts` owns the current app state, startup orchestration and runtime cleanup.
 
-The settings controller owns settings listeners and cleanup while receiving explicit callbacks into the application boundary. The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while the remaining state ownership stays inside the application boundary. The next architecture pass should continue with clock-shell boundaries before introducing deeper state/domain APIs.
+The settings controller owns settings listeners and cleanup while receiving explicit callbacks into the application boundary. The clock-shell controller owns live clock creation, marker visual sync, clock mount listener cleanup, the clock mutation observer and the visual timer while receiving explicit callbacks into app-owned state. The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while the remaining state ownership stays inside the application boundary. The next architecture pass should avoid deeper provider/import-export extraction until state/domain ownership is clearer.
 
 ## Decisions In Force
 

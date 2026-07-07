@@ -111,6 +111,35 @@ Not extracted in T071:
 - The document `pointerdown` listener remains in `create-clock-app.ts` because it coordinates settings, visual editor, timer menu and clock context menu closing.
 - Storage schema and import/export remain unchanged.
 
+## T072 Progress
+
+T072 extracted the first clock-shell boundary:
+
+- `apps/web/src/clock-shell/clock-shell-controller.ts` owns live clock creation and startup.
+- The controller owns the clock mount listeners for pointer/mouse tooltip handling, marker clicks and context menu opening.
+- The controller owns the clock mutation observer and schedules marker visual sync after clock SVG changes.
+- The controller owns the visual timer that drives countdown layer refresh, active tooltip refresh and alert checks through an explicit callback.
+- The controller exposes `start()`, `setTimeZone()`, `setEventLayers()`, `setZmanitTicks()`, `refresh()`, `syncEventVisuals()` and `destroy()`.
+- `create-clock-app.ts` still owns `eventLayers`, rendered event state, tooltip/menu/countdown state, floating clock/Picture-in-Picture orchestration, providers, import/export and storage.
+- Focused tests cover single-SVG creation, refresh without duplicate SVGs, listener/timer/observer cleanup and marker visual updates.
+
+Not extracted in T072:
+
+- Tooltip, timer menu, countdown arc and context menu rendering still live in `create-clock-app.ts` because they still share state with event lists, display preferences and floating window restoration.
+- Floating clock/Picture-in-Picture orchestration remains in `create-clock-app.ts`.
+- Provider/data flow, import/export and state/domain APIs remain unchanged.
+
+T072 verification passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Browser verification in the Codex in-app browser against the built app served locally from `apps/web/dist`.
+
+Browser verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding an event, deleting the added event, marker tooltip, timer menu, clock context menu and no console errors or warnings.
+
 ## Next Recommended Work
 
-Stop after T071. The next refactor should likely be a clock-shell controller, because context menus, floating clock behavior, tooltip/timer menu coordination and clock mount interactions are now the next large UI cluster. State/domain APIs should wait until one more UI controller boundary is smaller.
+Stop after T072. The next refactor should likely be a conservative follow-up on the remaining clock-shell surface only if tooltip/timer/context/floating responsibilities can be separated without state changes. Otherwise, prefer state/domain APIs before provider/import-export extraction.
