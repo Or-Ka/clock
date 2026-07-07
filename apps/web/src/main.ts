@@ -14,9 +14,10 @@ import {
 } from "@clock/clock";
 
 import { bindAppElements } from "./app/app-elements.js";
+import { createLifecycleRegistry } from "./app/lifecycle.js";
 import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "./data/hebcal-service.js";
 import { LOCATION_OPTIONS, getLocationById } from "./data/locations.js";
-import { validateEventTime, validateNonNegativeOffset } from "./event-editor/event-validation.js";
+import { createEventEditorController } from "./event-editor/event-editor-controller.js";
 import { EVENT_ICON_OPTIONS, createClockIcon, createHtmlIcon, type EventIconId } from "./ui/event-icons.js";
 
 type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
@@ -397,6 +398,7 @@ const eventVisualEditor = createEventVisualEditor();
 const clockTooltip = createClockTooltip();
 const timerActionMenu = createTimerActionMenu();
 const clockContextMenu = createClockContextMenu();
+const lifecycle = createLifecycleRegistry();
 
 const timeSource = new SystemTimeSource();
 let selectedLocation = getLocationById(locationSelect.value);
@@ -454,6 +456,7 @@ const clock = createLiveAnalogClock({
 });
 const clockEventObserver = new MutationObserver(scheduleClockEventVisualSync);
 clockEventObserver.observe(mount, { childList: true, subtree: true });
+lifecycle.add(() => clockEventObserver.disconnect());
 
 clock.start();
 syncEventList();
@@ -587,78 +590,48 @@ for (const input of [
   input.addEventListener("input", handleDisplayColorInput);
 }
 
-for (const toggle of eventFormToggles) {
-  toggle.addEventListener("click", () => {
-    const formName = toggle.dataset.eventFormToggle;
-    if (formName === undefined) {
-      return;
-    }
+const eventEditorController = createEventEditorController({
+  elements: {
+    eventFormToggles,
+    eventForm,
+    kindSelect,
+    titleInput,
+    hourInput,
+    minuteInput,
+    eventAlertControls,
+    eventError,
+    derivedForm,
+    derivedTitleInput,
+    derivedBaseSelect,
+    derivedDirectionSelect,
+    derivedOffsetInput,
+    derivedOffsetUnitSelect,
+    derivedEventAlertControls,
+    derivedError
+  },
+  setActiveForm: syncAddEventFormVisibility,
+  readAlertFormSettings,
+  onRegularEventSubmit(nextEvent, nextAlertSettings) {
+    eventAlertOverrides = { ...eventAlertOverrides, [nextEvent.id]: nextAlertSettings };
+    requestDesktopPermissionIfNeeded(nextAlertSettings);
 
-    const isExpanded = toggle.getAttribute("aria-expanded") === "true";
-    syncAddEventFormVisibility(isExpanded ? undefined : formName);
-  });
-}
-
-eventForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const validationError = validateEventForm();
-  if (validationError) {
-    eventError.textContent = validationError;
-    return;
+    eventLayers = eventLayers.map((layer) =>
+      layer.id === PERSONAL_LAYER_ID ? { ...layer, events: [...layer.events, nextEvent] } : layer
+    );
+    syncAddEventFormVisibility(undefined);
+    applyEventLayers();
+  },
+  onDerivedEventSubmit(nextEvent, nextAlertSettings) {
+    derivedEvents = [...derivedEvents, nextEvent];
+    eventAlertOverrides = { ...eventAlertOverrides, [nextEvent.id]: nextAlertSettings };
+    requestDesktopPermissionIfNeeded(nextAlertSettings);
+    refreshSpecialLayer();
+    syncAddEventFormVisibility(undefined);
+    applyEventLayers();
   }
-
-  eventError.textContent = "";
-  const title = titleInput.value.trim() || "אירוע";
-  const eventId = createEventId();
-  const nextEvent: InstantEventDefinition = {
-    id: eventId,
-    type: "instant",
-    kind: kindSelect.value as InstantEventKind,
-    title,
-    hour: Number(hourInput.value),
-    minute: Number(minuteInput.value)
-  };
-  const nextAlertSettings = readAlertFormSettings(eventAlertControls);
-  eventAlertOverrides = { ...eventAlertOverrides, [eventId]: nextAlertSettings };
-  requestDesktopPermissionIfNeeded(nextAlertSettings);
-
-  eventLayers = eventLayers.map((layer) =>
-    layer.id === PERSONAL_LAYER_ID ? { ...layer, events: [...layer.events, nextEvent] } : layer
-  );
-  syncAddEventFormVisibility(undefined);
-  applyEventLayers();
 });
-
-derivedForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const validationError = validateDerivedEventForm();
-  if (validationError) {
-    derivedError.textContent = validationError;
-    return;
-  }
-
-  derivedError.textContent = "";
-  const eventId = `derived-${Date.now()}`;
-  derivedEvents = [
-    ...derivedEvents,
-    {
-      id: eventId,
-      title: derivedTitleInput.value.trim() || "אירוע מיוחד",
-      base: derivedBaseSelect.value as DerivedBase,
-      direction: derivedDirectionSelect.value as DerivedDirection,
-      offsetValue: Number(derivedOffsetInput.value),
-      offsetUnit: derivedOffsetUnitSelect.value as DerivedOffsetUnit
-    }
-  ];
-  const nextAlertSettings = readAlertFormSettings(derivedEventAlertControls);
-  eventAlertOverrides = { ...eventAlertOverrides, [eventId]: nextAlertSettings };
-  requestDesktopPermissionIfNeeded(nextAlertSettings);
-  refreshSpecialLayer();
-  syncAddEventFormVisibility(undefined);
-  applyEventLayers();
-});
+eventEditorController.start();
+lifecycle.add(() => eventEditorController.destroy());
 
 fixedDayTimeList.addEventListener("input", handleFixedDayTimeControlEvent);
 fixedDayTimeList.addEventListener("change", handleFixedDayTimeControlEvent);
@@ -699,8 +672,19 @@ mount.addEventListener("mouseout", handleClockTooltipPointerOut);
 mount.addEventListener("click", handleClockTargetClick);
 mount.addEventListener("contextmenu", handleClockContextMenu);
 document.addEventListener("mousemove", handleDocumentClockMouseMove);
+lifecycle.add(() => {
+  mount.removeEventListener("pointerover", handleClockTooltipPointerOver);
+  mount.removeEventListener("pointermove", handleClockTooltipPointerMove);
+  mount.removeEventListener("pointerout", handleClockTooltipPointerOut);
+  mount.removeEventListener("mouseover", handleClockTooltipPointerOver);
+  mount.removeEventListener("mousemove", handleClockTooltipPointerMove);
+  mount.removeEventListener("mouseout", handleClockTooltipPointerOut);
+  mount.removeEventListener("click", handleClockTargetClick);
+  mount.removeEventListener("contextmenu", handleClockContextMenu);
+  document.removeEventListener("mousemove", handleDocumentClockMouseMove);
+});
 
-document.addEventListener("pointerdown", (event) => {
+const handleDocumentPointerDown = (event: PointerEvent) => {
   const target = event.target;
   if (!(target instanceof Node)) {
     return;
@@ -725,20 +709,25 @@ document.addEventListener("pointerdown", (event) => {
   ) {
     setDisplayPreferencesOpen(false);
   }
-});
+};
+document.addEventListener("pointerdown", handleDocumentPointerDown);
+lifecycle.add(() => document.removeEventListener("pointerdown", handleDocumentPointerDown));
 
 const statusTimer = window.setInterval(() => {
   syncEventList();
   void refreshDayTimesLayer();
   void refreshHebcalDetails();
 }, 30_000);
+lifecycle.add(() => window.clearInterval(statusTimer));
 const visualTimer = window.setInterval(() => {
   syncCountdownLayer();
   refreshActiveTooltip();
   checkDueAlerts();
 }, 1000);
+lifecycle.add(() => window.clearInterval(visualTimer));
 
 window.addEventListener("beforeunload", destroyClock);
+lifecycle.add(() => window.removeEventListener("beforeunload", destroyClock));
 
 function renderZmanitSetControls(): void {
   zmanitSetSelect.replaceChildren(
@@ -2712,46 +2701,6 @@ function syncEventList(): void {
   );
 }
 
-function validateEventForm(): string {
-  const hour = Number(hourInput.value);
-  const minute = Number(minuteInput.value);
-
-  hourInput.setCustomValidity("");
-  minuteInput.setCustomValidity("");
-
-  const result = validateEventTime(hour, minute);
-  if (!result.valid) {
-    if (result.field === "hour") {
-      hourInput.setCustomValidity(result.message);
-    } else {
-      minuteInput.setCustomValidity(result.message);
-    }
-    return result.message;
-  }
-
-  return "";
-}
-
-function validateDerivedEventForm(): string {
-  const offsetValue = Number(derivedOffsetInput.value);
-
-  derivedOffsetInput.setCustomValidity("");
-
-  const result = validateNonNegativeOffset(offsetValue);
-  if (!result.valid) {
-    derivedOffsetInput.setCustomValidity(result.message);
-    return result.message;
-  }
-
-  return "";
-}
-
-function createEventId(): string {
-  const hour = Number(hourInput.value);
-  const minute = Number(minuteInput.value);
-  return `${kindSelect.value}-${ringForTime(hour, minute)}-${hour}-${minute}-${Date.now()}`;
-}
-
 function formatTime(hour: number, minute: number): string {
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
@@ -3196,19 +3145,7 @@ function destroyClock(): void {
   closeFloatingClockWindow();
   dayTimesAbortController?.abort();
   hebcalAbortController?.abort();
-  window.clearInterval(statusTimer);
-  window.clearInterval(visualTimer);
-  window.removeEventListener("beforeunload", destroyClock);
-  mount.removeEventListener("pointerover", handleClockTooltipPointerOver);
-  mount.removeEventListener("pointermove", handleClockTooltipPointerMove);
-  mount.removeEventListener("pointerout", handleClockTooltipPointerOut);
-  mount.removeEventListener("mouseover", handleClockTooltipPointerOver);
-  mount.removeEventListener("mousemove", handleClockTooltipPointerMove);
-  mount.removeEventListener("mouseout", handleClockTooltipPointerOut);
-  mount.removeEventListener("click", handleClockTargetClick);
-  mount.removeEventListener("contextmenu", handleClockContextMenu);
-  document.removeEventListener("mousemove", handleDocumentClockMouseMove);
-  clockEventObserver.disconnect();
+  lifecycle.destroy();
   if (clockVisualSyncFrame !== undefined) {
     window.cancelAnimationFrame(clockVisualSyncFrame);
   }
