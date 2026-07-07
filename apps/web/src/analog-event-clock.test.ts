@@ -8,6 +8,18 @@ const appSrcDir = dirname(fileURLToPath(import.meta.url));
 const appRootDir = join(appSrcDir, "..");
 
 describe("Analog Event Clock Hebrew UI", () => {
+  it("keeps main as a small application entrypoint", () => {
+    const main = readAppFile("main.ts");
+
+    expect(main).toContain('import "./styles.css";');
+    expect(main).toContain('import { createClockApp } from "./app/create-clock-app.js";');
+    expect(main).toContain("const app = createClockApp({");
+    expect(main).toContain("app.start();");
+    expect(main).toContain("app.destroy()");
+    expect(main).not.toContain("querySelector");
+    expect(main).not.toContain("let eventLayers");
+    expect(main).not.toContain("createLiveAnalogClock");
+  });
   it("uses Hebrew document metadata, RTL layout and a clean clock-first shell", () => {
     const html = readAppFile("index.html");
 
@@ -28,7 +40,7 @@ describe("Analog Event Clock Hebrew UI", () => {
 
   it("includes a location selector and day-times API status text", () => {
     const html = readAppFile("index.html");
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
 
     expect(html).toContain('<select id="location">');
     expect(html).toContain("ירושלים");
@@ -74,7 +86,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   });
 
   it("keeps the application event model layer-based while sourcing day-times from the API", () => {
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
 
     expect(main).toContain("let eventLayers: EventLayerDefinition[]");
     expect(main).toContain("clock.setEventLayers(eventLayers)");
@@ -86,7 +98,7 @@ describe("Analog Event Clock Hebrew UI", () => {
 
   it("adds collapsible display preferences and in-list event visual editing", () => {
     const html = readAppFile("index.html");
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
     const css = readAppFile("styles.css");
 
     expect(html).toContain("העדפות תצוגה");
@@ -125,7 +137,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("restoreFloatingClockToMainDocument");
     expect(main).toContain("syncFloatingClockWindowStyles");
     expect(main).toContain("data-floating-clock-window");
-    expect(main).toContain('mount.addEventListener("contextmenu"');
+    expect(main).toContain('addLifecycleEventListener(mount, "contextmenu"');
     expect(main).toContain("root.dataset.displayMode");
     expect(main).toContain("applyDisplayPreferences");
     expect(main).toContain("syncDisplayPreferenceControls");
@@ -182,7 +194,7 @@ describe("Analog Event Clock Hebrew UI", () => {
 
   it("adds per-event alerts with global disable and import export controls", () => {
     const html = readAppFile("index.html");
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
     const css = readAppFile("styles.css");
 
     expect(html).toContain('id="alerts-enabled"');
@@ -212,7 +224,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   });
 
   it("defines configurable fixed day-time events from sunrise and sunset anchors", () => {
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
 
     for (const label of [
       "עלות השחר",
@@ -255,7 +267,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   });
 
   it("adds automatic Shabbat times only for Friday and Saturday", () => {
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
 
     expect(main).toContain("הדלקת נרות");
     expect(main).toContain('id: "candle-lighting"');
@@ -267,7 +279,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   });
 
   it("keeps legacy export and storage compatibility while writing new product names", () => {
-    const main = readAppFile("main.ts");
+    const main = readAppFile("app/create-clock-app.ts");
     const legacyDemoExport = {
       version: 1,
       exportedAt: "2026-07-05T00:00:00.000Z",
@@ -325,7 +337,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   });
 
   it("does not leave previous visible English legacy labels in place", () => {
-    const visibleTextSources = `${readAppFile("index.html")}\n${readAppFile("main.ts")}`;
+    const visibleTextSources = `${readAppFile("index.html")}\n${readAppFile("main.ts")}\n${readAppFile("app/create-clock-app.ts")}`;
 
     for (const englishText of [
       "Dual Ring Events",
