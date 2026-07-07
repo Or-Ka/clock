@@ -18,6 +18,8 @@ import { createLifecycleRegistry } from "./lifecycle.js";
 import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "../data/hebcal-service.js";
 import { LOCATION_OPTIONS, getLocationById } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
+import { createSettingsController } from "../settings/settings-controller.js";
+import { selectSettingsElements } from "../settings/settings-elements.js";
 import { EVENT_ICON_OPTIONS, createClockIcon, createHtmlIcon, type EventIconId } from "../ui/event-icons.js";
 
 export type ClockApp = {
@@ -376,6 +378,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
     }
   };
 
+  const appElements = bindAppElements(document);
+  const settingsElements = selectSettingsElements(appElements);
   const {
     mount,
     status,
@@ -438,7 +442,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     displayTextColorInput,
     displayAccentColorInput,
     displayClockFaceColorInput
-  } = bindAppElements(document);
+  } = appElements;
   const eventVisualEditor = createEventVisualEditor();
   const clockTooltip = createClockTooltip();
   const timerActionMenu = createTimerActionMenu();
@@ -495,10 +499,39 @@ function startClockApp(deps: ClockAppDeps): () => void {
     },
     emptySpecialLayer()
   ];
+  const settingsController = createSettingsController({
+    elements: settingsElements,
+    displayTemplates: DISPLAY_TEMPLATES,
+    getDisplayPreferences: () => displayPreferences,
+    setDisplayPreferences(next) {
+      displayPreferences = next;
+    },
+    cloneDisplayPreferences,
+    isDisplayTemplateId,
+    isDisplayMode,
+    isDisplayFontFamily,
+    persistDisplayMode,
+    onLocationChange(locationId) {
+      selectedLocation = getLocationById(locationId);
+      syncTimeZoneToLocation();
+      clock.setTimeZone(timezoneSelect.value);
+      dayTimesCacheKey = "";
+      hebcalCacheKey = "";
+      void refreshDayTimesLayer(true);
+      void refreshHebcalDetails(true);
+    },
+    applyDisplayPreferences,
+    syncEventList,
+    syncClockEventVisuals,
+    syncFloatingClockMode,
+    closeClockContextMenu,
+    closeEventVisualEditor,
+    closeTimerActionMenu
+  });
 
   syncTimeZoneToLocation();
   renderZmanitSetControls();
-  syncDisplayPreferenceControls();
+  settingsController.syncDisplayPreferenceControls();
   syncAlertGlobalControls();
   applyDisplayPreferences();
   renderFixedDayTimeControls();
@@ -519,16 +552,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
   syncClockEventVisuals();
   void refreshDayTimesLayer(true);
   void refreshHebcalDetails(true);
-
-  addLifecycleEventListener(locationSelect, "change", () => {
-    selectedLocation = getLocationById(locationSelect.value);
-    syncTimeZoneToLocation();
-    clock.setTimeZone(timezoneSelect.value);
-    dayTimesCacheKey = "";
-    hebcalCacheKey = "";
-    void refreshDayTimesLayer(true);
-    void refreshHebcalDetails(true);
-  });
+  settingsController.start();
+  lifecycle.add(() => settingsController.destroy());
 
   for (const toggle of layerToggles) {
     addLifecycleEventListener(toggle, "change", () => {
@@ -576,31 +601,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
   addLifecycleEventListener(zmanitSetNewButton, "click", addZmanitSet);
   addLifecycleEventListener(zmanitSetRemoveButton, "click", deleteEditedZmanitSet);
 
-  addLifecycleEventListener(displayPreferencesToggle, "click", () => {
-    setDisplayPreferencesOpen(displayPreferencesPanel.hidden);
-  });
-
-  addLifecycleEventListener(displayTemplateSelect, "change", () => {
-    if (!isDisplayTemplateId(displayTemplateSelect.value)) {
-      return;
-    }
-
-    const currentMode = displayPreferences.displayMode;
-    displayPreferences = { ...cloneDisplayPreferences(DISPLAY_TEMPLATES[displayTemplateSelect.value]), displayMode: currentMode };
-    syncDisplayPreferenceControls();
-    applyDisplayPreferences();
-    syncEventList();
-    syncClockEventVisuals();
-  });
-
-  addLifecycleEventListener(displayModeSelect, "change", () => {
-    if (!isDisplayMode(displayModeSelect.value)) {
-      return;
-    }
-
-    setDisplayMode(displayModeSelect.value);
-  });
-
   addLifecycleEventListener(alertsEnabledInput, "change", () => {
     alertSettings = { enabled: alertsEnabledInput.checked };
     syncAlertGlobalControls();
@@ -616,35 +616,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
   addLifecycleEventListener(importAppStateFileInput, "change", (event) => {
     void importAppStateFromInput(event);
   });
-
-  addLifecycleEventListener(displayFontFamilySelect, "change", () => {
-    if (!isDisplayFontFamily(displayFontFamilySelect.value)) {
-      return;
-    }
-
-    displayPreferences = { ...displayPreferences, fontFamily: displayFontFamilySelect.value };
-    applyDisplayPreferences();
-  });
-
-  addLifecycleEventListener(displayFontScaleInput, "input", () => {
-    displayPreferences = { ...displayPreferences, fontScale: Number(displayFontScaleInput.value) };
-    applyDisplayPreferences();
-  });
-
-  addLifecycleEventListener(displayClockScaleInput, "input", () => {
-    displayPreferences = { ...displayPreferences, clockScale: Number(displayClockScaleInput.value) };
-    applyDisplayPreferences();
-  });
-
-  for (const input of [
-    displayBackgroundColorInput,
-    displayPanelColorInput,
-    displayTextColorInput,
-    displayAccentColorInput,
-    displayClockFaceColorInput
-  ]) {
-    addLifecycleEventListener(input, "input", handleDisplayColorInput);
-  }
 
   const eventEditorController = createEventEditorController({
     elements: {
@@ -752,7 +723,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       !displayPreferencesPanel.contains(target) &&
       !displayPreferencesToggle.contains(target)
     ) {
-      setDisplayPreferencesOpen(false);
+      settingsController.setDisplayPreferencesOpen(false);
     }
   };
   addLifecycleEventListener(document, "pointerdown", handleDocumentPointerDown);
@@ -932,24 +903,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     applyEventLayers();
   }
 
-  function syncDisplayPreferenceControls(): void {
-    displayTemplateSelect.value = displayPreferences.templateId;
-    displayModeSelect.value = displayPreferences.displayMode;
-    displayFontFamilySelect.value = displayPreferences.fontFamily;
-    displayFontScaleInput.value = String(displayPreferences.fontScale);
-    displayClockScaleInput.value = String(displayPreferences.clockScale);
-    displayBackgroundColorInput.value = displayPreferences.backgroundColor;
-    displayPanelColorInput.value = displayPreferences.panelColor;
-    displayTextColorInput.value = displayPreferences.textColor;
-    displayAccentColorInput.value = displayPreferences.accentColor;
-    displayClockFaceColorInput.value = displayPreferences.clockFaceColor;
-  }
-
-  function setDisplayPreferencesOpen(isOpen: boolean): void {
-    displayPreferencesPanel.hidden = !isOpen;
-    displayPreferencesToggle.setAttribute("aria-expanded", String(isOpen));
-  }
-
   function applyDisplayPreferences(): void {
     const root = document.documentElement;
     root.dataset.displayTemplate = displayPreferences.templateId;
@@ -974,33 +927,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     syncFloatingClockWindowStyles();
     syncCountdownLayer();
     refreshActiveTooltip();
-  }
-
-  function setDisplayMode(displayMode: DisplayMode): void {
-    displayPreferences = { ...displayPreferences, displayMode };
-    persistDisplayMode(displayMode);
-    syncDisplayPreferenceControls();
-    applyDisplayPreferences();
-    syncFloatingClockMode();
-    closeClockContextMenu();
-    if (displayMode === "clockOnly" || displayMode === "floatingClock") {
-      setDisplayPreferencesOpen(false);
-      closeEventVisualEditor();
-      closeTimerActionMenu();
-    }
-  }
-
-  function handleDisplayColorInput(): void {
-    displayPreferences = {
-      ...displayPreferences,
-      backgroundColor: displayBackgroundColorInput.value,
-      panelColor: displayPanelColorInput.value,
-      textColor: displayTextColorInput.value,
-      accentColor: displayAccentColorInput.value,
-      clockFaceColor: displayClockFaceColorInput.value
-    };
-    applyDisplayPreferences();
-    syncClockEventVisuals();
   }
 
   function syncFloatingClockMode(): void {
@@ -1659,12 +1585,12 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function openClockContextMenu(x: number, y: number): void {
     const currentMode = displayPreferences.displayMode;
-    const fullMode = createClockContextMenuButton("מעבר למצב מלא", () => setDisplayMode("fullMode"));
-    const clockOnly = createClockContextMenuButton("מעבר לשעון בלבד", () => setDisplayMode("clockOnly"));
-    const floatingClock = createClockContextMenuButton("מעבר לשעון צף", () => setDisplayMode("floatingClock"));
+    const fullMode = createClockContextMenuButton("מעבר למצב מלא", () => settingsController.setDisplayMode("fullMode"));
+    const clockOnly = createClockContextMenuButton("מעבר לשעון בלבד", () => settingsController.setDisplayMode("clockOnly"));
+    const floatingClock = createClockContextMenuButton("מעבר לשעון צף", () => settingsController.setDisplayMode("floatingClock"));
     const preferences = createClockContextMenuButton("העדפות תצוגה", () => {
-      setDisplayMode("fullMode");
-      setDisplayPreferencesOpen(true);
+      settingsController.setDisplayMode("fullMode");
+      settingsController.setDisplayPreferencesOpen(true);
       closeClockContextMenu();
     });
 
@@ -2671,7 +2597,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     firedAlertKeys = new Set();
     renderZmanitSetControls();
-    syncDisplayPreferenceControls();
+    settingsController.syncDisplayPreferenceControls();
     syncAlertGlobalControls();
     applyDisplayPreferences();
     renderFixedDayTimeControls();
