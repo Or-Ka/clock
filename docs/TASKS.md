@@ -1,10 +1,10 @@
 # Tasks
 
-Updated: 2026-07-06
+Updated: 2026-07-07
 
 ## Active Task
 
-T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
+T070: Introduce createClockApp application boundary
 
 ## T068 Checklist
 
@@ -47,3 +47,16 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 - Added focused tests for lifecycle cleanup and event-editor submit behavior.
 - `main.ts` still owns state, settings, import/export, clock-shell interactions and rendering coordination.
 - The next step should continue with shallow settings extraction before reconsidering a deeper `createClockApp` boundary.
+
+## T070 Checklist
+
+- `[x]` Add `apps/web/src/app/create-clock-app.ts`.
+- `[x]` Define `ClockApp` with `start()` and `destroy()`.
+- `[x]` Define `ClockAppDeps` with `document` and `window`.
+- `[x]` Move app initialization out of `main.ts`.
+- `[x]` Keep current state shape inside the new application boundary.
+- `[x]` Keep `main.ts` free of business logic and DOM queries.
+- `[x]` Route top-level startup listeners through lifecycle cleanup.
+- `[x]` Add focused tests for the boundary and entrypoint.
+- `[ ]` Run final docs/typecheck/tests/build and browser verification.
+- `[ ]` Create T070 commit.

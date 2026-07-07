@@ -39,7 +39,7 @@ Responsibilities:
 
 ## Application Structure
 
-After the first T069 extraction passes, the application keeps `main.ts` as the state and orchestration owner while introducing narrow modules around stable boundaries:
+After T070, the application has a small entrypoint and a temporary application boundary around the existing state and orchestration:
 
 ```text
 apps/web/
@@ -47,6 +47,7 @@ apps/web/
   src/
     app/
       app-elements.ts
+      create-clock-app.ts
       lifecycle.ts
     data/
       hebcal-service.ts
@@ -62,7 +63,9 @@ apps/web/
     dev.gif
 ```
 
-The current refactor is intentionally shallow: modules receive explicit elements/callbacks, while state ownership remains in `main.ts`. The next architecture pass should continue with settings and clock-shell boundaries before introducing a deeper `createClockApp` entrypoint.
+`main.ts` imports styles, creates `createClockApp({ document, window })`, starts it and disposes it during HMR. `create-clock-app.ts` owns the current app state, startup orchestration and runtime cleanup.
+
+The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while the remaining state ownership stays inside the application boundary. The next architecture pass should continue with settings and clock-shell boundaries before introducing deeper state/domain APIs.
 
 ## Decisions In Force
 

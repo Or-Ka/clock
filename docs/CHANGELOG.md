@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Introduced `createClockApp` as the web app application boundary with `start()` and `destroy()`.
+- Reduced `main.ts` to the official style import, app creation/start and HMR disposal entrypoint.
+- Routed top-level startup listeners through lifecycle cleanup inside the new app boundary.
+- Added focused tests for the `createClockApp` API and small-entrypoint shape.
 - Continued T069 with a conservative frontend architecture extraction.
 - Added a lifecycle cleanup registry for app listeners, timers and observers.
 - Added a narrow event-editor controller for event form toggles and regular/special event submit handling.

@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-06
+Updated: 2026-07-07
 
 ## Current State
 
@@ -13,7 +13,7 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T069: Frontend Architecture Refactor for the official Analog Event Clock Beta application.
+T070: Introduce createClockApp application boundary
 
 ## Current Branch
 
@@ -29,30 +29,33 @@ T069: Frontend Architecture Refactor for the official Analog Event Clock Beta ap
 - T068 final gate passed.
 - T068 commits were created.
 
-## T069 Current Progress
+## Frontend Refactor Progress
 
-Current extraction strategy: shallow controller modules around the existing `main.ts` state.
+Current extraction strategy: a temporary application boundary around the existing state and orchestration, plus shallow controller modules around stable responsibilities.
 
 Extracted so far:
 
 - `app/app-elements.ts`
 - `app/lifecycle.ts`
+- `app/create-clock-app.ts`
 - `data/locations.ts`
 - `data/hebcal-service.ts`
 - `ui/event-icons.ts`
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` still owns application state and orchestration. The next recommended extraction is a narrow settings controller/binder, not a deep `createClockApp` boundary yet.
+`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. This is intentionally a large temporary application boundary; internal decomposition is deferred to later focused extractions.
 
-## Next Gate
+## T070 Gate
 
-T069 must run:
+T070 CLI gate passed:
 
 - `npm.cmd run docs:check`
 - `npm.cmd run typecheck`
 - `npm.cmd test`
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
-- Desktop and mobile browser verification.
-- Clean working tree after logical commits.
+
+Browser gate was completed manually outside Codex in a regular browser. The app loaded, the clock and existing events were displayed, adding and deleting an event worked, display preferences opened, and no console errors were observed.
+
+Codex browser tooling was blocked by environment constraints only, not by an app failure: Vite failed from Codex with `EPERM` on `D:\Oriya\Projects`, localhost was blocked with `ERR_BLOCKED_BY_CLIENT`, and `file://` is blocked by browser-tool policy.
