@@ -89,7 +89,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     const main = readAppFile("app/create-clock-app.ts");
 
     expect(main).toContain("let eventLayers: EventLayerDefinition[]");
-    expect(main).toContain("clock.setEventLayers(eventLayers)");
+    expect(main).toContain("clockShellController.setEventLayers(eventLayers)");
     expect(main).toContain("DAY_TIMES_LAYER_ID");
     expect(main).toContain("PERSONAL_LAYER_ID");
     expect(main).toContain("emptyDayTimesLayer()");
@@ -99,6 +99,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   it("adds collapsible display preferences and in-list event visual editing", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
+    const clockShell = readAppFile("clock-shell/clock-shell-controller.ts");
     const css = readAppFile("styles.css");
 
     expect(html).toContain("העדפות תצוגה");
@@ -137,14 +138,14 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("restoreFloatingClockToMainDocument");
     expect(main).toContain("syncFloatingClockWindowStyles");
     expect(main).toContain("data-floating-clock-window");
-    expect(main).toContain('addLifecycleEventListener(mount, "contextmenu"');
+    expect(clockShell).toContain('addEventListener(mount, "contextmenu"');
     expect(main).toContain("root.dataset.displayMode");
     expect(main).toContain("applyDisplayPreferences");
     expect(main).toContain("syncDisplayPreferenceControls");
     expect(main).toContain("createEventVisualEditor");
     expect(main).toContain("EVENT_ICON_OPTIONS");
     expect(main).toContain("data-event-visual-id");
-    expect(main).toContain("syncClockEventVisuals");
+    expect(clockShell).toContain("syncEventVisuals");
     expect(main).toContain("syncCountdownLayer");
     expect(main).toContain("timer-action-menu");
     expect(main).toContain("timer-action-menu-color");

@@ -1,5 +1,4 @@
 import {
-  createLiveAnalogClock,
   projectInstantToStaticClockTime,
   resolveEventLayers,
   ringForTime,
@@ -20,7 +19,8 @@ import { LOCATION_OPTIONS, getLocationById } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
 import { createSettingsController } from "../settings/settings-controller.js";
 import { selectSettingsElements } from "../settings/settings-elements.js";
-import { EVENT_ICON_OPTIONS, createClockIcon, createHtmlIcon, type EventIconId } from "../ui/event-icons.js";
+import { createClockShellController } from "../clock-shell/clock-shell-controller.js";
+import { EVENT_ICON_OPTIONS, createHtmlIcon, type EventIconId } from "../ui/event-icons.js";
 
 export type ClockApp = {
   start(): void;
@@ -483,7 +483,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
   let renderedEventsById = new Map<string, VisualEvent>();
   let activeTooltipTarget: CountdownTarget | undefined;
   let activeCountdowns: Record<string, ActiveCountdown> = {};
-  let clockVisualSyncFrame: number | undefined;
   let eventLayers: EventLayerDefinition[] = [
     emptyDayTimesLayer(),
     {
@@ -499,6 +498,29 @@ function startClockApp(deps: ClockAppDeps): () => void {
     },
     emptySpecialLayer()
   ];
+  const clockShellController = createClockShellController({
+    document,
+    window,
+    MutationObserver,
+    elements: { mount },
+    timeSource,
+    timeZone: timezoneSelect.value,
+    eventLayers,
+    dateDisplayDetails: () => jewishDateDetails,
+    getRenderedEvent: (eventId) => renderedEventsById.get(eventId),
+    eventVisualForEvent,
+    onTooltipPointerOver: handleClockTooltipPointerOver,
+    onTooltipPointerMove: handleClockTooltipPointerMove,
+    onTooltipPointerOut: handleClockTooltipPointerOut,
+    onClockTargetClick: handleClockTargetClick,
+    onClockContextMenu: handleClockContextMenu,
+    onDocumentMouseMove: handleDocumentClockMouseMove,
+    onVisualTimerTick() {
+      syncCountdownLayer();
+      refreshActiveTooltip();
+      checkDueAlerts();
+    }
+  });
   const settingsController = createSettingsController({
     elements: settingsElements,
     displayTemplates: DISPLAY_TEMPLATES,
@@ -514,7 +536,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     onLocationChange(locationId) {
       selectedLocation = getLocationById(locationId);
       syncTimeZoneToLocation();
-      clock.setTimeZone(timezoneSelect.value);
+      clockShellController.setTimeZone(timezoneSelect.value);
       dayTimesCacheKey = "";
       hebcalCacheKey = "";
       void refreshDayTimesLayer(true);
@@ -522,7 +544,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     },
     applyDisplayPreferences,
     syncEventList,
-    syncClockEventVisuals,
+    syncClockEventVisuals: () => clockShellController.syncEventVisuals(),
     syncFloatingClockMode,
     closeClockContextMenu,
     closeEventVisualEditor,
@@ -536,20 +558,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
   applyDisplayPreferences();
   renderFixedDayTimeControls();
 
-  const clock = createLiveAnalogClock({
-    container: mount,
-    timeSource,
-    timeZone: timezoneSelect.value,
-    eventLayers,
-    dateDisplayDetails: () => jewishDateDetails
-  });
-  const clockEventObserver = new MutationObserver(scheduleClockEventVisualSync);
-  clockEventObserver.observe(mount, { childList: true, subtree: true });
-  lifecycle.add(() => clockEventObserver.disconnect());
-
-  clock.start();
+  clockShellController.start();
+  lifecycle.add(() => clockShellController.destroy());
   syncEventList();
-  syncClockEventVisuals();
+  clockShellController.syncEventVisuals();
   void refreshDayTimesLayer(true);
   void refreshHebcalDetails(true);
   settingsController.start();
@@ -570,7 +582,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   addLifecycleEventListener(zmanitLayerToggle, "change", () => {
-    clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
+    clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
   });
 
   addLifecycleEventListener(zmanitSetSelect, "change", () => {
@@ -690,16 +702,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
   addLifecycleEventListener(eventList, "input", handleEventAlertControlEvent);
   addLifecycleEventListener(eventList, "change", handleEventAlertControlEvent);
 
-  addLifecycleEventListener(mount, "pointerover", handleClockTooltipPointerOver);
-  addLifecycleEventListener(mount, "pointermove", handleClockTooltipPointerMove);
-  addLifecycleEventListener(mount, "pointerout", handleClockTooltipPointerOut);
-  addLifecycleEventListener(mount, "mouseover", handleClockTooltipPointerOver);
-  addLifecycleEventListener(mount, "mousemove", handleClockTooltipPointerMove);
-  addLifecycleEventListener(mount, "mouseout", handleClockTooltipPointerOut);
-  addLifecycleEventListener(mount, "click", handleClockTargetClick);
-  addLifecycleEventListener(mount, "contextmenu", handleClockContextMenu);
-  addLifecycleEventListener(document, "mousemove", handleDocumentClockMouseMove);
-
   const handleDocumentPointerDown = (event: PointerEvent) => {
     const target = event.target;
     if (!(target instanceof Node)) {
@@ -734,13 +736,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     void refreshHebcalDetails();
   }, 30_000);
   lifecycle.add(() => window.clearInterval(statusTimer));
-  const visualTimer = window.setInterval(() => {
-    syncCountdownLayer();
-    refreshActiveTooltip();
-    checkDueAlerts();
-  }, 1000);
-  lifecycle.add(() => window.clearInterval(visualTimer));
-
   addLifecycleEventListener(window, "beforeunload", destroyClock);
 
   function renderZmanitSetControls(): void {
@@ -898,7 +893,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     const dayTimesLayer = eventLayers.find((layer) => layer.id === DAY_TIMES_LAYER_ID);
     const dayEvents = dayTimesLayer?.events ?? [];
     zmanitTicks = createZmanitTicks(dayEvents, selectedDefaultZmanitSetId);
-    clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
+    clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
     refreshSpecialLayer();
     applyEventLayers();
   }
@@ -1347,7 +1342,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       [activeVisualEventId]: { icon, color }
     };
     syncEventList();
-    syncClockEventVisuals();
+    clockShellController.syncEventVisuals();
   }
 
   function getEventVisualEditorIconSelect(): HTMLSelectElement {
@@ -1356,53 +1351,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function getEventVisualEditorColorInput(): HTMLInputElement {
     return getRequiredChild<HTMLInputElement>(eventVisualEditor, "[data-event-visual-editor-color]");
-  }
-
-  function scheduleClockEventVisualSync(): void {
-    if (clockVisualSyncFrame !== undefined) {
-      return;
-    }
-
-    clockVisualSyncFrame = window.requestAnimationFrame(() => {
-      clockVisualSyncFrame = undefined;
-      syncClockEventVisuals();
-    });
-  }
-
-  function syncClockEventVisuals(): void {
-    for (const marker of Array.from(mount.querySelectorAll<SVGGElement>('[data-clock-part="event-marker"]'))) {
-      const eventId = marker.dataset.eventId;
-      const event = eventId === undefined ? undefined : renderedEventsById.get(eventId);
-      if (event === undefined) {
-        continue;
-      }
-
-      const visual = eventVisualForEvent(event);
-      const line = marker.querySelector<SVGLineElement>("line");
-      const existingSymbol = marker.querySelector('[data-clock-part="event-symbol"]');
-
-      marker.dataset.eventIcon = visual.icon;
-      marker.dataset.eventColor = visual.color;
-      marker.style.setProperty("--event-marker-color", visual.color);
-      line?.style.setProperty("stroke", visual.color);
-
-      if (line === null) {
-        continue;
-      }
-
-      const x = line.getAttribute("x2") ?? "100";
-      const y = line.getAttribute("y2") ?? "100";
-      if (existingSymbol !== null && existingSymbol.getAttribute("data-event-icon") === visual.icon) {
-        existingSymbol.setAttribute("transform", `translate(${x} ${y}) scale(0.34) translate(-12 -12)`);
-        existingSymbol.setAttribute("color", visual.color);
-        continue;
-      }
-
-      existingSymbol?.remove();
-      const symbol = createClockIcon(visual.icon, x, y, visual.color);
-      symbol.dataset.eventIcon = visual.icon;
-      marker.append(symbol);
-    }
   }
 
   function createClockTooltip(): HTMLDivElement {
@@ -1929,9 +1877,9 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function applyEventLayers(): void {
-    clock.setEventLayers(eventLayers);
+    clockShellController.setEventLayers(eventLayers);
     syncEventList();
-    syncClockEventVisuals();
+    clockShellController.syncEventVisuals();
   }
 
   function syncAddEventFormVisibility(activeFormName: string | undefined): void {
@@ -1979,7 +1927,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       );
       syncFixedDayTimeStatus();
       zmanitTicks = createZmanitTicks(layer.events, selectedDefaultZmanitSetId);
-      clock.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
+      clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
       refreshSpecialLayer();
       applyEventLayers();
       void refreshHebcalDetails();
@@ -1993,7 +1941,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
         layer.id === DAY_TIMES_LAYER_ID ? { ...layer, events: [] } : layer
       );
       zmanitTicks = [];
-      clock.setZmanitTicks([]);
+      clockShellController.setZmanitTicks([]);
       syncFixedDayTimeStatus();
       refreshSpecialLayer();
       applyEventLayers();
@@ -2026,7 +1974,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
       jewishDateDetails = parseHebcalDetails(await response.json(), hebcalDate);
       hebcalCacheKey = nextCacheKey;
-      clock.refresh();
+      clockShellController.refresh();
     } catch (error) {
       if (isAbortError(error)) {
         return;
@@ -2034,7 +1982,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
       jewishDateDetails = { observances: [] };
       hebcalCacheKey = "";
-      clock.refresh();
+      clockShellController.refresh();
     }
   }
 
@@ -2540,7 +2488,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       selectedLocation = getLocationById(state.selectedLocationId);
       locationSelect.value = selectedLocation.id;
       syncTimeZoneToLocation();
-      clock.setTimeZone(timezoneSelect.value);
+      clockShellController.setTimeZone(timezoneSelect.value);
       dayTimesCacheKey = "";
     }
 
@@ -3115,14 +3063,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
     dayTimesAbortController?.abort();
     hebcalAbortController?.abort();
     lifecycle.destroy();
-    if (clockVisualSyncFrame !== undefined) {
-      window.cancelAnimationFrame(clockVisualSyncFrame);
-    }
     clockTooltip.remove();
     eventVisualEditor.remove();
     timerActionMenu.remove();
     clockContextMenu.remove();
-    clock.destroy();
   }
 
   return destroyClock;
