@@ -251,6 +251,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS
     }
   ];
+  const INCLUDE_AUTOMATIC_SHABBAT_EVENTS = false;
   const AUTOMATIC_SHABBAT_EVENTS: readonly (FixedDayTimeDefinition & { readonly weekdays: readonly number[] })[] = [
     { id: "candle-lighting", title: "הדלקת נרות", base: "sunset", direction: "before", offsetValue: 18, offsetUnit: "minutes", weekdays: [5] },
     { id: "shabbat-exit", title: "יציאת שבת", base: "sunset", direction: "after", offsetValue: 42, offsetUnit: "minutes", weekdays: [6] }
@@ -440,17 +441,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     layerToggles,
     zmanitLayerToggle,
     displayPreferencesToggle,
-    displayPreferencesPanel,
-    displayTemplateSelect,
-    displayModeSelect,
-    displayFontFamilySelect,
-    displayFontScaleInput,
-    displayClockScaleInput,
-    displayBackgroundColorInput,
-    displayPanelColorInput,
-    displayTextColorInput,
-    displayAccentColorInput,
-    displayClockFaceColorInput
+    displayPreferencesPanel
   } = appElements;
   const eventVisualEditor = createEventVisualEditor();
   const clockTooltip = createClockTooltip();
@@ -2175,7 +2166,12 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function resolveFixedDayTimeEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
-    return resolveOffsetDefinitions(events, fixedDayTimeEvents, "fixed");
+    const fixedEvents = resolveOffsetDefinitions(events, fixedDayTimeEvents, "fixed");
+    if (!INCLUDE_AUTOMATIC_SHABBAT_EVENTS) {
+      return fixedEvents;
+    }
+
+    return [...fixedEvents, ...resolveAutomaticShabbatEvents(events)];
   }
 
   function resolveAutomaticShabbatEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
