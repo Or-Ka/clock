@@ -196,3 +196,31 @@ Final T074 CLI gate passed:
 - `npm.cmd run build --workspace @clock/clock`
 
 Browser verification was attempted against a locally served app on `127.0.0.1:4174`. Vite could not start inside the sandbox because of the known `EPERM` issue on `D:\Oriya\Projects`, then started successfully outside the sandbox. Edge headless crashed before CDP verification could complete, so no browser result was recorded. This is an environment/tooling blocker, not an observed application failure.
+
+## T075 Provider Controller Checks
+
+Added focused tests:
+
+- `apps/web/src/data/provider-controller.test.ts`
+
+The provider-controller tests cover:
+
+- Loading sunrise/sunset layers through `SunriseSunsetEventLayerProvider`.
+- Skipping cached day-times requests.
+- Reloading when the location cache key changes.
+- Loading Hebcal details for the displayed Hebrew date after sunset.
+- Skipping cached Hebcal detail requests.
+- Computing location date keys by time zone.
+
+The source-level app tests now assert that `create-clock-app.ts` uses `createProviderController()` and that provider construction/date-window logic lives in `data/provider-controller.ts`.
+
+Final T075 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification was attempted after the product-code change. A local static preview server started on `127.0.0.1:4176`, but the Codex in-app browser blocked the local URL with `ERR_BLOCKED_BY_CLIENT` before the app loaded. T075 is not browser verified; manual browser verification is required before merge. This is an environment/tooling blocker, not an observed application failure.

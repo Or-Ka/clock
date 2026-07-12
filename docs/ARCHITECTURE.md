@@ -39,7 +39,7 @@ Responsibilities:
 
 ## Application Structure
 
-After T074, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, and a small internal state/domain API:
+After T075, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, a small internal state/domain API, and a provider/data controller:
 
 ```text
 apps/web/
@@ -59,6 +59,7 @@ apps/web/
     data/
       hebcal-service.ts
       locations.ts
+      provider-controller.ts
     event-editor/
       event-editor-controller.ts
       event-validation.ts
@@ -76,6 +77,8 @@ The settings controller owns settings listeners and cleanup while receiving expl
 
 `app-state/app-state.ts` is an internal DOM-free state/domain API around the current state variables owned by `create-clock-app.ts`. It provides snapshot access, guarded getters/setters for location, timezone, display preferences, event layers, derived events and rendered events, plus pure event-layer helpers. It is not a state manager and does not change the state shape. The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while remaining orchestration stays inside the application boundary.
 
+`data/provider-controller.ts` owns provider refresh mechanics for sunrise/sunset and Hebcal details: cache keys, abort controllers, provider construction, `loadLayer()` calls, Hebcal date/window calculation and parsed date-display details. `create-clock-app.ts` still applies provider results to app state and UI.
+
 ## Decisions In Force
 
 - The core library remains independent of the official web app.
@@ -83,4 +86,4 @@ The settings controller owns settings listeners and cleanup while receiving expl
 - The app is Hebrew-first and RTL.
 - The current refactor is behavior-preserving.
 - Historical prototype screens must not be included in the official production build.
-- The new state/domain API is internal to `apps/web`; it must not change storage, import/export or `packages/clock` contracts.
+- The state/domain API and provider controller are internal to `apps/web`; they must not change storage, import/export or `packages/clock` contracts.

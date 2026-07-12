@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Current Branch
 
-`refactor/frontend-architecture-app`
+`main`
 
 ## Completed Migration Task
 
@@ -178,3 +178,26 @@ Stop after T074. The next recommended task is:
 `T075 - Extract Data/Provider Controller`
 
 This should be a conservative extraction of sunrise/sunset and Hebcal provider orchestration behind the new state/domain API. Import/export should wait until provider refresh state has a clearer boundary.
+
+## T075 Progress
+
+T075 extracted the provider/data orchestration boundary:
+
+- Added `apps/web/src/data/provider-controller.ts`.
+- The provider controller owns sunrise/sunset refresh cache keys, abort controllers, `SunriseSunsetEventLayerProvider` creation and `loadLayer()` calls.
+- The provider controller owns Hebcal refresh cache keys, abort controllers, date/window selection, URL creation and detail parsing through `hebcal-service.ts`.
+- The controller reads location, timezone and event layers through the app-state API.
+- `create-clock-app.ts` still owns app state mutation, status text, fixed day-time events, zmanit tick calculation, special-layer refresh, event list rendering and clock-shell refreshes.
+- Added `apps/web/src/data/provider-controller.test.ts`.
+- Updated source-level app tests so provider construction is asserted in the provider controller rather than the app boundary.
+
+Not extracted in T075:
+
+- Import/export parsing and restore.
+- Storage reads and legacy display-mode migration.
+- Tooltip, timer menu, clock context menu, countdown rendering, floating clock behavior and alert behavior.
+- Zmanit set editing and fixed day-time resolution.
+- CSS or UX changes.
+- `packages/clock`.
+
+Next recommended work after T075 should not start automatically. A reasonable future T076 candidate is import/export boundary extraction, now that provider refresh state has a clearer boundary.

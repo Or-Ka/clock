@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Active Task
 
-T074: Introduce State/Domain APIs
+T075: Extract Data/Provider Controller
 
 ## T068 Checklist
 
@@ -108,3 +108,18 @@ T074: Introduce State/Domain APIs
 - `[x]` Run final docs/typecheck/tests/build.
 - `[ ]` Complete browser verification outside the current Edge headless tooling blocker.
 - `[ ]` Create T074 commit.
+
+## T075 Checklist
+
+- `[x]` Confirm `main` is clean and up to date with `origin/main`.
+- `[x]` Create a small provider/data controller.
+- `[x]` Move sunrise/sunset provider construction and `loadLayer()` orchestration out of `create-clock-app.ts`.
+- `[x]` Move sunrise/sunset and Hebcal cache keys and abort controllers into the provider controller.
+- `[x]` Move Hebcal date-range orchestration and detail refresh into the provider controller.
+- `[x]` Use the app-state API for provider reads of location, timezone and event layers.
+- `[x]` Keep state ownership, storage, import/export, UI rendering, alerts, tooltip/timer/context menu and floating clock behavior in `create-clock-app.ts`.
+- `[x]` Keep UX, CSS, storage schema, import/export schema and `packages/clock` unchanged.
+- `[x]` Add focused provider-controller tests.
+- `[x]` Run final docs/lint/typecheck/tests/build gate.
+- `[ ]` Complete browser verification outside the current Edge headless tooling blocker if automation remains unavailable.
+- `[ ]` Create T075 commits.

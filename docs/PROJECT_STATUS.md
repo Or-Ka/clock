@@ -13,11 +13,11 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T074: Introduce State/Domain APIs
+T075: Extract Data/Provider Controller
 
 ## Current Branch
 
-`refactor/frontend-architecture-app`
+`main`
 
 ## Migration Status
 
@@ -44,20 +44,22 @@ Extracted so far:
 - `clock-shell/clock-shell-controller.ts`
 - `data/locations.ts`
 - `data/hebcal-service.ts`
+- `data/provider-controller.ts`
 - `ui/event-icons.ts`
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` is a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns application state, startup orchestration and runtime cleanup. T074 adds an internal `app-state` API so part of that state access now goes through named methods and pure event-layer helpers instead of scattered direct mutations.
+`main.ts` is a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns application state, startup orchestration and runtime cleanup. T074 added an internal `app-state` API so part of that state access now goes through named methods and pure event-layer helpers instead of scattered direct mutations. T075 added a small provider controller for sunrise/sunset and Hebcal refresh orchestration.
 
-## T074 Gate
+## T075 Gate
 
-T074 CLI gate passed:
+T075 CLI gate passed:
 
 - `npm.cmd run docs:check`
+- `npm.cmd run lint`
 - `npm.cmd run typecheck`
 - `npm.cmd test`
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-Browser verification was attempted against a locally served app. The Vite server started successfully outside the sandbox on `127.0.0.1:4174`, but Edge headless crashed before CDP verification could complete. This is tracked as an environment/tooling blocker, not as an observed application failure.
+Browser verification was attempted after the product-code change. A local static preview server started on `127.0.0.1:4176`, but the Codex in-app browser blocked the local URL with `ERR_BLOCKED_BY_CLIENT` before the app loaded. T075 is not browser verified; manual browser verification is required before merge. This is tracked as an environment/tooling blocker, not as an observed application failure.
