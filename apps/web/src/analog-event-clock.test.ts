@@ -89,7 +89,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     const main = readAppFile("app/create-clock-app.ts");
 
     expect(main).toContain("let eventLayers: EventLayerDefinition[]");
-    expect(main).toContain("clockShellController.setEventLayers(eventLayers)");
+    expect(main).toContain("createAppStateApi");
+    expect(main).toContain("clockShellController.setEventLayers(appState.getEventLayers())");
     expect(main).toContain("DAY_TIMES_LAYER_ID");
     expect(main).toContain("PERSONAL_LAYER_ID");
     expect(main).toContain("emptyDayTimesLayer()");

@@ -5,6 +5,7 @@ import {
   SunriseSunsetEventLayerProvider,
   SystemTimeSource,
   type ClockDateDisplayDetails,
+  type EventDefinition,
   type EventLayerDefinition,
   type EventLayerKind,
   type InstantEventDefinition,
@@ -14,8 +15,16 @@ import {
 
 import { bindAppElements } from "./app-elements.js";
 import { createLifecycleRegistry } from "./lifecycle.js";
+import {
+  appendEventToLayer,
+  createAppStateApi,
+  eventsForLayer,
+  removeEventFromLayers,
+  setEventLayerEnabled,
+  setEventLayerEvents
+} from "../app-state/app-state.js";
 import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "../data/hebcal-service.js";
-import { LOCATION_OPTIONS, getLocationById } from "../data/locations.js";
+import { LOCATION_OPTIONS, getLocationById, type AppLocation } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
 import { createSettingsController } from "../settings/settings-controller.js";
 import { selectSettingsElements } from "../settings/settings-elements.js";
@@ -498,16 +507,50 @@ function startClockApp(deps: ClockAppDeps): () => void {
     },
     emptySpecialLayer()
   ];
+  const appState = createAppStateApi<
+    AppLocation,
+    DisplayPreferences,
+    EventDefinition,
+    EventLayerDefinition,
+    DerivedEventDefinition,
+    VisualEvent
+  >({
+    getLocation: () => selectedLocation,
+    setLocation(next) {
+      selectedLocation = next;
+    },
+    getTimeZone: () => timezoneSelect.value,
+    setTimeZone(next) {
+      timezoneSelect.value = next;
+    },
+    getDisplayPreferences: () => displayPreferences,
+    setDisplayPreferences(next) {
+      displayPreferences = next;
+    },
+    cloneDisplayPreferences,
+    getEventLayers: () => eventLayers,
+    setEventLayers(next) {
+      eventLayers = next;
+    },
+    getDerivedEvents: () => derivedEvents,
+    setDerivedEvents(next) {
+      derivedEvents = next;
+    },
+    getRenderedEventsById: () => renderedEventsById,
+    setRenderedEventsById(next) {
+      renderedEventsById = next;
+    }
+  });
   const clockShellController = createClockShellController({
     document,
     window,
     MutationObserver,
     elements: { mount },
     timeSource,
-    timeZone: timezoneSelect.value,
-    eventLayers,
+    timeZone: appState.getTimeZone(),
+    eventLayers: appState.getEventLayers(),
     dateDisplayDetails: () => jewishDateDetails,
-    getRenderedEvent: (eventId) => renderedEventsById.get(eventId),
+    getRenderedEvent: (eventId) => appState.getRenderedEvent(eventId),
     eventVisualForEvent,
     onTooltipPointerOver: handleClockTooltipPointerOver,
     onTooltipPointerMove: handleClockTooltipPointerMove,
@@ -524,19 +567,17 @@ function startClockApp(deps: ClockAppDeps): () => void {
   const settingsController = createSettingsController({
     elements: settingsElements,
     displayTemplates: DISPLAY_TEMPLATES,
-    getDisplayPreferences: () => displayPreferences,
-    setDisplayPreferences(next) {
-      displayPreferences = next;
-    },
+    getDisplayPreferences: () => appState.getDisplayPreferences(),
+    setDisplayPreferences: (next) => appState.setDisplayPreferences(next),
     cloneDisplayPreferences,
     isDisplayTemplateId,
     isDisplayMode,
     isDisplayFontFamily,
     persistDisplayMode,
     onLocationChange(locationId) {
-      selectedLocation = getLocationById(locationId);
+      appState.setLocation(getLocationById(locationId));
       syncTimeZoneToLocation();
-      clockShellController.setTimeZone(timezoneSelect.value);
+      clockShellController.setTimeZone(appState.getTimeZone());
       dayTimesCacheKey = "";
       hebcalCacheKey = "";
       void refreshDayTimesLayer(true);
@@ -574,9 +615,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
         return;
       }
 
-      eventLayers = eventLayers.map((layer) =>
-        layer.id === layerId ? { ...layer, enabled: toggle.checked } : layer
-      );
+      appState.setEventLayers(setEventLayerEnabled(appState.getEventLayers(), layerId, toggle.checked));
       applyEventLayers();
     });
   }
@@ -654,14 +693,12 @@ function startClockApp(deps: ClockAppDeps): () => void {
       eventAlertOverrides = { ...eventAlertOverrides, [nextEvent.id]: nextAlertSettings };
       requestDesktopPermissionIfNeeded(nextAlertSettings);
 
-      eventLayers = eventLayers.map((layer) =>
-        layer.id === PERSONAL_LAYER_ID ? { ...layer, events: [...layer.events, nextEvent] } : layer
-      );
+      appState.setEventLayers(appendEventToLayer(appState.getEventLayers(), PERSONAL_LAYER_ID, nextEvent));
       syncAddEventFormVisibility(undefined);
       applyEventLayers();
     },
     onDerivedEventSubmit(nextEvent, nextAlertSettings) {
-      derivedEvents = [...derivedEvents, nextEvent];
+      appState.setDerivedEvents([...appState.getDerivedEvents(), nextEvent]);
       eventAlertOverrides = { ...eventAlertOverrides, [nextEvent.id]: nextAlertSettings };
       requestDesktopPermissionIfNeeded(nextAlertSettings);
       refreshSpecialLayer();
@@ -687,15 +724,12 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return;
     }
 
-    derivedEvents = derivedEvents.filter((item) => item.id !== button.dataset.eventId);
     if (button.dataset.eventId !== undefined) {
+      appState.setDerivedEvents(appState.getDerivedEvents().filter((item) => item.id !== button.dataset.eventId));
       delete eventVisualOverrides[button.dataset.eventId];
       delete eventAlertOverrides[button.dataset.eventId];
+      appState.setEventLayers(removeEventFromLayers(appState.getEventLayers(), button.dataset.eventId));
     }
-    eventLayers = eventLayers.map((layer) => ({
-      ...layer,
-      events: layer.events.filter((item) => item.id !== button.dataset.eventId)
-    }));
     refreshSpecialLayer();
     applyEventLayers();
   });
@@ -890,8 +924,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function refreshDayTimeDerivedState(): void {
     refreshFixedDayTimeEvents();
-    const dayTimesLayer = eventLayers.find((layer) => layer.id === DAY_TIMES_LAYER_ID);
-    const dayEvents = dayTimesLayer?.events ?? [];
+    const dayEvents = eventsForLayer(appState.getEventLayers(), DAY_TIMES_LAYER_ID);
     zmanitTicks = createZmanitTicks(dayEvents, selectedDefaultZmanitSetId);
     clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
     refreshSpecialLayer();
@@ -899,33 +932,34 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function applyDisplayPreferences(): void {
+    const preferences = appState.getDisplayPreferences();
     const root = document.documentElement;
-    root.dataset.displayTemplate = displayPreferences.templateId;
-    root.dataset.displayMode = displayPreferences.displayMode;
-    root.style.setProperty("--display-font-family", DISPLAY_FONT_STACKS[displayPreferences.fontFamily]);
-    root.style.setProperty("--display-font-scale", `${displayPreferences.fontScale / 100}rem`);
-    root.style.setProperty("--display-clock-size", `${round(680 * displayPreferences.clockScale / 100)}px`);
-    root.style.setProperty("--display-clock-only-size", `${round(760 * displayPreferences.clockScale / 100)}px`);
+    root.dataset.displayTemplate = preferences.templateId;
+    root.dataset.displayMode = preferences.displayMode;
+    root.style.setProperty("--display-font-family", DISPLAY_FONT_STACKS[preferences.fontFamily]);
+    root.style.setProperty("--display-font-scale", `${preferences.fontScale / 100}rem`);
+    root.style.setProperty("--display-clock-size", `${round(680 * preferences.clockScale / 100)}px`);
+    root.style.setProperty("--display-clock-only-size", `${round(760 * preferences.clockScale / 100)}px`);
     root.style.setProperty("--floating-clock-size", `${floatingClockPixelSize()}px`);
     root.style.setProperty("--clock-font-boost", String(clockFontBoost()));
-    root.style.setProperty("--display-background-color", displayPreferences.backgroundColor);
-    root.style.setProperty("--display-panel-color", displayPreferences.panelColor);
-    root.style.setProperty("--display-text-color", displayPreferences.textColor);
-    root.style.setProperty("--display-muted-color", displayPreferences.mutedColor);
-    root.style.setProperty("--display-accent-color", displayPreferences.accentColor);
-    root.style.setProperty("--display-clock-face-color", displayPreferences.clockFaceColor);
-    root.style.setProperty("--display-clock-stroke-color", displayPreferences.clockStrokeColor);
-    root.style.setProperty("--display-clock-hand-color", displayPreferences.clockHandColor);
-    root.style.setProperty("--event-sunrise-color", displayPreferences.eventStyles.sunrise.color);
-    root.style.setProperty("--event-sunset-color", displayPreferences.eventStyles.sunset.color);
-    root.style.setProperty("--event-custom-color", displayPreferences.eventStyles.custom.color);
+    root.style.setProperty("--display-background-color", preferences.backgroundColor);
+    root.style.setProperty("--display-panel-color", preferences.panelColor);
+    root.style.setProperty("--display-text-color", preferences.textColor);
+    root.style.setProperty("--display-muted-color", preferences.mutedColor);
+    root.style.setProperty("--display-accent-color", preferences.accentColor);
+    root.style.setProperty("--display-clock-face-color", preferences.clockFaceColor);
+    root.style.setProperty("--display-clock-stroke-color", preferences.clockStrokeColor);
+    root.style.setProperty("--display-clock-hand-color", preferences.clockHandColor);
+    root.style.setProperty("--event-sunrise-color", preferences.eventStyles.sunrise.color);
+    root.style.setProperty("--event-sunset-color", preferences.eventStyles.sunset.color);
+    root.style.setProperty("--event-custom-color", preferences.eventStyles.custom.color);
     syncFloatingClockWindowStyles();
     syncCountdownLayer();
     refreshActiveTooltip();
   }
 
   function syncFloatingClockMode(): void {
-    if (displayPreferences.displayMode === "floatingClock") {
+    if (appState.getDisplayPreferences().displayMode === "floatingClock") {
       void openFloatingClockWindow();
       return;
     }
@@ -1007,7 +1041,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     const pipRoot = floatingClockWindow.document.documentElement;
     const sourceRoot = document.documentElement;
-    pipRoot.dataset.displayTemplate = displayPreferences.templateId;
+    pipRoot.dataset.displayTemplate = appState.getDisplayPreferences().templateId;
     pipRoot.dataset.displayMode = "floatingClock";
     pipRoot.dataset.floatingClockWindow = "true";
     for (const property of [
@@ -1093,11 +1127,11 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function floatingClockPixelSize(): number {
-    return Math.max(140, Math.min(260, Math.round(200 * displayPreferences.clockScale / 100)));
+    return Math.max(140, Math.min(260, Math.round(200 * appState.getDisplayPreferences().clockScale / 100)));
   }
 
   function clockFontBoost(): number {
-    return round(1 + Math.max(0, 100 - displayPreferences.clockScale) / 220);
+    return round(1 + Math.max(0, 100 - appState.getDisplayPreferences().clockScale) / 220);
   }
 
   function syncAlertGlobalControls(): void {
@@ -1227,6 +1261,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function eventVisualForEvent(event: Pick<VisualEvent, "id" | "kind">): EventVisualStyle {
+    const preferences = appState.getDisplayPreferences();
     const override = eventVisualOverrides[event.id];
     if (override !== undefined) {
       return override;
@@ -1240,25 +1275,26 @@ function startClockApp(deps: ClockAppDeps): () => void {
       };
     }
 
-    const derivedEvent = derivedEvents.find((definition) => definition.id === event.id);
+    const derivedEvent = appState.getDerivedEvents().find((definition) => definition.id === event.id);
     if (derivedEvent !== undefined) {
       return {
-        icon: displayPreferences.eventStyles.custom.icon,
+        icon: preferences.eventStyles.custom.icon,
         color: colorForEventTone(derivedEvent.base === "sunset" ? "sunset" : "sunrise")
       };
     }
 
-    return displayPreferences.eventStyles[event.kind];
+    return preferences.eventStyles[event.kind];
   }
 
   function colorForEventTone(tone: EventVisualTone): string {
+    const preferences = appState.getDisplayPreferences();
     if (tone === "sunrise") {
-      return displayPreferences.eventStyles.sunrise.color;
+      return preferences.eventStyles.sunrise.color;
     }
     if (tone === "sunset") {
-      return displayPreferences.eventStyles.sunset.color;
+      return preferences.eventStyles.sunset.color;
     }
-    return displayPreferences.eventStyles.custom.color;
+    return preferences.eventStyles.custom.color;
   }
 
   function createEventVisualEditor(): HTMLDivElement {
@@ -1296,7 +1332,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return;
     }
 
-    const event = renderedEventsById.get(eventId);
+    const event = appState.getRenderedEvent(eventId);
     if (event === undefined) {
       return;
     }
@@ -1325,7 +1361,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return;
     }
 
-    const event = renderedEventsById.get(activeVisualEventId);
+    const event = appState.getRenderedEvent(activeVisualEventId);
     if (event === undefined) {
       closeEventVisualEditor();
       return;
@@ -1532,7 +1568,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function openClockContextMenu(x: number, y: number): void {
-    const currentMode = displayPreferences.displayMode;
+    const currentMode = appState.getDisplayPreferences().displayMode;
     const fullMode = createClockContextMenuButton("מעבר למצב מלא", () => settingsController.setDisplayMode("fullMode"));
     const clockOnly = createClockContextMenuButton("מעבר לשעון בלבד", () => settingsController.setDisplayMode("clockOnly"));
     const floatingClock = createClockContextMenuButton("מעבר לשעון צף", () => settingsController.setDisplayMode("floatingClock"));
@@ -1718,7 +1754,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     const arcColor = target.countdownColor ?? visual.color;
     const remainingSeconds = secondsUntilTarget(target);
     const radius = target.ring === "outer" ? 83 : 56;
-    const current = projectInstantToStaticClockTime(timeSource.now(), timezoneSelect.value);
+    const current = projectInstantToStaticClockTime(timeSource.now(), appState.getTimeZone());
     const startAngle = displayAngleForTime(current.hour, current.minute, current.second ?? 0);
     const sweep = Math.min(359.5, Math.max(1, (remainingSeconds / (12 * 60 * 60)) * 360));
     const endAngle = (startAngle + sweep) % 360;
@@ -1781,7 +1817,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     if (element.dataset.clockPart === "event-marker") {
       const eventId = element.dataset.eventId;
-      const event = eventId === undefined ? undefined : renderedEventsById.get(eventId);
+      const event = eventId === undefined ? undefined : appState.getRenderedEvent(eventId);
       return event === undefined ? undefined : { ...event, targetType: "event" };
     }
 
@@ -1822,7 +1858,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function countdownTargetById(targetId: string): CountdownTarget | undefined {
-    const event = renderedEventsById.get(targetId);
+    const event = appState.getRenderedEvent(targetId);
     if (event !== undefined) {
       return { ...event, targetType: "event" };
     }
@@ -1854,7 +1890,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function secondsUntilTime(hour: number, minute: number, second = 0): number {
-    const current = projectInstantToStaticClockTime(timeSource.now(), timezoneSelect.value);
+    const current = projectInstantToStaticClockTime(timeSource.now(), appState.getTimeZone());
     return eventSecondOfDay({ hour, minute, second }) - eventSecondOfDay(current);
   }
 
@@ -1877,7 +1913,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function applyEventLayers(): void {
-    clockShellController.setEventLayers(eventLayers);
+    clockShellController.setEventLayers(appState.getEventLayers());
     syncEventList();
     clockShellController.syncEventVisuals();
   }
@@ -1920,10 +1956,12 @@ function startClockApp(deps: ClockAppDeps): () => void {
       });
       dayTimesCacheKey = nextCacheKey;
       dayTimesStatus.textContent = `זמני היום נטענו עבור ${selectedLocation.title} בתאריך ${date}.`;
-      eventLayers = eventLayers.map((existingLayer) =>
-        existingLayer.id === DAY_TIMES_LAYER_ID
-          ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(layer, existingLayer.enabled))
-          : existingLayer
+      appState.setEventLayers(
+        appState.getEventLayers().map((existingLayer) =>
+          existingLayer.id === DAY_TIMES_LAYER_ID
+            ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(layer, existingLayer.enabled))
+            : existingLayer
+        )
       );
       syncFixedDayTimeStatus();
       zmanitTicks = createZmanitTicks(layer.events, selectedDefaultZmanitSetId);
@@ -1937,9 +1975,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       }
 
       dayTimesStatus.textContent = `לא ניתן לטעון זמני זריחה ושקיעה עבור ${selectedLocation.title}.`;
-      eventLayers = eventLayers.map((layer) =>
-        layer.id === DAY_TIMES_LAYER_ID ? { ...layer, events: [] } : layer
-      );
+      appState.setEventLayers(setEventLayerEvents(appState.getEventLayers(), DAY_TIMES_LAYER_ID, []));
       zmanitTicks = [];
       clockShellController.setZmanitTicks([]);
       syncFixedDayTimeStatus();
@@ -2122,8 +2158,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function refreshFixedDayTimeEvents(): void {
-    eventLayers = eventLayers.map((layer) =>
-      layer.id === DAY_TIMES_LAYER_ID ? addFixedDayTimeEventsToLayer(layer) : layer
+    appState.setEventLayers(
+      appState.getEventLayers().map((layer) =>
+        layer.id === DAY_TIMES_LAYER_ID ? addFixedDayTimeEventsToLayer(layer) : layer
+      )
     );
     syncFixedDayTimeStatus();
   }
@@ -2268,14 +2306,11 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function refreshSpecialLayer(): void {
     const specialEvents = resolveDerivedEvents();
-    eventLayers = eventLayers.map((layer) =>
-      layer.id === SPECIAL_LAYER_ID ? { ...layer, events: specialEvents } : layer
-    );
+    appState.setEventLayers(setEventLayerEvents(appState.getEventLayers(), SPECIAL_LAYER_ID, specialEvents));
   }
 
   function resolveDerivedEvents(): InstantEventDefinition[] {
-    const dayTimesLayer = eventLayers.find((layer) => layer.id === DAY_TIMES_LAYER_ID);
-    const dayEvents = dayTimesLayer?.events ?? [];
+    const dayEvents = eventsForLayer(appState.getEventLayers(), DAY_TIMES_LAYER_ID);
     const sunrise = dayEvents.find((event) => event.kind === "sunrise");
     const sunset = dayEvents.find((event) => event.kind === "sunset");
     if (sunrise === undefined || sunset === undefined) {
@@ -2287,7 +2322,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return [];
     }
 
-    return derivedEvents.flatMap((definition) => {
+    return appState.getDerivedEvents().flatMap((definition) => {
       const baseSeconds = derivedBaseSecondOfDay(definition.base, sunrise, sunset);
       if (baseSeconds === undefined) {
         return [];
@@ -2342,10 +2377,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return;
     }
 
-    const currentTime = projectInstantToStaticClockTime(timeSource.now(), timezoneSelect.value);
+    const currentTime = projectInstantToStaticClockTime(timeSource.now(), appState.getTimeZone());
     const currentSeconds = eventSecondOfDay(currentTime);
     const today = currentDateKey();
-    const resolved = resolveEventLayers(eventLayers, currentTime);
+    const resolved = resolveEventLayers(appState.getEventLayers(), currentTime);
 
     for (const event of resolved) {
       const settings = eventAlertSettingsForEventId(event.id);
@@ -2433,16 +2468,17 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function exportAppState(): void {
+    const snapshot = appState.getSnapshot();
     const state: AppExportState = {
       version: 1,
       exportedAt: new Date().toISOString(),
-      selectedLocationId: selectedLocation.id,
+      selectedLocationId: snapshot.location.id,
       selectedDefaultZmanitSetId,
       zmanitTimeSets: zmanitTimeSets.map(cloneZmanitTimeSet),
       personalEvents: personalLayerEvents(),
-      derivedEvents,
+      derivedEvents: snapshot.derivedEvents,
       fixedDayTimeEvents,
-      displayPreferences: cloneDisplayPreferences(displayPreferences),
+      displayPreferences: snapshot.displayPreferences,
       eventVisualOverrides: { ...eventVisualOverrides },
       alertSettings: { ...alertSettings },
       eventAlertOverrides: { ...eventAlertOverrides }
@@ -2485,10 +2521,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     const state = payload as Partial<AppExportState>;
     if (typeof state.selectedLocationId === "string" && LOCATION_OPTIONS.some((item) => item.id === state.selectedLocationId)) {
-      selectedLocation = getLocationById(state.selectedLocationId);
-      locationSelect.value = selectedLocation.id;
+      appState.setLocation(getLocationById(state.selectedLocationId));
+      locationSelect.value = appState.getLocation().id;
       syncTimeZoneToLocation();
-      clockShellController.setTimeZone(timezoneSelect.value);
+      clockShellController.setTimeZone(appState.getTimeZone());
       dayTimesCacheKey = "";
     }
 
@@ -2506,13 +2542,11 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     if (Array.isArray(state.personalEvents)) {
       const importedPersonalEvents = state.personalEvents.filter(isInstantEventDefinition);
-      eventLayers = eventLayers.map((layer) =>
-        layer.id === PERSONAL_LAYER_ID ? { ...layer, events: importedPersonalEvents } : layer
-      );
+      appState.setEventLayers(setEventLayerEvents(appState.getEventLayers(), PERSONAL_LAYER_ID, importedPersonalEvents));
     }
 
     if (Array.isArray(state.derivedEvents)) {
-      derivedEvents = state.derivedEvents.filter(isDerivedEventDefinition);
+      appState.setDerivedEvents(state.derivedEvents.filter(isDerivedEventDefinition));
     }
 
     if (Array.isArray(state.fixedDayTimeEvents)) {
@@ -2520,7 +2554,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     }
 
     if (isDisplayPreferences(state.displayPreferences)) {
-      displayPreferences = cloneDisplayPreferences(state.displayPreferences);
+      appState.setDisplayPreferences(state.displayPreferences);
     }
 
     if (isRecord(state.eventVisualOverrides)) {
@@ -2555,16 +2589,16 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function personalLayerEvents(): readonly InstantEventDefinition[] {
-    return eventLayers.find((layer) => layer.id === PERSONAL_LAYER_ID)?.events ?? [];
+    return eventsForLayer(appState.getEventLayers(), PERSONAL_LAYER_ID);
   }
 
   function syncEventList(): void {
-    const currentTime = projectInstantToStaticClockTime(timeSource.now(), timezoneSelect.value);
-    const resolved = [...resolveEventLayers(eventLayers, currentTime)].sort(
+    const currentTime = projectInstantToStaticClockTime(timeSource.now(), appState.getTimeZone());
+    const resolved = [...resolveEventLayers(appState.getEventLayers(), currentTime)].sort(
       (first, second) => eventSecondOfDay(first) - eventSecondOfDay(second)
     );
-    renderedEventsById = new Map(resolved.map((event) => [event.id, event]));
-    status.textContent = `שעה מקומית ${formatTime(currentTime.hour, currentTime.minute)} | ${selectedLocation.title} | ${timezoneSelect.value}`;
+    appState.setRenderedEvents(resolved, (event) => event.id);
+    status.textContent = `שעה מקומית ${formatTime(currentTime.hour, currentTime.minute)} | ${appState.getLocation().title} | ${appState.getTimeZone()}`;
     eventList.replaceChildren(
       ...resolved.map((event) => {
         const item = document.createElement("li");
@@ -2959,7 +2993,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function syncTimeZoneToLocation(): void {
-    timezoneSelect.value = selectedLocation.timeZone;
+    appState.setTimeZone(appState.getLocation().timeZone);
   }
 
   function displayLayerKind(kind: EventLayerKind | undefined): string {
