@@ -2,9 +2,7 @@ import {
   projectInstantToStaticClockTime,
   resolveEventLayers,
   ringForTime,
-  SunriseSunsetEventLayerProvider,
   SystemTimeSource,
-  type ClockDateDisplayDetails,
   type EventDefinition,
   type EventLayerDefinition,
   type EventLayerKind,
@@ -23,7 +21,7 @@ import {
   setEventLayerEnabled,
   setEventLayerEvents
 } from "../app-state/app-state.js";
-import { addDaysToDateKey, hebcalUrlForDate, parseHebcalDetails } from "../data/hebcal-service.js";
+import { createProviderController, dateKeyForLocation } from "../data/provider-controller.js";
 import { LOCATION_OPTIONS, getLocationById, type AppLocation } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
 import { createSettingsController } from "../settings/settings-controller.js";
@@ -75,7 +73,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
   const window = deps.window as ClockAppWindow;
   const localStorage = window.localStorage;
   const MutationObserver = window.MutationObserver;
-  const DOMException = window.DOMException;
   type DerivedBase = "sunrise" | "sunset" | `zmanit-${number}`;
   type DerivedDirection = "before" | "after";
   type EventOffsetUnit = "minutes" | "hours" | "zmanit-hours";
@@ -462,11 +459,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   const timeSource = new SystemTimeSource();
   let selectedLocation = getLocationById(locationSelect.value);
-  let dayTimesAbortController: AbortController | undefined;
-  let dayTimesCacheKey = "";
-  let hebcalAbortController: AbortController | undefined;
-  let hebcalCacheKey = "";
-  let jewishDateDetails: ClockDateDisplayDetails = { observances: [] };
   let zmanitTicks: ZmanitTick[] = [];
   let zmanitTimeSets: ZmanitTimeSetDefinition[] = DEFAULT_ZMANIT_TIME_SETS.map(cloneZmanitTimeSet);
   let selectedDefaultZmanitSetId: ZmanitTimeSetId = DEFAULT_ZMANIT_SET_ID;
@@ -532,6 +524,14 @@ function startClockApp(deps: ClockAppDeps): () => void {
       renderedEventsById = next;
     }
   });
+  const providerController = createProviderController({
+    state: appState,
+    timeSource,
+    dayTimesLayerId: DAY_TIMES_LAYER_ID,
+    dayTimesLayerTitle: "׳–׳׳ ׳™ ׳”׳™׳•׳",
+    sunriseTitle: "׳–׳¨׳™׳—׳”",
+    sunsetTitle: "׳©׳§׳™׳¢׳”"
+  });
   const clockShellController = createClockShellController({
     document,
     window,
@@ -540,7 +540,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     timeSource,
     timeZone: appState.getTimeZone(),
     eventLayers: appState.getEventLayers(),
-    dateDisplayDetails: () => jewishDateDetails,
+    dateDisplayDetails: () => providerController.getDateDisplayDetails(),
     getRenderedEvent: (eventId) => appState.getRenderedEvent(eventId),
     eventVisualForEvent,
     onTooltipPointerOver: handleClockTooltipPointerOver,
@@ -569,8 +569,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       appState.setLocation(getLocationById(locationId));
       syncTimeZoneToLocation();
       clockShellController.setTimeZone(appState.getTimeZone());
-      dayTimesCacheKey = "";
-      hebcalCacheKey = "";
+      providerController.invalidateCaches();
       void refreshDayTimesLayer(true);
       void refreshHebcalDetails(true);
     },
@@ -1920,52 +1919,33 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   async function refreshDayTimesLayer(force = false): Promise<void> {
-    const date = currentDateKey();
-    const nextCacheKey = `${selectedLocation.id}:${date}`;
-    if (!force && nextCacheKey === dayTimesCacheKey) {
-      return;
-    }
-
-    dayTimesAbortController?.abort();
-    dayTimesAbortController = new AbortController();
-    dayTimesStatus.textContent = `טוען זריחה ושקיעה עבור ${selectedLocation.title}...`;
-
-    const provider = new SunriseSunsetEventLayerProvider({
-      layerId: DAY_TIMES_LAYER_ID,
-      layerTitle: "זמני היום",
-      latitude: selectedLocation.latitude,
-      longitude: selectedLocation.longitude,
-      sunriseTitle: "זריחה",
-      sunsetTitle: "שקיעה"
+    const result = await providerController.refreshDayTimesLayer({
+      force,
+      onStart({ location }) {
+        dayTimesStatus.textContent = `טוען זריחה ושקיעה עבור ${location.title}...`;
+      }
     });
 
-    try {
-      const layer = await provider.loadLayer({
-        date,
-        timeZone: selectedLocation.timeZone,
-        signal: dayTimesAbortController.signal
-      });
-      dayTimesCacheKey = nextCacheKey;
-      dayTimesStatus.textContent = `זמני היום נטענו עבור ${selectedLocation.title} בתאריך ${date}.`;
+    if (result.status === "loaded") {
+      dayTimesStatus.textContent = `זמני היום נטענו עבור ${result.location.title} בתאריך ${result.date}.`;
       appState.setEventLayers(
         appState.getEventLayers().map((existingLayer) =>
           existingLayer.id === DAY_TIMES_LAYER_ID
-            ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(layer, existingLayer.enabled))
+            ? addFixedDayTimeEventsToLayer(mergeLayerEnabled(result.layer, existingLayer.enabled))
             : existingLayer
         )
       );
       syncFixedDayTimeStatus();
-      zmanitTicks = createZmanitTicks(layer.events, selectedDefaultZmanitSetId);
+      zmanitTicks = createZmanitTicks(result.layer.events, selectedDefaultZmanitSetId);
       clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
       refreshSpecialLayer();
       applyEventLayers();
       void refreshHebcalDetails();
-    } catch (error) {
-      if (isAbortError(error)) {
-        return;
-      }
+      return;
+    }
 
-      dayTimesStatus.textContent = `לא ניתן לטעון זמני זריחה ושקיעה עבור ${selectedLocation.title}.`;
+    if (result.status === "failed") {
+      dayTimesStatus.textContent = `לא ניתן לטעון זמני זריחה ושקיעה עבור ${result.location.title}.`;
       appState.setEventLayers(setEventLayerEvents(appState.getEventLayers(), DAY_TIMES_LAYER_ID, []));
       zmanitTicks = [];
       clockShellController.setZmanitTicks([]);
@@ -1977,69 +1957,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   async function refreshHebcalDetails(force = false): Promise<void> {
-    const civilDate = currentDateKey();
-    const hebcalDate = currentHebcalDateKey();
-    const parshaStartDate = currentParshaRangeStartDateKey(civilDate);
-    const nextCacheKey = `${selectedLocation.id}:${civilDate}:${hebcalDate}:${parshaStartDate}`;
-    if (!force && nextCacheKey === hebcalCacheKey) {
-      return;
-    }
-
-    hebcalAbortController?.abort();
-    hebcalAbortController = new AbortController();
-
-    try {
-      const response = await fetch(
-        hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7), selectedLocation.timeZone),
-        {
-          signal: hebcalAbortController.signal
-        }
-      );
-      if (!response.ok) {
-        throw new Error(`Hebcal request failed with status ${response.status}.`);
-      }
-
-      jewishDateDetails = parseHebcalDetails(await response.json(), hebcalDate);
-      hebcalCacheKey = nextCacheKey;
-      clockShellController.refresh();
-    } catch (error) {
-      if (isAbortError(error)) {
-        return;
-      }
-
-      jewishDateDetails = { observances: [] };
-      hebcalCacheKey = "";
+    const result = await providerController.refreshHebcalDetails({ force });
+    if (result.status === "loaded" || result.status === "failed") {
       clockShellController.refresh();
     }
-  }
-
-  function currentHebcalDateKey(): string {
-    const date = currentDateKey();
-    const sunset = eventLayers
-      .find((layer) => layer.id === DAY_TIMES_LAYER_ID)
-      ?.events.find((event) => event.kind === "sunset");
-    if (sunset === undefined) {
-      return date;
-    }
-
-    const current = projectInstantToStaticClockTime(timeSource.now(), selectedLocation.timeZone);
-    return eventSecondOfDay(current) >= eventSecondOfDay(sunset) ? addDaysToDateKey(date, 1) : date;
-  }
-
-  function currentParshaRangeStartDateKey(civilDate: string): string {
-    if (weekdayIndexForDateKey(civilDate) !== 0) {
-      return civilDate;
-    }
-
-    const sunrise = eventLayers
-      .find((layer) => layer.id === DAY_TIMES_LAYER_ID)
-      ?.events.find((event) => event.kind === "sunrise");
-    if (sunrise === undefined) {
-      return civilDate;
-    }
-
-    const current = projectInstantToStaticClockTime(timeSource.now(), selectedLocation.timeZone);
-    return eventSecondOfDay(current) < eventSecondOfDay(sunrise) ? addDaysToDateKey(civilDate, -1) : civilDate;
   }
 
   function renderFixedDayTimeControls(): void {
@@ -2521,7 +2442,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       locationSelect.value = appState.getLocation().id;
       syncTimeZoneToLocation();
       clockShellController.setTimeZone(appState.getTimeZone());
-      dayTimesCacheKey = "";
+      providerController.invalidateDayTimesCache();
     }
 
     if (Array.isArray(state.zmanitTimeSets)) {
@@ -2688,23 +2609,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function currentDateKey(): string {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: selectedLocation.timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).formatToParts(timeSource.now().epochMilliseconds);
-    const year = parts.find((part) => part.type === "year")?.value;
-    const month = parts.find((part) => part.type === "month")?.value;
-    const day = parts.find((part) => part.type === "day")?.value;
-
-    if (year === undefined || month === undefined || day === undefined) {
-      throw new Error("לא ניתן לחשב את התאריך הנוכחי עבור המיקום שנבחר.");
-    }
-
-    return `${year}-${month}-${day}`;
+    return dateKeyForLocation(timeSource.now().epochMilliseconds, appState.getLocation().timeZone);
   }
-
   function weekdayIndexForDateKey(date: string): number {
     return new Date(`${date}T12:00:00Z`).getUTCDay();
   }
@@ -3068,10 +2974,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     return "מצב מלא";
   }
 
-  function isAbortError(error: unknown): boolean {
-    return error instanceof DOMException && error.name === "AbortError";
-  }
-
   function overlayWindow(element: Element): Window {
     return element.ownerDocument.defaultView ?? window;
   }
@@ -3090,8 +2992,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function destroyClock(): void {
     closeFloatingClockWindow();
-    dayTimesAbortController?.abort();
-    hebcalAbortController?.abort();
+    providerController.abort();
     lifecycle.destroy();
     clockTooltip.remove();
     eventVisualEditor.remove();
