@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>שעון יומי</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <title>שעון אירועים אנלוגי Beta</title>
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <main class="phase3-demo">
+    <main class="clock-app">
       <section class="workspace" aria-label="שעון והגדרות">
         <section class="clock-panel" aria-label="שעון חי עם טבעות אירועים">
           <div class="clock-toolbar">
@@ -357,9 +357,9 @@
                 התראות פעילות
               </label>
               <div class="import-export-actions">
-                <button id="export-demo-state" type="button">ייצוא</button>
-                <button id="import-demo-state" type="button">ייבוא</button>
-                <input id="import-demo-state-file" class="visually-hidden" type="file" accept="application/json,.json" />
+                <button id="export-app-state" type="button">ייצוא</button>
+                <button id="import-app-state" type="button">ייבוא</button>
+                <input id="import-app-state-file" class="visually-hidden" type="file" accept="application/json,.json" />
               </div>
               <p id="import-export-status" class="helper-text" aria-live="polite"></p>
             </fieldset>
@@ -580,11 +580,11 @@
         aria-label="Open Orka GitHub profile"
       >
         <span class="dev-stamp-tooltip" aria-hidden="true">
-          <img src="./dev.gif" alt="" />
+          <img src="./src/dev.gif" alt="" />
         </span>
         <span class="dev-stamp-text">dev by Orka</span>
       </a>
     </div>
-    <script type="module" src="./main.ts"></script>
+    <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

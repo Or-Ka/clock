@@ -1,19 +1,25 @@
 # Architecture
 
-## מבנה Workspace
-
-הפרויקט הוא workspace קטן, לא monorepo מרובה חבילות:
+## Workspace
 
 ```text
 apps/
-  demo/
+  web/
 packages/
   clock/
+archive/
+  legacy-app-screens/
 ```
 
-## מבנה הספרייה
+## Active Boundaries
 
-בתוך `packages/clock/src`:
+- `packages/clock`: reusable framework-independent TypeScript library.
+- `apps/web`: official Analog Event Clock Beta web application.
+- `archive/legacy-app-screens`: historical prototype screens, outside active TypeScript and Vite build.
+
+## Library Structure
+
+`packages/clock/src`:
 
 ```text
 core/
@@ -23,47 +29,58 @@ rendering/
 themes/
 ```
 
-## גבולות אחריות
+Responsibilities:
 
-- `core`: טיפוסי הקשר, lifecycle ותיאום בין מודולים.
-- `time`: מקורות זמן, scheduler, projection לפי timezone וחישובי זמן.
-- `events`: הגדרת אירועים ופתרון אירועים לפריטים להצגה.
-- `rendering`: חוזי renderer ומימוש SVG עתידי.
-- `themes`: tokens ואפשרויות עיצוב.
+- `core`: shared context and lifecycle contracts.
+- `time`: time sources, schedulers, projection and clock time calculations.
+- `events`: event definitions and resolution.
+- `rendering`: SVG renderer and live/static clock controllers.
+- `themes`: reusable clock colors/tokens.
 
-## החלטות מבניות
+## Application Structure
 
-- הליבה אינה תלויה ב-React.
-- renderer מקבל רק `ResolvedClockItem`.
-- `TimeSource` מחזיר `Temporal.Instant`.
-- `ClockScheduler` נפרד מ-`TimeSource`.
-- `ClockContext` מחזיק `timeZone` ו-`locale`.
+After T074, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, and a small internal state/domain API:
 
-## Phase 2: שעון חי
+```text
+apps/web/
+  index.html
+  src/
+    app/
+      app-elements.ts
+      create-clock-app.ts
+      lifecycle.ts
+    app-state/
+      app-state.ts
+    settings/
+      settings-controller.ts
+      settings-elements.ts
+    clock-shell/
+      clock-shell-controller.ts
+    data/
+      hebcal-service.ts
+      locations.ts
+    event-editor/
+      event-editor-controller.ts
+      event-validation.ts
+    ui/
+      event-icons.ts
+    main.ts
+    styles.css
+    analog-event-clock.test.ts
+    dev.gif
+```
 
-Phase 2 מוסיף שכבה חיה מעל השעון הסטטי בלי לשכפל את ציור ה-SVG:
+`main.ts` imports styles, creates `createClockApp({ document, window })`, starts it and disposes it during HMR. `create-clock-app.ts` owns the current app state, startup orchestration and runtime cleanup.
 
-- `TimeSource` מחזיר `Temporal.Instant` בלבד.
-- `SystemTimeSource`, `FixedTimeSource` ו-`SimulatedTimeSource` נמצאים תחת `time`.
-- `ClockScheduler` אחראי רק לתזמון רענון.
-- `MinuteBoundaryClockScheduler` מרענן מיד בעת `start()` ומסתנכרן לגבול הדקה הבאה.
-- `projectInstantToStaticClockTime` ממירה `Temporal.Instant` ו-IANA timezone אל `StaticClockTime`.
-- `createLiveAnalogClock` משתמש ב-`createStaticAnalogClock` ומעדכן את אותו SVG קיים.
+The settings controller owns settings listeners and cleanup while receiving explicit callbacks into the application boundary. The clock-shell controller owns live clock creation, marker visual sync, clock mount listener cleanup, the clock mutation observer and the visual timer while receiving explicit callbacks into app-owned state.
 
-## Phase 3: שתי טבעות אירועים
+`app-state/app-state.ts` is an internal DOM-free state/domain API around the current state variables owned by `create-clock-app.ts`. It provides snapshot access, guarded getters/setters for location, timezone, display preferences, event layers, derived events and rendered events, plus pure event-layer helpers. It is not a state manager and does not change the state shape. The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while remaining orchestration stays inside the application boundary.
 
-Phase 3 מוסיף שכבת אירועים ידנית מעל השעון החי:
+## Decisions In Force
 
-- השעון נשאר שעון אנלוגי רגיל עם מחוג שעות ומחוג דקות במרכז.
-- סביב המחוגים מוצגות שתי טבעות קבועות של אירועים ושעות.
-- הטבעת החיצונית (`outer`) מייצגת את 06:00 עד לפני 18:00.
-- הטבעת הפנימית (`inner`) מייצגת את 18:00 עד לפני 06:00.
-- כל 24 השעות מוצגות תמיד, ללא הסתרת אירועים מחוץ למחצית היום הנוכחית.
-- `events` מכיל אירועים ידניים בזמן מקומי בלבד מסוג `sunrise`, `sunset` או `custom`.
-- resolver תחת `events` מחשב `ring`, `angle` ו-`status` לפני שה-renderer מקבל את האירועים.
-- renderer אינו משייך אירועים לטבעת בעצמו.
-- `LiveAnalogClock` מוסיף `setEvents()` ומחשב מחדש אירועים בעת refresh, שינוי timezone או שינוי רשימת אירועים.
-
-## Spike לפני מוצר
-
-לפני מימוש קוד מוצר יבוצע SVG Spike תחת `apps/demo/src/spikes/svg-clock/`. ה-Spike אינו API ציבורי ואינו מועבר אוטומטית ל-`packages/clock`.
+- The core library remains independent of the official web app.
+- The app consumes the library through `@clock/clock`.
+- The app is Hebrew-first and RTL.
+- The current refactor is behavior-preserving.
+- Historical prototype screens must not be included in the official production build.
+- The new state/domain API is internal to `apps/web`; it must not change storage, import/export or `packages/clock` contracts.

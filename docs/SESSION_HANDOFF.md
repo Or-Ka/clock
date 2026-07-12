@@ -1,84 +1,70 @@
 # Session Handoff
 
-עודכן: 2026-07-02
+Updated: 2026-07-07
 
-## תקציר
+## Current Branch
 
-הפרויקט `clock` מיועד להיות ספריית TypeScript פתוחה ומודולרית לשעון אנלוגי עם אירועים מבוססי זמן.
+`refactor/frontend-architecture-app`
 
-בתחילת הסשן התיקייה `D:\Oriya\Projects\clock` הייתה קיימת, אך לא הכילה Git repository פעיל ולא הכילה קובצי תיעוד. המידע מהודעת bootstrap נשמר בקובצי Markdown תחת `docs/`, ולאחר מכן בוצע `git init`.
+## Completed Migration Task
 
-## מצב נוכחי
+T068: Promote the web surface to the official Analog Event Clock Beta application.
 
-- המשימה הפעילה: אין משימה פעילה.
-- Git אותחל בפועל.
-- branch: `feat/phase-3-dual-ring-events`.
-- Gate התיעוד עבר.
-- SVG Spike הושלם ונבדק.
-- Phase 1 הושלם, עבר Gate ומוזג ל-`main`.
-- Phase 2 הושלם ועבר Gate בענף `feat/phase-2-live-clock`.
-- Phase 3 נפתח מתוך `feat/phase-2-live-clock`, כי `main` המקומי עדיין אינו כולל את commits של Phase 2.
-- Phase 3 הושלם ומוכן לביקורת.
-- סבב תיקוני תצוגה ממוקד לדמו Phase 3 הושלם ומוכן לביקורת.
-- Phase 2 הוסיף שעון חי ומקורות זמן בלבד, ללא events, providers, markers, זריחה או שקיעה.
+## Completed In T068
 
-## המשך מומלץ
+- Confirmed `main` was clean and up to date with `origin/main`.
+- Ran baseline docs/typecheck/tests/build before migration.
+- Created the migration branch.
+- Moved tracked app files from `apps/demo` to `apps/web` with Git rename operations.
+- Confirmed rename detection with `git diff --cached --summary`.
+- Renamed the package to `@clock/web`.
+- Promoted the active web application entrypoint to `apps/web/index.html`.
+- Moved historical prototype screens to `archive/legacy-app-screens`.
+- Added localStorage compatibility for the previous display-mode key.
+- Kept JSON export schema at version `1` for import compatibility.
+- Added `docs/APP_MIGRATION.md`.
+- Ran the final migration gate.
+- Created logical migration commits.
 
-1. לבצע ביקורת ל-Phase 3.
-2. להחליט האם למזג את הענף.
-3. לא להתחיל Phase 4 ללא אישור מפורש.
+## Not Done In T068
 
-## תוצאות Phase 1
+- No `main.ts` refactor.
+- No state model refactor.
+- No CSS split.
+- No UX redesign.
+- No `packages/clock` behavior change.
 
-- קוד מוצרי: `packages/clock/src/rendering/static-analog-clock.ts`.
-- מודל זמן: `packages/clock/src/time/static-clock-time.ts`.
-- חישובי זווית: `packages/clock/src/time/clock-angles.ts`.
-- דמו מוצרי: `apps/demo/src/product-static-clock/`.
-- בדיקת דפדפן: שלושה SVGים, 12 סימוני שעות בכל שעון, זוויות 15:45/00:00/06:30 תקינות, responsive ב-1200px/760px/390px, ללא console errors/warnings.
-- ביקורת קוד: `destroy()` idempotent, `setTime()` לאחר destroy או detach זורק, מופע שני באותו container נדחה, וכשל setup משחזר את תוכן ה-container.
+## T069 Progress
 
-## תוצאות Phase 2
+Foundation and shallow controller modules were extracted without intended behavior changes:
 
-- קוד מקורות זמן: `packages/clock/src/time/time-source.ts`.
-- קוד scheduler: `packages/clock/src/time/clock-scheduler.ts`.
-- projection לפי timezone: `packages/clock/src/time/timezone-projection.ts`.
-- controller חי: `packages/clock/src/rendering/live-analog-clock.ts`.
-- דמו חי: `apps/demo/src/live-clock/`.
-- scripts: `npm.cmd run dev` בשורש וב-`@clock/demo`.
-- בדיקות: 7 test files, 54 tests.
-- בדיקת דפדפן: SVG יחיד, Start/Stop/Refresh, Fixed, Simulated כולל התקדמות אוטומטית ב-120x, timezone, responsive ב-1200px/760px/390px, ללא console errors/warnings מהאפליקציה.
+- `apps/web/src/app/app-elements.ts`
+- `apps/web/src/app/lifecycle.ts`
+- `apps/web/src/data/locations.ts`
+- `apps/web/src/data/hebcal-service.ts`
+- `apps/web/src/ui/event-icons.ts`
+- `apps/web/src/event-editor/event-validation.ts`
+- `apps/web/src/event-editor/event-editor-controller.ts`
 
-## תוצאות Phase 3
+The latest shallow extraction pass moved lifecycle cleanup and event form submit/toggle behavior behind narrow APIs. `main.ts` still owns state updates through callbacks, so this is not yet a deep app-controller refactor.
 
-- קוד טבעות ואירועים: `packages/clock/src/events/event-model.ts`.
-- renderer מורחב: `packages/clock/src/rendering/static-analog-clock.ts`.
-- controller חי מורחב: `packages/clock/src/rendering/live-analog-clock.ts`.
-- דמו Phase 3: `apps/demo/src/dual-ring-events/`.
-- API חדש: `ClockRing`, `InstantEventDefinition`, `ResolvedInstantEvent`, `ringForTime`, `dualRingAngle`, `resolveInstantEvents`, `events` ו-`setEvents()`.
-- בדיקות: 8 test files, 78 tests.
-- בדיקת דפדפן: SVG יחיד, שתי טבעות, 12 תוויות בכל טבעת, אירועים בשתי הטבעות, add/delete ללא יצירת SVG חדש, responsive ב-1200px/760px/390px, ללא console errors/warnings מהאפליקציה.
+## T070 Progress
 
-## תוצאות סבב תיקוני תצוגה Phase 3
+T070 introduced the explicit application boundary:
 
-- לוח השעון המרכזי: 12 למעלה, 3 מימין, 6 למטה, 9 משמאל.
-- שנתות: 60 שנתות חיצוניות, 12 שנתות שעה בולטות.
-- טבעות אירועים: לוגיקת `outer`/`inner` לא השתנתה.
-- מעבר יום/לילה: גרדיאנט על הטבעות ושני סימוני מעבר ב-05:59-06:00 וב-17:59-18:00.
-- דמו: כל הטקסטים הגלויים תורגמו לעברית, למעט מזהי timezone טכניים.
-- בדיקות: 9 test files, 84 tests.
-- בדיקת דפדפן: responsive ב-1200px, 760px ו-390px, ללא overflow וללא console errors/warnings מהאפליקציה.
+- `apps/web/src/main.ts` is now only the style import, `createClockApp({ document, window })`, `app.start()` and HMR disposal.
+- `apps/web/src/app/create-clock-app.ts` owns current application startup, state, orchestration and teardown.
+- `ClockApp` exposes `start()` and `destroy()`.
+- `start()` is guarded so repeated calls do not attach duplicate runtime listeners or timers.
+- `destroy()` is idempotent and delegates to the runtime `destroyClock()` cleanup.
+- Top-level listeners registered during startup now go through the lifecycle registry helper.
+- Focused tests were added for the new boundary API and entrypoint shape.
 
-## עובדות שחשוב לשמר
+This is intentionally a large temporary application boundary. It moves ownership out of `main.ts` without rewriting the internal state model or UX.
 
-- אין push, merge, rebase או Pull Request.
-- הודעות commit יהיו מפורטות בעברית.
-- commit יתבצע רק לאחר בדיקות ועדכון תיעוד.
-- Spike אינו API ציבורי.
-- קוד Spike צריך להישאר תחת `apps/demo/src/spikes/svg-clock/`.
+## T070 Verification
 
-## מצב בדיקות
-
-פקודות Gate אחרונות שעברו:
+Final CLI gate passed:
 
 - `npm.cmd run docs:check`
 - `npm.cmd run typecheck`
@@ -86,24 +72,109 @@
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-## מצב Git סופי
+Browser gate was completed manually outside Codex in a regular browser:
 
-```text
-git status --short
-<empty>
-```
+- The application loads.
+- The clock is displayed.
+- Existing events are displayed.
+- Adding an event works.
+- Deleting an event works.
+- Opening display preferences works.
+- No console errors were observed.
 
-נוצרו commits אמיתיים עבור שלבי bootstrap, Spike ו-Phase 1. commits של Phase 2 נוצרים בסגירת הסשן הנוכחי.
+Codex browser tooling was blocked by environment constraints only, not by an application failure. Vite failed from Codex with `EPERM` on `D:\Oriya\Projects`, the in-app browser blocked localhost with `ERR_BLOCKED_BY_CLIENT`, and `file://` is blocked by browser-tool policy.
 
-1. `הקמת תשתית הפרויקט`
-2. `הוספת SVG Spike בדמו`
-3. `תיעוד שלב ה-bootstrap וה-SVG Spike`
+## T071 Progress
 
-commit המימוש האחרון לפני Phase 2 הוא merge של Phase 1 ל-`main`: `45973c2`.
+T071 extracted the first settings boundary:
 
-## תוצאות SVG Spike
+- `apps/web/src/settings/settings-elements.ts` defines the settings element subset selected from the app DOM binding.
+- `apps/web/src/settings/settings-controller.ts` owns the listeners for location selection, display preferences panel toggle, display template selection, display mode selection, display font family/scale, clock scale and basic display color controls.
+- The controller exposes `start()`, `destroy()`, `syncDisplayPreferenceControls()`, `setDisplayPreferencesOpen()` and `setDisplayMode()`.
+- Settings state remains inside `create-clock-app.ts`; the controller receives explicit callbacks for state reads/writes, rendering side effects and clock-shell menu cleanup.
+- Focused tests cover panel open/close, `fullMode` / `clockOnly` / `floatingClock`, location callback, appearance changes and listener cleanup.
 
-- URL dev מקומי: `http://127.0.0.1:5173/`.
-- קוד: `apps/demo/src/spikes/svg-clock/`.
-- בדיקת דפדפן: שלושה SVGים, marker נגיש כ-button, click, Enter, focus ring, RTL ו-responsive עברו.
-- console errors/warnings מהאפליקציה: אין.
+T071 verification passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Browser verification in the Codex in-app browser against the built app served locally.
+
+Browser verification covered app load, clock display, existing events, display preferences open/close, display mode changes, location/timezone change, adding an event, deleting the added event and no console errors or warnings.
+
+Not extracted in T071:
+
+- Layer toggles remain in `create-clock-app.ts` because they directly update event layers.
+- The document `pointerdown` listener remains in `create-clock-app.ts` because it coordinates settings, visual editor, timer menu and clock context menu closing.
+- Storage schema and import/export remain unchanged.
+
+## T072 Progress
+
+T072 extracted the first clock-shell boundary:
+
+- `apps/web/src/clock-shell/clock-shell-controller.ts` owns live clock creation and startup.
+- The controller owns the clock mount listeners for pointer/mouse tooltip handling, marker clicks and context menu opening.
+- The controller owns the clock mutation observer and schedules marker visual sync after clock SVG changes.
+- The controller owns the visual timer that drives countdown layer refresh, active tooltip refresh and alert checks through an explicit callback.
+- The controller exposes `start()`, `setTimeZone()`, `setEventLayers()`, `setZmanitTicks()`, `refresh()`, `syncEventVisuals()` and `destroy()`.
+- `create-clock-app.ts` still owns `eventLayers`, rendered event state, tooltip/menu/countdown state, floating clock/Picture-in-Picture orchestration, providers, import/export and storage.
+- Focused tests cover single-SVG creation, refresh without duplicate SVGs, listener/timer/observer cleanup and marker visual updates.
+
+Not extracted in T072:
+
+- Tooltip, timer menu, countdown arc and context menu rendering still live in `create-clock-app.ts` because they still share state with event lists, display preferences and floating window restoration.
+- Floating clock/Picture-in-Picture orchestration remains in `create-clock-app.ts`.
+- Provider/data flow, import/export and state/domain APIs remain unchanged.
+
+T072 verification passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Browser verification in the Codex in-app browser against the built app served locally from `apps/web/dist`.
+
+Browser verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding an event, deleting the added event, marker tooltip, timer menu, clock context menu and no console errors or warnings.
+
+## T073 Progress
+
+T073 was a documentation-only architecture review after T072:
+
+- Reviewed the remaining callback pressure between `create-clock-app.ts`, settings and clock-shell boundaries.
+- Kept product code unchanged.
+- Recommended `T074 - Introduce State/Domain APIs` as the next step before provider or import/export extraction.
+
+T073 commit:
+
+- `9078bc0 docs review frontend architecture after T072`
+
+## T074 Progress
+
+T074 introduced the first internal state/domain API:
+
+- `apps/web/src/app-state/app-state.ts` defines `createAppStateApi()`.
+- The API covers location, timezone, display preferences, event layers, derived events, rendered event map access and snapshot creation.
+- The same module also provides pure event-layer helpers for reading a layer's events, toggling enabled state, setting layer events, appending an event to a layer and removing an event from all layers.
+- `create-clock-app.ts` now routes part of state access through `appState`, including settings display preference reads/writes, location/timezone changes, event-layer mutations, derived event mutations, rendered event lookup and export snapshot creation.
+- `apps/web/src/app-state/app-state.test.ts` adds focused DOM-free coverage for the new API and event-layer helpers.
+- Existing app source tests were updated so the expected event-layer handoff goes through `appState.getEventLayers()`.
+
+Not extracted in T074:
+
+- Provider/data flow remains in `create-clock-app.ts`.
+- Import/export parsing and UI status remain in `create-clock-app.ts`.
+- Storage reads and legacy display-mode migration remain unchanged.
+- Tooltip, timer menu, clock context menu, countdown rendering, floating clock behavior and alert behavior remain in `create-clock-app.ts`.
+- `packages/clock`, CSS, UX and import/export JSON format remain unchanged.
+
+## Next Recommended Work
+
+Stop after T074. The next recommended task is:
+
+`T075 - Extract Data/Provider Controller`
+
+This should be a conservative extraction of sunrise/sunset and Hebcal provider orchestration behind the new state/domain API. Import/export should wait until provider refresh state has a clearer boundary.

@@ -9,10 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json && npm run build --workspace @clock/demo",
-    "dev": "npm --workspace @clock/demo run dev --",
-    "dev:svg-spike": "npm run dev:svg-spike --workspace @clock/demo",
-    "dev:static-clock": "npm --workspace @clock/demo run dev:static-clock --",
+    "build": "tsc -b tsconfig.json && npm run build --workspace @clock/web",
+    "dev": "npm --workspace @clock/web run dev --",
     "test": "vitest run",
     "typecheck": "tsc -b tsconfig.json --pretty false",
     "lint": "eslint .",

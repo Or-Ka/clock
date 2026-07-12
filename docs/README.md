@@ -1,66 +1,45 @@
-# Clock Project Documentation
+# Documentation
 
-תיקיית `docs/` היא מקור האמת של פרויקט `clock`: ספריית TypeScript פתוחה ומודולרית להצגת שעון אנלוגי SVG עם שכבת אירועים מבוססי זמן.
+עודכן: 2026-07-05
 
-המסמך הזה הוא אינדקס תיעוד. הוראות עבודה למודל ולסשנים נמצאות בנפרד ב-`AGENT_GUIDE.md`.
+## Source Of Truth
 
-## מהות הפרויקט
+The project includes:
 
-`clock` מיועד להטמעה באתרים ובאפליקציות Web שרוצים להציג זמן ואירועים על גבי שעון אנלוגי אינטראקטיבי.
+- `packages/clock`: reusable embeddable analog clock library.
+- `apps/web`: official Analog Event Clock Beta web application.
 
-הכיוון המוצרי:
+The web application is the primary product consumer of the library. Historical prototype screens are stored outside active app source under `archive/legacy-app-screens`.
 
-- שעון SVG סטטי וחי.
-- API נקי לצריכה דרך Vanilla JavaScript ובהמשך React או Web Component.
-- הצגת אירועים על לוח השעון.
-- תמיכה באירועים מוחלטים ידניים, ובהמשך אירועי עוגן, אירועים נגזרים וטווחי זמן.
-- חיבור עתידי למקורות נתונים כמו זריחה ושקיעה.
-- הפרדה מלאה בין לוגיקת זמן, אירועים, providers ו-renderer.
+## Main Documents
 
-## מסמכי תכנון ומוצר
+- [Product Spec](PRODUCT_SPEC.md)
+- [Architecture](ARCHITECTURE.md)
+- [Embedding API](EMBEDDING_API.md)
+- [Event Model](EVENT_MODEL.md)
+- [Rendering Strategy](RENDERING_STRATEGY.md)
+- [Accessibility](ACCESSIBILITY.md)
+- [Migration](APP_MIGRATION.md)
+- [Project Status](PROJECT_STATUS.md)
+- [Current Task](CURRENT_TASK.md)
+- [Session Handoff](SESSION_HANDOFF.md)
+- [Decisions](DECISIONS.md)
+- [Changelog](CHANGELOG.md)
 
-- `PRODUCT_SPEC.md`: חזון, משתמשים מיועדים וגבולות MVP.
-- `ARCHITECTURE.md`: מבנה workspace, מודולים וגבולות אחריות.
-- `TIME_MODEL.md`: מקורות זמן, timezone וייצוגי זמן.
-- `EVENT_MODEL.md`: מודל אירועים, פתרון אירועים ושיוך לטבעות.
-- `RENDERING_STRATEGY.md`: אסטרטגיית ה-SVG וה-renderer.
-- `EMBEDDING_API.md`: API להטמעה וצריכה חיצונית.
-- `ACCESSIBILITY.md`: עקרונות נגישות.
-
-## מסמכי ניהול פרויקט
-
-- `PROJECT_STATUS.md`: תמונת מצב עדכנית.
-- `CURRENT_TASK.md`: המשימה הפעילה.
-- `TASKS.md`: רשימת משימות והחלטות מאושרות.
-- `ROADMAP.md`: כיוון התפתחות.
-- `DECISIONS.md`: החלטות מרכזיות.
-- `CHANGELOG.md`: שינויים שבוצעו.
-- `KNOWN_ISSUES.md`: בעיות ידועות.
-- `RISKS.md`: סיכונים.
-- `OPEN_QUESTIONS.md`: שאלות פתוחות.
-
-## מסמכי בדיקות
-
-- `TEST_STRATEGY.md`: אסטרטגיית בדיקות.
-- `TEST_STATUS.md`: מצב בדיקות עדכני.
-
-## מסמכי עבודה למודל
-
-- `AGENT_GUIDE.md`: סדר קריאה, פרוטוקולי פתיחת וסיום סשן, Gates וכללי Git.
-- `SESSION_HANDOFF.md`: מצב העברה לסשן הבא.
-
-## הפעלת דמו Phase 3
-
-להפעלת דמו השעון החי עם שתי טבעות אירועים משורש הפרויקט:
+## Running The Official App
 
 ```powershell
 npm.cmd run dev
 ```
 
-הפקודה מפעילה את `apps/demo/src/dual-ring-events` דרך Vite על `127.0.0.1`.
+This starts `@clock/web` from `apps/web` through Vite on `127.0.0.1`.
 
-דמואים נוספים זמינים דרך scripts ייעודיים:
+## Gates
 
-- `npm.cmd run dev:static-clock --workspace @clock/demo`
-- `npm.cmd run dev:live-clock --workspace @clock/demo`
-- `npm.cmd run dev:svg-spike --workspace @clock/demo`
+```powershell
+npm.cmd run docs:check
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+npm.cmd run build --workspace @clock/clock
+```

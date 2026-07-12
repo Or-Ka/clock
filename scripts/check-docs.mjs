@@ -24,6 +24,7 @@ const requiredDocs = [
   "KNOWN_ISSUES.md",
   "CHANGELOG.md",
   "ACCESSIBILITY.md",
+  "APP_MIGRATION.md",
   "RISKS.md",
   "OPEN_QUESTIONS.md"
 ];

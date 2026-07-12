@@ -1,40 +1,34 @@
 # Changelog
 
-## 2026-07-02
+## Unreleased
 
-- החל Phase 3 בענף `feat/phase-3-dual-ring-events`.
-- סומנה כהוחלפה החלטת ה-MVP הישנה שהציגה רק את מחזור 12 השעות הנוכחי.
-- נוסף ADR לתצוגת 24 שעות בשתי טבעות: `outer` עבור 06:00-17:59 ו-`inner` עבור 18:00-05:59.
-- נוספו `ClockRing`, `ringForTime()`, `dualRingAngle()` ו-`resolveInstantEvents()`.
-- נוסף מודל `InstantEventDefinition` ו-`ResolvedInstantEvent` לאירועים ידניים מסוג `sunrise`, `sunset` ו-`custom`.
-- הורחב ה-SVG renderer להצגת שתי טבעות, 24 תוויות שעה וסמני אירועים.
-- הורחב `LiveAnalogClock` עם `events` ו-`setEvents()`.
-- נוסף דמו Phase 3 תחת `apps/demo/src/dual-ring-events/` עם הוספה, מחיקה, timezone ורשימת אירועים.
-- `npm.cmd run dev` מפעיל כעת את דמו Phase 3.
-- נוספו בדיקות Phase 3 והורץ Gate מלא.
-- בוצע סבב תיקוני תצוגה ממוקד לדמו Phase 3: מספרי השעון המרכזי סודרו בכיוון אנלוגי רגיל, נוספו 60 שנתות חיצוניות, נוספו סימוני מעבר יום/לילה, והממשק תורגם לעברית.
+- Introduced an internal app state/domain API for existing location, timezone, display preference, event-layer, derived-event and rendered-event state.
+- Added pure event-layer domain helpers and focused state/domain API tests.
+- Routed part of `create-clock-app.ts` state access through the new app-state API without changing state shape, UX, CSS, storage, import/export or `packages/clock`.
+- Extracted a shallow clock-shell controller for live clock creation, mount listeners, marker visual sync, clock mutation observer and visual timer cleanup.
+- Added focused clock-shell controller tests for single-SVG rendering, refresh behavior, cleanup and marker visual updates.
+- Extracted a shallow settings controller for location and display-preference listeners.
+- Added settings controller cleanup and focused settings tests.
+- Introduced `createClockApp` as the web app application boundary with `start()` and `destroy()`.
+- Reduced `main.ts` to the official style import, app creation/start and HMR disposal entrypoint.
+- Routed top-level startup listeners through lifecycle cleanup inside the new app boundary.
+- Added focused tests for the `createClockApp` API and small-entrypoint shape.
+- Continued T069 with a conservative frontend architecture extraction.
+- Added a lifecycle cleanup registry for app listeners, timers and observers.
+- Added a narrow event-editor controller for event form toggles and regular/special event submit handling.
+- Added focused tests for the new lifecycle and event-editor boundaries.
 
-## 2026-06-30
+## 0.1.0-beta.1 - 2026-07-05
 
-- נשמר מקור אמת ראשוני תחת `docs/`.
-- אותחל Git repository.
-- נבחר npm כ-package manager.
-- נוצר workspace עם `apps/demo` ו-`packages/clock`.
-- הוגדר TypeScript strict.
-- הוגדר Vitest עם בדיקת עשן.
-- הוגדר build בסיסי עם `tsc -b`.
-- נוספה תלות `@js-temporal/polyfill` עבור טיפוסי Temporal.
-- מומש SVG Spike תחת `apps/demo/src/spikes/svg-clock/`.
-- נבדקו responsive, click, keyboard focus, focus ring, RTL ו-build של ה-Spike.
-- החל Phase 1 בענף `feat/phase-1-static-clock`.
-- נוסף API `createStaticAnalogClock` לשעון SVG סטטי מוצרי.
-- נוספו פונקציות זווית טהורות ובדיקות עבור מיפוי זמן לזווית.
-- נוסף demo מוצרי נפרד מה-Spike תחת `apps/demo/src/product-static-clock/`.
-- בוצעה ביקורת Phase 1: API הזוויות נשאר פנימי, lifecycle חוזק, ונוספו בדיקות לקלט מיוחד ולמקרי cleanup.
-- החל Phase 2 בענף `feat/phase-2-live-clock`.
-- נוספו `SystemTimeSource`, `FixedTimeSource` ו-`SimulatedTimeSource`.
-- נוסף `MinuteBoundaryClockScheduler` שמרענן מיד ומסתנכרן לגבול הדקה.
-- נוספה projection טהורה מ-`Temporal.Instant` ו-IANA timezone אל `StaticClockTime`.
-- נוסף API `createLiveAnalogClock` מעל `createStaticAnalogClock`.
-- נוסף דמו שעון חי תחת `apps/demo/src/live-clock/` עם Start, Stop, Refresh, timezone, System, Fixed ו-Simulated.
-- נוסף script `dev` בשורש וב-`@clock/demo`.
+- Promoted the web product to the official Analog Event Clock Beta application.
+- Moved the active app workspace to `apps/web`.
+- Renamed the app package to `@clock/web`.
+- Promoted the active app entrypoint to `apps/web/index.html`.
+- Moved historical prototype screens to `archive/legacy-app-screens`.
+- Added compatibility for the previous display-mode localStorage key.
+- Kept JSON export schema version `1` for imported state compatibility.
+- Updated active documentation for the official Beta application.
+
+## Historical Notes
+
+Earlier project phases produced the clock library, live clock behavior, dual-ring event rendering, Hebrew/RTL UI, and prototype screens. Historical implementation notes are superseded by the current app migration documentation.

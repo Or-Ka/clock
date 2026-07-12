@@ -13,18 +13,17 @@ This is a Windows/PowerShell project — the docs invoke npm as `npm.cmd`.
 - Run a single test file: `npx vitest run packages/clock/src/time/time-source.test.ts`
 - Run tests matching a name: `npx vitest run -t "part of test name"`
 - Typecheck: `npm.cmd run typecheck` (`tsc -b` across project references)
-- Build: `npm.cmd run build` (builds the library then all demos)
+- Build: `npm.cmd run build` (builds the library then the official web application)
 - Docs gate: `npm.cmd run docs:check` — **run this before considering doc-touching work done** (see below)
 
-Demos (Vite, served on `127.0.0.1`):
-- `npm.cmd run dev` — Phase 3 dual-ring events demo (the default)
-- `npm.cmd run dev:static-clock` / `dev:live-clock` / `dev:svg-spike` — other demos
+Application (Vite, served on `127.0.0.1`):
+- `npm.cmd run dev` — Analog Event Clock Beta application
 
 ## Architecture
 
 npm workspace (not a multi-package monorepo). Two workspaces:
 - `packages/clock` (`@clock/clock`) — the framework-agnostic core library. **No React/DOM-framework dependency.**
-- `apps/demo` (`@clock/demo`) — Vite demo apps, one folder per demo under `apps/demo/src/`.
+- `apps/web` (`@clock/web`) — official Analog Event Clock Beta web application.
 
 The library core (`packages/clock/src`) is split by responsibility, and the layering matters:
 - `time/` — time sources and scheduling. `TimeSource.now()` returns a `Temporal.Instant` (via `@js-temporal/polyfill`) and nothing else. `ClockScheduler` (e.g. `MinuteBoundaryClockScheduler`) is **separate** from `TimeSource` and only decides *when* to refresh. `timezone-projection.ts` converts an `Instant` + IANA timezone into a `StaticClockTime`.

@@ -1,40 +1,52 @@
 # Current Task
 
-עודכן: 2026-07-02
+Updated: 2026-07-07
 
-## משימה פעילה
+## Active Task
 
-T067: סבב המשך נקודתי ל-Phase 3: שכבות תצוגה לאירועים ותצוגת תאריך במרכז השעון.
+T074: Introduce State/Domain APIs
 
-## למה זו המשימה הפעילה
+## Context
 
-Phase 3 הושלם בענף `feat/phase-3-dual-ring-events`. סבב תיקוני התצוגה הממוקד לדמו Phase 3 הושלם גם הוא ומוכן לביקורת. הסבב הנוכחי מוסיף תשתית שכבות תצוגה (`day-times`, `personal`, ובהמשך `api`) ותצוגת תאריך עברי/לועזי במרכז השעון.
+T068 promoted the existing web product to the official Beta application under `apps/web`. T069 extracted narrow app/data/event-editor/lifecycle modules. T070 established an explicit application boundary while preserving behavior and keeping `packages/clock` as the reusable embeddable library. T071 extracted the first settings listener boundary. T072 extracted the first clock-shell wiring boundary. T073 reviewed the frontend architecture after T072 and recommended introducing state/domain APIs before extracting another controller.
 
-`main` המקומי עדיין אינו כולל את commits של Phase 2, ולכן Phase 3 נפתח מענף `feat/phase-2-live-clock` כדי לא לאבד את בסיס השעון החי וללא merge ל-`main`.
+T074 introduces a small internal `app-state` API around the existing state held by `create-clock-app.ts`. It does not replace the state manager, does not change the state shape, and does not change storage, import/export, CSS, UX or `packages/clock`.
 
-```text
-fatal: not a git repository (or any of the parent directories): .git
+Completed in T074:
+
+- Added `apps/web/src/app-state/app-state.ts`.
+- Added `createAppStateApi()` for location, timezone, display preferences, event layers, derived events and rendered event lookup/snapshot access.
+- Added pure event-layer domain helpers for reading layer events, setting layer events, toggling layer enabled state, appending events and removing events across layers.
+- Routed part of `create-clock-app.ts` state access through the new API, including settings display preferences, location/timezone changes, event-layer updates, derived event updates, rendered event lookup and export snapshot creation.
+- Added focused state/domain API tests in `apps/web/src/app-state/app-state.test.ts`.
+
+`create-clock-app.ts` remains the main orchestration boundary. Provider/data flow, import/export parsing, storage, alerts, overlays, floating clock behavior, tooltip/timer/context menu behavior and controller coordination intentionally stay there for this step.
+
+## Out Of Scope
+
+- No UX changes.
+- No CSS changes.
+- No storage schema changes.
+- No import/export format changes.
+- No provider controller extraction.
+- No import/export controller extraction.
+- No clock-shell split continuation.
+- No state manager, event bus, Redux, Zustand or MobX.
+- No `packages/clock` public API changes.
+- No production cleanup for the dev stamp yet.
+
+## Gate
+
+Final T074 CLI gate passed:
+
+```powershell
+npm.cmd run docs:check
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+npm.cmd run build --workspace @clock/clock
 ```
 
-לאחר מכן בוצע `git init`, ו-`git status --short --branch` החזיר:
+Browser verification must cover app load, clock display, existing events, display preferences, location/timezone change, adding and deleting an event and no console errors or warnings.
 
-```text
-## No commits yet on master
-?? docs/
-```
-
-הקבצים הקיימים שנבדקו לפני תחילת Phase 1 הם טיפוסים וממשקים בלבד:
-
-- `packages/clock/src/core/clock-context.ts`: ממשק `ClockContext` בלבד.
-- `packages/clock/src/events/event-model.ts`: טיפוסי אירועים ופריטים פתורים בלבד; אין resolver או renderer.
-- `packages/clock/src/time/time-source.ts`: ממשק `TimeSource` בלבד.
-
-## פעולות המשך מוצעות
-
-1. לבצע ביקורת ל-Phase 3 כולל סבב תיקוני התצוגה.
-2. להחליט האם למזג את הענף ל-`main`.
-3. לא להתחיל Phase 4 לפני אישור מפורש.
-
-## כלל חשוב
-
-ב-Phase 3 אין להוסיף API אמיתי של זריחה/שקיעה, location, latitude/longitude, derived events, offsets, ranges, קשתות זמן, tooltips מורכבים, React adapter, Web Component, Desktop או EXE. קיימת כעת תשתית provider כללית שמחזירה שכבת אירועים לפי תאריך ואזור זמן, אך חיבור API אמיתי חסום עד שיוגדרו endpoint, סכמה ונתוני מיקום.
+Browser verification was attempted against a locally served app. The server started successfully on `127.0.0.1:4174`, but Edge headless crashed before CDP verification could complete in this Codex environment.

@@ -1,235 +1,110 @@
 # Tasks
 
-עודכן: 2026-07-02
+Updated: 2026-07-07
 
-## סטטוסים
+## Active Task
 
-- `[ ]` לא התחיל
-- `[~]` בתהליך
-- `[x]` הושלם
-- `[!]` חסום
+T074: Introduce State/Domain APIs
 
-## משימה פעילה
+## T068 Checklist
 
-T067: סבב המשך נקודתי ל-Phase 3: שכבות תצוגה לאירועים ותצוגת תאריך במרכז השעון.
+- `[x]` Confirm `main` is clean and up to date with `origin/main`.
+- `[x]` Run pre-migration baseline checks.
+- `[x]` Create branch `refactor/promote-demo-to-beta-app`.
+- `[x]` Move tracked app files from `apps/demo` to `apps/web` using Git rename operations.
+- `[x]` Confirm rename detection with `git diff --cached --summary`.
+- `[x]` Rename package to `@clock/web`.
+- `[x]` Promote the active app entrypoint to `apps/web/index.html`.
+- `[x]` Move historical prototype screens outside active `src`.
+- `[x]` Add backward compatibility for the legacy display-mode localStorage key.
+- `[x]` Keep exported JSON schema compatible with previous version `1`.
+- `[x]` Update active product documentation.
+- `[x]` Add `docs/APP_MIGRATION.md`.
+- `[x]` Run final checks and browser verification.
+- `[x]` Create logical commits.
 
-## משימות מאושרות עד SVG Spike
+## T069 Checklist
 
-- `[x]` T001: לאתחל Git repository ולתעד מצב Git.
-- `[x]` T002: לבחור package manager ולהגדיר workspace.
-- `[x]` T003: ליצור שלד תיקיות.
-- `[x]` T004: להגדיר TypeScript strict.
-- `[x]` T005: להגדיר test runner ובדיקת עשן.
-- `[x]` T006: להגדיר build בסיסי.
-- `[x]` T007: ליצור `docs/README.md`.
-- `[x]` T008: ליצור `PROJECT_STATUS.md`.
-- `[x]` T009: ליצור `CURRENT_TASK.md`.
-- `[x]` T010: ליצור `SESSION_HANDOFF.md`.
-- `[x]` T011: ליצור `TEST_STATUS.md`.
-- `[x]` T012: ליצור `KNOWN_ISSUES.md`.
-- `[x]` T013: ליצור `CHANGELOG.md`.
-- `[x]` T014: ליצור את שאר מסמכי התכנון עם תוכן ראשוני ממשי.
-- `[x]` T015: לכתוב פרוטוקול פתיחת סשן.
-- `[x]` T016: לכתוב פרוטוקול סיום סשן.
-- `[x]` T017: למלא `DECISIONS.md`.
-- `[x]` T018: למלא `ARCHITECTURE.md`, `TIME_MODEL.md`, `EVENT_MODEL.md`.
-- `[x]` T019: למלא `ROADMAP.md`, `TASKS.md`, `TEST_STRATEGY.md`, `EMBEDDING_API.md`.
-- `[x]` T020: לעדכן את כל מסמכי המצב למצב אמת.
-- `[x]` T021: לבצע Gate תיעוד.
-- `[x]` T022: ליצור `apps/demo/src/spikes/svg-clock/`.
-- `[x]` T023: לממש SVG Spike בלבד.
-- `[x]` T024: להריץ בדיקות ו-build.
-- `[x]` T025: לתעד את תוצאות ה-Spike.
+- `[x]` Create a separate branch for the architecture refactor.
+- `[x]` Run baseline docs/typecheck/tests/build before code movement.
+- `[x]` Map responsibilities inside `apps/web/src/main.ts`.
+- `[x]` Extract typed DOM binders by domain without changing behavior.
+- `[x]` Extract app lifecycle cleanup boundaries.
+- `[x]` Extract event-editor logic behind a narrow API.
+- `[ ]` Extract settings logic behind a narrow API.
+- `[x]` Extract data/import/export/provider helpers behind a narrow API.
+- `[x]` Keep `packages/clock` behavior unchanged.
+- `[ ]` Run final docs/typecheck/tests/build and browser verification.
 
-## החלטות ארכיטקטוניות מאושרות
+## T069 Progress Notes
 
-- workspace קטן, לא monorepo מרובה חבילות.
-- מבנה ראשוני:
-  - `apps/demo`
-  - `packages/clock`
-- בתוך `packages/clock/src`:
-  - `core`
-  - `time`
-  - `events`
-  - `rendering`
-  - `themes`
-- renderer ראשי: SVG.
-- SVG Spike יתבצע לפני מימוש קוד מוצר.
-- הליבה אינה תלויה ב-React.
-- `TimeSource` מחזיר `Temporal.Instant`.
-- `ClockScheduler` נפרד מ-`TimeSource`.
-- `timeZone` ו-`locale` שייכים ל-`ClockContext`.
-- Temporal עם polyfill הוא הכיוון המועדף, בכפוף לבדיקת bundle size ותאימות.
-- יש הפרדה בין `EventDefinition` לבין `ResolvedClockItem`.
-- ה-renderer מקבל רק אירועים פתורים.
-- MVP כולל רק אירועים מוחלטים ידניים.
-- `anchor`, `derived` ו-`range` מתוכננים אך לא ממומשים ב-MVP.
-- תצוגת MVP היא מחזור 12 השעות הנוכחי:
-  - `00:00` עד לפני `12:00`
-  - `12:00` עד לפני חצות
-- Superseded: אירועים מחוץ לחצי היממה הנוכחי אינם מוצגים על החוגה ב-MVP.
-- API ה-MVP המתוכנן:
+- Added `app/app-elements.ts` as the first typed DOM binder.
+- Added `data/locations.ts` and `data/hebcal-service.ts`.
+- Added `ui/event-icons.ts`.
+- Added `event-editor/event-validation.ts`.
+- Added `app/lifecycle.ts` and routed observer/timer/listener cleanup through it.
+- Added `event-editor/event-editor-controller.ts` for event form toggles and regular/special event submits.
+- Added focused tests for lifecycle cleanup and event-editor submit behavior.
+- `main.ts` still owns state, settings, import/export, clock-shell interactions and rendering coordination.
+- The next step should continue with shallow settings extraction before reconsidering a deeper `createClockApp` boundary.
 
-```ts
-createAnalogClock({
-  container,
-  timeSource,
-  timeZone,
-  events,
-  theme
-});
-```
+## T070 Checklist
 
-## Gate התיעוד
+- `[x]` Add `apps/web/src/app/create-clock-app.ts`.
+- `[x]` Define `ClockApp` with `start()` and `destroy()`.
+- `[x]` Define `ClockAppDeps` with `document` and `window`.
+- `[x]` Move app initialization out of `main.ts`.
+- `[x]` Keep current state shape inside the new application boundary.
+- `[x]` Keep `main.ts` free of business logic and DOM queries.
+- `[x]` Route top-level startup listeners through lifecycle cleanup.
+- `[x]` Add focused tests for the boundary and entrypoint.
+- `[ ]` Run final docs/typecheck/tests/build and browser verification.
+- `[ ]` Create T070 commit.
 
-אין להתחיל את ה-SVG Spike לפני ש:
+## T071 Checklist
 
-- כל מסמכי מקור האמת קיימים.
-- אין מסמכים ריקים.
-- המשימה הפעילה זהה ב-`TASKS.md`, `CURRENT_TASK.md` ו-`PROJECT_STATUS.md`.
-- קיימים פרוטוקולי פתיחת וסיום סשן.
-- מצב Git מתועד.
-- מצב הבדיקות מתועד.
-- סשן חדש יכול להבין את מצב הפרויקט ללא השיחה הזו.
+- `[x]` Create a narrow settings controller/binder.
+- `[x]` Move location and display preference listeners out of `create-clock-app.ts`.
+- `[x]` Keep settings state ownership in `create-clock-app.ts`.
+- `[x]` Add explicit dependencies through controller callbacks.
+- `[x]` Add cleanup for moved listeners.
+- `[x]` Add focused settings-controller tests.
+- `[x]` Run final docs/typecheck/tests/build and browser verification.
+- `[x]` Create T071 commit.
 
-## Gate ה-SVG Spike
+## T072 Checklist
 
-ה-Spike צריך להוכיח:
+- `[x]` Create a narrow clock-shell controller.
+- `[x]` Move live clock creation out of `create-clock-app.ts`.
+- `[x]` Move clock mount listeners out of `create-clock-app.ts`.
+- `[x]` Move clock marker visual sync and mutation observer into the clock-shell controller.
+- `[x]` Move the visual timer into the clock-shell controller.
+- `[x]` Keep state ownership and provider/data flow in `create-clock-app.ts`.
+- `[x]` Add explicit callbacks for event lookup, visuals, tooltip/menu handlers and visual timer work.
+- `[x]` Add cleanup for moved listeners, timers and observer.
+- `[x]` Add focused clock-shell controller tests.
+- `[x]` Run final docs/typecheck/tests/build and browser verification.
+- `[x]` Create T072 commit.
 
-- SVG responsive בשלושה גדלים.
-- מחוג שעות ודקות לפי זמן קבוע.
-- marker אחד לפחות.
-- hover.
-- click.
-- keyboard focus.
-- focus ring גלוי.
-- RTL תקין.
-- resize תקין.
-- cleanup של listeners ו-observers.
-- הקוד נשאר רק תחת `apps/demo/src/spikes/svg-clock/`.
+## T073 Checklist
 
-ה-Spike אינו API ציבורי ואינו מועבר אוטומטית ל-`packages/clock`.
+- `[x]` Review frontend architecture after T072.
+- `[x]` Update documentation only.
+- `[x]` Keep product code unchanged.
+- `[x]` Recommend `T074 - Introduce State/Domain APIs` as the next step.
+- `[x]` Create T073 commit.
 
-## Phase 1: שעון SVG סטטי מוצרי
+## T074 Checklist
 
-- `[x]` T026: להגדיר מודל זמן סטטי מינימלי עבור שעה ודקה.
-- `[x]` T027: לממש פונקציות זווית טהורות עבור שעה ודקה.
-- `[x]` T028: להוסיף בדיקות למיפוי זמן לזווית.
-- `[x]` T029: להגדיר מבנה SVG מוצרי בסיסי.
-- `[x]` T030: לממש סימוני שעות.
-- `[x]` T031: לממש מחוג שעות.
-- `[x]` T032: לממש מחוג דקות.
-- `[x]` T033: לממש `setTime`.
-- `[x]` T034: לממש resize responsive.
-- `[x]` T035: לממש `destroy`.
-- `[x]` T036: ליצור demo מוצרי נפרד מה-Spike.
-- `[x]` T037: להוסיף בדיקות DOM או component.
-- `[x]` T038: לעדכן את התיעוד עבור API ותוצאות Phase 1.
-- `[x]` T039: לבצע Gate של Phase 1.
-
-## Gate של Phase 1
-
-Phase 1 ייחשב הושלם רק אם:
-
-- השעון נמצא תחת `packages/clock`, ולא תחת תיקיית ה-Spike.
-- ניתן להעביר שעה ודקה מפורשות.
-- מחוג השעות כולל את השפעת הדקות.
-- מחוגי השעות והדקות נכונים בזמני הבדיקה שהוגדרו.
-- השעון responsive בשלושה גדלים לפחות.
-- `setTime()` מעדכן את המחוגים ללא יצירת רכיב חדש.
-- `destroy()` מנקה כל observer או listener.
-- אין timer ואין שימוש בשעת המערכת.
-- אין events, providers או scheduler.
-- קיימות בדיקות אמיתיות מעבר לבדיקת העשן.
-- `npm.cmd run docs:check` עובר.
-- `npm.cmd run typecheck` עובר.
-- `npm.cmd test` עובר.
-- `npm.cmd run build` עובר.
-- הדמו נבדק בדפדפן.
-- התיעוד תואם למצב הקוד.
-- working tree נקי לאחר commit.
-
-## Phase 2: שעון חי ומקורות זמן
-
-- `[x]` T040: לעדכן תיעוד פתיחה ותכנון משימות עבור Phase 2.
-- `[x]` T041: לממש `TimeSource` עבור זמן מערכת, זמן קבוע וזמן מדומה.
-- `[x]` T042: לממש `ClockScheduler` שמרענן מיד, מסתנכרן לגבול הדקה ומנקה timers.
-- `[x]` T043: לממש projection טהור מ-`Temporal.Instant` ו-IANA timezone אל `StaticClockTime`.
-- `[x]` T044: לממש `createLiveAnalogClock` מעל `createStaticAnalogClock` ללא שכפול SVG.
-- `[x]` T045: להוסיף בדיקות יחידה ודום עבור מקורות זמן, scheduler, timezone ו-lifecycle.
-- `[x]` T046: ליצור דמו שעון חי עם Start, Stop, Refresh, timezone ומצבי זמן.
-- `[x]` T047: להוסיף scripts של `dev` בשורש ובדמו ולתעד הפעלה.
-- `[x]` T048: להריץ בדיקות, typecheck, build ובדיקת דפדפן בגדלים הנדרשים.
-- `[x]` T049: לעדכן תיעוד סיום Phase 2, Gate ותוצאות בדיקות.
-
-## Gate של Phase 2
-
-Phase 2 ייחשב הושלם רק אם:
-
-- Phase 1 ממשיך לעבוד ללא breaking changes.
-- השעון מציג זמן מערכת ומתעדכן.
-- Fixed Time עובד.
-- Simulated Time עובד, כולל pause/resume ושינוי מהירות.
-- Start, Stop ו-Refresh עובדים.
-- שינוי timezone עובד ומשתמש ב-IANA timezone, לא ב-offset קבוע.
-- אין timer כפול.
-- אין timer פעיל אחרי `destroy()`.
-- אין יצירת SVG חדש בכל עדכון.
-- `npm.cmd run dev` מפעיל את הדמו.
-- הדמו עובד בגדלי חלון 1200, 760 ו-390.
-- אין שגיאות או warnings בקונסול.
-- `npm.cmd run docs:check` עובר.
-- `npm.cmd run typecheck` עובר.
-- `npm.cmd test` עובר.
-- `npm.cmd run build` עובר.
-- `npm.cmd run build --workspace @clock/clock` עובר.
-- התיעוד מעודכן.
-- working tree נקי לאחר commits.
-
-סטטוס: הושלם בענף `feat/phase-2-live-clock`.
-
-## Phase 3: שתי טבעות אירועים ידניים
-
-- `[x]` T050: לעדכן תיעוד ו-ADR עבור תצוגת 24 שעות בשתי טבעות.
-- `[x]` T051: לממש `ClockRing`, `ringForTime()` ו-`dualRingAngle()`.
-- `[x]` T052: לממש מודל אירועים ידניים מיידיים ו-resolver ל-`ResolvedInstantEvent`.
-- `[x]` T053: להרחיב את renderer כך שיציג שתי טבעות, 24 תוויות שעה וסמני אירועים.
-- `[x]` T054: להרחיב `LiveAnalogClockOptions` ו-`LiveAnalogClock` עם `events` ו-`setEvents()`.
-- `[x]` T055: להוסיף בדיקות יחידה ו-DOM עבור טבעות, זוויות, resolver, renderer ו-lifecycle.
-- `[x]` T056: ליצור דמו Phase 3 נפרד עם טופס הוספה, מחיקה, timezone ורשימת אירועים.
-- `[x]` T057: לעדכן scripts כך ש-`npm.cmd run dev` מפעיל את דמו Phase 3.
-- `[x]` T058: להריץ Gate בדיקות, build ובדיקת דפדפן.
-- `[x]` T059: לעדכן תיעוד סיום Phase 3 וליצור commits.
-
-סטטוס: מוכן לביקורת בענף `feat/phase-3-dual-ring-events`.
-
-## Phase 3: סבב תיקוני תצוגה ממוקד
-
-- `[x]` T060: להפריד חזותית בין לוח השעון המרכזי לבין טבעות האירועים.
-- `[x]` T061: למקם את מספרי השעון המרכזי בכיוון אנלוגי רגיל.
-- `[x]` T062: להעביר את השנתות למעגל החיצוני ביותר עם 60 שנתות ו-12 שנתות שעה.
-- `[x]` T063: לתרגם את דמו Phase 3 לעברית ולשמור על RTL תקין.
-- `[x]` T064: להוסיף סימוני מעבר חזותיים בין 05:59-06:00 ובין 17:59-18:00.
-- `[x]` T065: להוסיף/לעדכן בדיקות עבור השנתות, מספרי השעון, המעברים והממשק העברי.
-- `[x]` T066: להריץ Gate מלא ובדיקת דפדפן.
-
-סטטוס: הושלם בענף `feat/phase-3-dual-ring-events`.
-
-## Gate של Phase 3
-
-Phase 3 ייחשב הושלם רק אם:
-
-- שתי הטבעות מוצגות בו-זמנית.
-- הטבעת החיצונית מייצגת 06:00 עד לפני 18:00.
-- הטבעת הפנימית מייצגת 18:00 עד לפני 06:00.
-- כל טבעת כוללת 12 תוויות שעה ברורות.
-- אירועים משויכים לטבעת לפי זמנם בפועל.
-- זריחה ושקיעה אינן מקובעות לטבעת מסוימת.
-- כל 24 השעות מוצגות תמיד.
-- האירוע הבא מחושב מכל אירועי היום.
-- `setEvents()` עובד בלי ליצור SVG חדש.
-- Phase 1 ו-Phase 2 ממשיכים לעבוד.
-- הדמו responsive ברוחב 1200, 760 ו-390.
-- אין שגיאות או warnings בקונסול.
-- כל הבדיקות וה-build עוברים.
-- התיעוד מעודכן.
+- `[x]` Create a small internal state/domain API.
+- `[x]` Keep the existing state shape unchanged.
+- `[x]` Keep storage schema unchanged.
+- `[x]` Keep import/export format unchanged.
+- `[x]` Keep UX and CSS unchanged.
+- `[x]` Keep `packages/clock` unchanged.
+- `[x]` Route part of `create-clock-app.ts` state access through the new API.
+- `[x]` Add pure event-layer domain helpers.
+- `[x]` Add focused state/domain API tests.
+- `[x]` Run final docs/typecheck/tests/build.
+- `[ ]` Complete browser verification outside the current Edge headless tooling blocker.
+- `[ ]` Create T074 commit.

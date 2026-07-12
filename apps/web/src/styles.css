@@ -62,7 +62,7 @@ select {
   font: inherit;
 }
 
-.phase3-demo {
+.clock-app {
   width: min(1280px, calc(100vw - 32px));
   margin: 0 auto;
   padding: 18px 0 28px;
@@ -266,7 +266,7 @@ h2 {
     margin 220ms ease;
 }
 
-:root[data-display-mode="clockOnly"] .phase3-demo {
+:root[data-display-mode="clockOnly"] .clock-app {
   width: min(760px, calc(100vw - 32px));
   padding-block: 12px;
 }
@@ -310,7 +310,7 @@ h2 {
   background: transparent;
 }
 
-:root[data-display-mode="floatingClock"] .phase3-demo {
+:root[data-display-mode="floatingClock"] .clock-app {
   width: var(--floating-clock-size);
   min-height: var(--floating-clock-size);
   margin: 0;
@@ -1491,7 +1491,7 @@ a:focus-visible {
 }
 
 @media (max-width: 520px) {
-  .phase3-demo {
+  .clock-app {
     width: min(100vw - 20px, 1180px);
     padding: 16px 0;
   }

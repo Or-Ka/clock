@@ -60,7 +60,7 @@ interface TimeSource {
 המימושים:
 
 - `SystemTimeSource`: מחזיר את זמן המערכת הנוכחי כ-`Temporal.Instant`.
-- `FixedTimeSource`: מחזיר instant קבוע, ומתאים לבדיקות ודמו.
+- `FixedTimeSource`: מחזיר instant קבוע, ומתאים לבדיקות ולאימות האפליקציה.
 - `SimulatedTimeSource`: מתחיל מ-instant נתון ומתקדם לפי מהירות ניתנת לשינוי.
 
 `SimulatedTimeSource` תומך ב-`pause()`, `resume()`, `setSpeed()`, `getSpeed()` ו-`isRunning()`. מהירות שלילית או לא סופית זורקת `RangeError`.
