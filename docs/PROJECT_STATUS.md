@@ -13,7 +13,7 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T072: Extract clock shell controller
+T074: Introduce State/Domain APIs
 
 ## Current Branch
 
@@ -31,13 +31,14 @@ T072: Extract clock shell controller
 
 ## Frontend Refactor Progress
 
-Current extraction strategy: a temporary application boundary around the existing state and orchestration, plus shallow controller modules around stable responsibilities.
+Current extraction strategy: a temporary application boundary around the existing state and orchestration, shallow controller modules around stable responsibilities, and a small internal state/domain API around existing app state.
 
 Extracted so far:
 
 - `app/app-elements.ts`
 - `app/lifecycle.ts`
 - `app/create-clock-app.ts`
+- `app-state/app-state.ts`
 - `settings/settings-elements.ts`
 - `settings/settings-controller.ts`
 - `clock-shell/clock-shell-controller.ts`
@@ -47,23 +48,11 @@ Extracted so far:
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` is now a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns the current application state, startup orchestration and runtime cleanup. T071 moved the first settings listeners into a narrow settings controller while keeping state ownership in `create-clock-app.ts`. T072 moves the live clock shell wiring into `clock-shell/clock-shell-controller.ts` while keeping event/state ownership in `create-clock-app.ts`.
+`main.ts` is a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns application state, startup orchestration and runtime cleanup. T074 adds an internal `app-state` API so part of that state access now goes through named methods and pure event-layer helpers instead of scattered direct mutations.
 
-## T071 Gate
+## T074 Gate
 
-T071 CLI gate passed:
-
-- `npm.cmd run docs:check`
-- `npm.cmd run typecheck`
-- `npm.cmd test`
-- `npm.cmd run build`
-- `npm.cmd run build --workspace @clock/clock`
-
-Browser gate passed in the Codex in-app browser against the built app served locally. Verification covered app load, clock display, existing events, display preferences open/close, display mode changes, location/timezone change, adding an event, deleting the added event and no console errors or warnings.
-
-## T072 Gate
-
-T072 CLI gate passed:
+T074 CLI gate passed:
 
 - `npm.cmd run docs:check`
 - `npm.cmd run typecheck`
@@ -71,4 +60,4 @@ T072 CLI gate passed:
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-Browser gate passed in the Codex in-app browser against the built app served locally from `apps/web/dist`. Verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding an event, deleting the added event, marker tooltip, timer menu, clock context menu and no console errors or warnings.
+Browser verification was attempted against a locally served app. The Vite server started successfully outside the sandbox on `127.0.0.1:4174`, but Edge headless crashed before CDP verification could complete. This is tracked as an environment/tooling blocker, not as an observed application failure.

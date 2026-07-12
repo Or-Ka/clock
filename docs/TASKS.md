@@ -4,7 +4,7 @@ Updated: 2026-07-07
 
 ## Active Task
 
-T072: Extract clock shell controller
+T074: Introduce State/Domain APIs
 
 ## T068 Checklist
 
@@ -85,3 +85,26 @@ T072: Extract clock shell controller
 - `[x]` Add focused clock-shell controller tests.
 - `[x]` Run final docs/typecheck/tests/build and browser verification.
 - `[x]` Create T072 commit.
+
+## T073 Checklist
+
+- `[x]` Review frontend architecture after T072.
+- `[x]` Update documentation only.
+- `[x]` Keep product code unchanged.
+- `[x]` Recommend `T074 - Introduce State/Domain APIs` as the next step.
+- `[x]` Create T073 commit.
+
+## T074 Checklist
+
+- `[x]` Create a small internal state/domain API.
+- `[x]` Keep the existing state shape unchanged.
+- `[x]` Keep storage schema unchanged.
+- `[x]` Keep import/export format unchanged.
+- `[x]` Keep UX and CSS unchanged.
+- `[x]` Keep `packages/clock` unchanged.
+- `[x]` Route part of `create-clock-app.ts` state access through the new API.
+- `[x]` Add pure event-layer domain helpers.
+- `[x]` Add focused state/domain API tests.
+- `[x]` Run final docs/typecheck/tests/build.
+- `[ ]` Complete browser verification outside the current Edge headless tooling blocker.
+- `[ ]` Create T074 commit.

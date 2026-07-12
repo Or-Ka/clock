@@ -140,6 +140,41 @@ T072 verification passed:
 
 Browser verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding an event, deleting the added event, marker tooltip, timer menu, clock context menu and no console errors or warnings.
 
+## T073 Progress
+
+T073 was a documentation-only architecture review after T072:
+
+- Reviewed the remaining callback pressure between `create-clock-app.ts`, settings and clock-shell boundaries.
+- Kept product code unchanged.
+- Recommended `T074 - Introduce State/Domain APIs` as the next step before provider or import/export extraction.
+
+T073 commit:
+
+- `9078bc0 docs review frontend architecture after T072`
+
+## T074 Progress
+
+T074 introduced the first internal state/domain API:
+
+- `apps/web/src/app-state/app-state.ts` defines `createAppStateApi()`.
+- The API covers location, timezone, display preferences, event layers, derived events, rendered event map access and snapshot creation.
+- The same module also provides pure event-layer helpers for reading a layer's events, toggling enabled state, setting layer events, appending an event to a layer and removing an event from all layers.
+- `create-clock-app.ts` now routes part of state access through `appState`, including settings display preference reads/writes, location/timezone changes, event-layer mutations, derived event mutations, rendered event lookup and export snapshot creation.
+- `apps/web/src/app-state/app-state.test.ts` adds focused DOM-free coverage for the new API and event-layer helpers.
+- Existing app source tests were updated so the expected event-layer handoff goes through `appState.getEventLayers()`.
+
+Not extracted in T074:
+
+- Provider/data flow remains in `create-clock-app.ts`.
+- Import/export parsing and UI status remain in `create-clock-app.ts`.
+- Storage reads and legacy display-mode migration remain unchanged.
+- Tooltip, timer menu, clock context menu, countdown rendering, floating clock behavior and alert behavior remain in `create-clock-app.ts`.
+- `packages/clock`, CSS, UX and import/export JSON format remain unchanged.
+
 ## Next Recommended Work
 
-Stop after T072. The next refactor should likely be a conservative follow-up on the remaining clock-shell surface only if tooltip/timer/context/floating responsibilities can be separated without state changes. Otherwise, prefer state/domain APIs before provider/import-export extraction.
+Stop after T074. The next recommended task is:
+
+`T075 - Extract Data/Provider Controller`
+
+This should be a conservative extraction of sunrise/sunset and Hebcal provider orchestration behind the new state/domain API. Import/export should wait until provider refresh state has a clearer boundary.

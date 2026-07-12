@@ -4,9 +4,11 @@ Updated: 2026-07-07
 
 ## Scope
 
-T069-T073 refactor and review the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, providers, storage schema, import/export schema or the app state shape.
+T069-T074 refactor and review the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, providers, storage schema, import/export schema or the app state shape.
 
 T073 is a review and stabilization checkpoint after T069-T072. No product code was changed in this checkpoint.
+
+T074 introduces a small internal state/domain API around existing app state. It does not introduce a state manager and does not change the state shape.
 
 ## Current Branch
 
@@ -18,6 +20,7 @@ T073 is a review and stabilization checkpoint after T069-T072. No product code w
 - `apps/web/src/app/app-elements.ts`: typed application DOM binding.
 - `apps/web/src/app/lifecycle.ts`: cleanup registry for app-owned listeners, timers and observers.
 - `apps/web/src/app/create-clock-app.ts`: temporary application boundary. It still owns the current app state, startup orchestration, data/provider flow, import/export, storage, display side effects, event rendering, overlays, floating clock and alert runtime behavior.
+- `apps/web/src/app-state/app-state.ts`: internal DOM-free state/domain API around existing app state, plus pure event-layer helpers.
 - `apps/web/src/settings/settings-elements.ts`: settings-focused element subset from the app DOM binding.
 - `apps/web/src/settings/settings-controller.ts`: shallow settings listener/controller boundary.
 - `apps/web/src/clock-shell/clock-shell-controller.ts`: shallow live clock shell wiring/controller boundary.
@@ -48,11 +51,73 @@ Remaining in `main.ts`:
 - `app.start()`.
 - HMR disposal via `app.destroy()`.
 
-`create-clock-app.ts` remains a large temporary application boundary after T072. This is not a new intended architecture; it is the staging area that allowed `main.ts`, settings, event-editor and the first clock-shell responsibilities to be separated without changing behavior.
+`create-clock-app.ts` remains a large temporary application boundary after T074. This is not a new intended architecture; it is the staging area that allowed `main.ts`, settings, event-editor, the first clock-shell responsibilities and the first state/domain API to be separated without changing behavior.
+
+## State/Domain API
+
+T074 added `apps/web/src/app-state/app-state.ts`.
+
+Created API:
+
+- `createAppStateApi()` wraps existing state variables through getter/setter callbacks.
+- `getSnapshot()` returns a consistent read snapshot for location, timezone, display preferences, event layers, derived events and rendered events.
+- `getLocation()` / `setLocation()`.
+- `getTimeZone()` / `setTimeZone()`.
+- `getDisplayPreferences()` / `setDisplayPreferences()`.
+- `getEventLayers()` / `setEventLayers()`.
+- `getDerivedEvents()` / `setDerivedEvents()`.
+- `getRenderedEventsById()`, `getRenderedEvent()`, `setRenderedEventsById()` and `setRenderedEvents()`.
+
+Pure event-layer helpers:
+
+- `eventsForLayer()`.
+- `setEventLayerEnabled()`.
+- `setEventLayerEvents()`.
+- `appendEventToLayer()`.
+- `removeEventFromLayers()`.
+
+Moved from direct access in `create-clock-app.ts` to the state/domain API:
+
+- Settings display preference reads/writes.
+- Location changes from settings and import restore.
+- Timezone sync and clock-shell timezone handoff.
+- Event-layer toggles.
+- Personal event append.
+- Derived event append/remove.
+- Event removal across layers.
+- Day-times and special-layer event replacement.
+- Fixed day-time layer refresh.
+- Rendered event lookup used by clock-shell, visual editor, tooltip target resolution and countdown target lookup.
+- Rendered event map replacement in event-list rendering.
+- Export snapshot reads for selected location, derived events and display preferences.
+
+Still intentionally left in `create-clock-app.ts`:
+
+- The actual state variables.
+- Provider/data orchestration.
+- Import/export parsing and UI status.
+- Storage reads and legacy display-mode migration.
+- Display preference side effects on document CSS variables and floating window styles.
+- Event rendering, tooltip/timer/context menu behavior, countdown rendering, floating clock lifecycle and alerts.
+
+Coupling reduced:
+
+- Settings no longer receives direct closures over `displayPreferences`; it talks through `appState`.
+- Clock-shell rendered event lookup now goes through `appState.getRenderedEvent()`.
+- Event-layer mutation code is named through pure helpers instead of repeated ad hoc `map()` operations.
+- Export can read a state snapshot instead of reaching into several local state variables.
+
+Coupling still remaining:
+
+- `create-clock-app.ts` still coordinates when state changes should trigger rendering, clock-shell refreshes, provider refreshes and UI control sync.
+- Provider refresh still updates day-times, fixed day-time status, zmanit ticks, special events, Hebcal details and clock rendering in one flow.
+- Import restore still touches many state slices and manually resyncs dependent UI surfaces.
+- Display preferences still mix state writes with document CSS, floating clock style sync, countdown refresh and tooltip refresh.
+- Tooltip/timer/context/floating clock behavior still depends on rendered events, display preferences and app-owned overlay state.
 
 ## Lifecycle Cleanup
 
-After T072, the application boundary registers these resources with the lifecycle registry:
+After T074, the application boundary registers these resources with the lifecycle registry:
 
 - Clock-shell controller cleanup.
 - Settings controller cleanup.
@@ -80,7 +145,7 @@ Still intentionally kept in `create-clock-app.ts`:
 - Desktop notification permission requests.
 - Refreshing special layers and applying event layers.
 
-This boundary is stable and intentionally shallow. It should not be deepened before the app has explicit state/domain APIs for event mutations.
+This boundary is stable and intentionally shallow. T074 adds explicit state/domain APIs for event mutations, so a later pass can reduce event-editor callback pressure without changing behavior.
 
 ## Settings Boundary
 
@@ -105,11 +170,12 @@ Still intentionally kept in `create-clock-app.ts`:
 - Layer toggles, because they directly mutate event layer state.
 - The document `pointerdown` listener, because it closes settings, event visual editor, timer menu and clock context menu together.
 
-Current awkward dependencies:
+Current awkward dependencies after T074:
 
 - Settings display mode changes still need callbacks for floating clock orchestration and menu cleanup.
 - Appearance changes still trigger app-owned rendering, clock visual sync and event list refresh callbacks.
 - Import state restore still needs to call back into settings control syncing after replacing display preferences.
+- The settings controller still owns listeners only; display preference side effects stay in `create-clock-app.ts`.
 
 ## Clock Shell Boundary
 
@@ -134,13 +200,13 @@ Still intentionally kept in `create-clock-app.ts`:
 - Provider/data refreshes, import/export and storage.
 - The document `pointerdown` listener because it coordinates settings, event visual editor, timer menu and clock context menu closing.
 
-The clock-shell controller has not become a new monolith. It is still a narrow shell adapter around the live clock instance and shell-level DOM wiring. Its callback list is the main sign that the surrounding app lacks explicit state/domain APIs.
+The clock-shell controller has not become a new monolith. It is still a narrow shell adapter around the live clock instance and shell-level DOM wiring. T074 reduced only the rendered-event lookup and event-layer handoff by routing them through `appState`; tooltip, timer, context and floating-window callback pressure remains.
 
 ## Remaining Responsibilities In `create-clock-app.ts`
 
-`create-clock-app.ts` still owns these responsibilities after T072:
+`create-clock-app.ts` still owns these responsibilities after T074:
 
-- App state shape and all mutable state variables.
+- App state shape and all mutable state variables, now partly wrapped by `appState`.
 - Event layer mutations and resolved event list rendering.
 - Zmanit set editing, fixed day-time editing and derived event resolution.
 - Provider/data flow for sunrise/sunset and Hebcal details.
@@ -152,14 +218,14 @@ The clock-shell controller has not become a new monolith. It is still a narrow s
 - Alert settings, due-alert checks, sound and desktop notification behavior.
 - Coordination between extracted controllers.
 
-This file is still the temporary monolith. T072 did not create a second monolith in `clock-shell-controller.ts`; it made the remaining state coupling easier to see.
+This file is still the temporary monolith. T074 did not move ownership out of it; it named the first state/domain operations so the next controller extraction can depend on a smaller interface.
 
 ## Known Coupling Points
 
-- `clock-shell-controller.ts` receives `getRenderedEvent`, `eventVisualForEvent`, tooltip callbacks, click/context-menu callbacks, a floating-document mousemove callback and a visual-timer callback. These are symptoms of app state that is not exposed through a stable domain API.
+- `clock-shell-controller.ts` still receives `getRenderedEvent`, `eventVisualForEvent`, tooltip callbacks, click/context-menu callbacks, a floating-document mousemove callback and a visual-timer callback. `getRenderedEvent` now routes through `appState`, but the surrounding tooltip/timer/context behavior is still app-owned.
 - `settings-controller.ts` receives callbacks for display state writes, display rendering, event list refresh, clock visual sync, floating clock mode and overlay cleanup.
 - `applyDisplayPreferences()` changes document-level CSS variables, updates floating window styles, refreshes countdown arcs and refreshes the active tooltip.
-- `applyEventLayers()` updates the clock shell, event list and marker visuals as one operation.
+- `applyEventLayers()` updates the clock shell, event list and marker visuals as one operation. It now reads event layers through `appState`.
 - Provider refreshes update day-time layers, fixed day-time status, zmanit ticks, special layers, Hebcal details and rendered clock state in one flow.
 - Import restore replaces location, zmanit sets, personal events, derived events, fixed day-time events, display preferences, visual overrides and alert settings, then manually resyncs every dependent UI surface.
 - Floating clock behavior moves the shell mount and overlay elements between documents, so tooltip/menu/countdown ownership cannot be moved cleanly without a clearer state and shell API.
@@ -168,21 +234,14 @@ This file is still the temporary monolith. T072 did not create a second monolith
 
 ## Rejected Next Steps
 
-- `T074 - Continue Clock Shell Split`: rejected for the next step. Tooltip, timer, context menu, countdown and floating-clock behavior are not only shell concerns; they depend on shared app state, display preferences, rendered events and alert timing. Moving them now would mostly move callbacks around.
-- `T074 - Extract Data/Provider Controller`: rejected for the next step. Provider refresh mutates event layers, zmanit ticks, fixed day-time status, special events, Hebcal date details and clock rendering. Extracting it first would require a broad callback API around unstable state.
-- `T074 - Extract Import/Export Controller`: rejected for the next step. Import restore touches nearly every state slice and UI surface. Extracting it before state/domain APIs would freeze the current monolithic state shape behind a large controller interface.
+- `T075 - Continue Clock Shell Split`: rejected for the next step. Tooltip, timer, context menu, countdown and floating-clock behavior are not only shell concerns; they depend on shared app state, display preferences, rendered events and alert timing. Moving them now would mostly move callbacks around.
+- `T075 - Extract Import/Export Controller`: rejected for the next step. Import restore touches nearly every state slice and UI surface. It should wait until provider refresh state has a clearer boundary.
+- `T075 - Continue State/Domain APIs`: rejected for the next step as a standalone task. The useful next pressure point is provider orchestration, and the new API is sufficient for a conservative first provider extraction.
 
 ## Recommended Next Step
 
-`T074 - Introduce State/Domain APIs`
+`T075 - Extract Data/Provider Controller`
 
-The next step should introduce narrow, behavior-preserving state/domain APIs inside `apps/web` before extracting another controller. The goal is not a state manager and not a state shape rewrite. The goal is to name and centralize the existing operations that are already being coordinated manually:
+The next step should extract a conservative provider/data controller for sunrise/sunset and Hebcal refresh orchestration. It should use the new state/domain API where it touches location, timezone and event layers, while leaving import/export, storage, UX, CSS and `packages/clock` unchanged.
 
-- event-layer reads and mutations;
-- rendered event lookup and visual style lookup;
-- display preference reads/writes;
-- import-restore application points;
-- provider refresh application points;
-- countdown and tooltip target lookup.
-
-This is the lowest-risk next step because it reduces callback pressure without changing UX, CSS, providers, storage schema or `packages/clock`. After these APIs exist, the project can choose a smaller follow-up extraction with clearer ownership.
+This is the clearest next step because provider refresh is the largest remaining flow that updates day-times, fixed day-time status, zmanit ticks, special events, Hebcal details and clock rendering. Import/export should remain in `create-clock-app.ts` until that provider/data boundary exists.

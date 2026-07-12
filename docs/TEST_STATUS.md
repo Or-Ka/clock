@@ -168,3 +168,31 @@ Final T072 browser verification passed in the Codex in-app browser against the b
 - Deleting the added event works and returns to the original event/marker count.
 - Marker tooltip, timer menu and clock context menu open.
 - No console errors or warnings were observed.
+
+## T074 State/Domain API Checks
+
+Added focused tests:
+
+- `apps/web/src/app-state/app-state.test.ts`
+
+The state/domain API tests cover:
+
+- Creating the API with initial location, timezone, display preferences, event layers and derived events.
+- Returning a consistent snapshot.
+- Updating location and timezone.
+- Updating display preferences without exposing the stored nested object.
+- Updating event layers without exposing the stored event array.
+- Updating derived events and rendered event lookup state.
+- Pure event-layer helpers for enabled toggles, setting layer events, appending events, removing events and reading events by layer.
+
+The source-level app tests now assert that `create-clock-app.ts` uses `createAppStateApi()` and routes clock-shell event-layer updates through `appState.getEventLayers()`.
+
+Final T074 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification was attempted against a locally served app on `127.0.0.1:4174`. Vite could not start inside the sandbox because of the known `EPERM` issue on `D:\Oriya\Projects`, then started successfully outside the sandbox. Edge headless crashed before CDP verification could complete, so no browser result was recorded. This is an environment/tooling blocker, not an observed application failure.

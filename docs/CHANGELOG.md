@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Introduced an internal app state/domain API for existing location, timezone, display preference, event-layer, derived-event and rendered-event state.
+- Added pure event-layer domain helpers and focused state/domain API tests.
+- Routed part of `create-clock-app.ts` state access through the new app-state API without changing state shape, UX, CSS, storage, import/export or `packages/clock`.
 - Extracted a shallow clock-shell controller for live clock creation, mount listeners, marker visual sync, clock mutation observer and visual timer cleanup.
 - Added focused clock-shell controller tests for single-SVG rendering, refresh behavior, cleanup and marker visual updates.
 - Extracted a shallow settings controller for location and display-preference listeners.

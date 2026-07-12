@@ -4,38 +4,40 @@ Updated: 2026-07-07
 
 ## Active Task
 
-T072: Extract clock shell controller
+T074: Introduce State/Domain APIs
 
 ## Context
 
-T068 promoted the existing web product to the official Beta application under `apps/web`. T069 extracted narrow app/data/event-editor/lifecycle modules. T070 established an explicit application boundary while preserving behavior and keeping `packages/clock` as the reusable embeddable library.
+T068 promoted the existing web product to the official Beta application under `apps/web`. T069 extracted narrow app/data/event-editor/lifecycle modules. T070 established an explicit application boundary while preserving behavior and keeping `packages/clock` as the reusable embeddable library. T071 extracted the first settings listener boundary. T072 extracted the first clock-shell wiring boundary. T073 reviewed the frontend architecture after T072 and recommended introducing state/domain APIs before extracting another controller.
 
-T072 is a shallow clock-shell extraction. The current state shape and data/provider control flow remain inside `create-clock-app.ts`; the new clock-shell controller receives explicit DOM, time, event and visual callbacks.
+T074 introduces a small internal `app-state` API around the existing state held by `create-clock-app.ts`. It does not replace the state manager, does not change the state shape, and does not change storage, import/export, CSS, UX or `packages/clock`.
 
-Completed in T072:
+Completed in T074:
 
-- Added `apps/web/src/clock-shell/clock-shell-controller.ts`.
-- Moved live clock creation, clock DOM binding, marker visual sync, the clock mount listeners, the clock mutation observer and the visual timer out of `create-clock-app.ts`.
-- Kept application state, event layer ownership, tooltip/context/countdown state, floating clock orchestration and provider refreshes in `create-clock-app.ts`.
-- Routed shell behavior through explicit callbacks for rendered events, visual styles, tooltip/menu handlers and visual timer work.
-- Added focused clock-shell controller tests for single-SVG creation, refresh behavior, listener/timer/observer cleanup and marker visual sync.
+- Added `apps/web/src/app-state/app-state.ts`.
+- Added `createAppStateApi()` for location, timezone, display preferences, event layers, derived events and rendered event lookup/snapshot access.
+- Added pure event-layer domain helpers for reading layer events, setting layer events, toggling layer enabled state, appending events and removing events across layers.
+- Routed part of `create-clock-app.ts` state access through the new API, including settings display preferences, location/timezone changes, event-layer updates, derived event updates, rendered event lookup and export snapshot creation.
+- Added focused state/domain API tests in `apps/web/src/app-state/app-state.test.ts`.
 
-`create-clock-app.ts` remains the application state owner. The clock-shell boundary is intentionally shallow and delegates behavior through callbacks.
+`create-clock-app.ts` remains the main orchestration boundary. Provider/data flow, import/export parsing, storage, alerts, overlays, floating clock behavior, tooltip/timer/context menu behavior and controller coordination intentionally stay there for this step.
 
 ## Out Of Scope
 
-- No CSS split.
-- No UX redesign.
-- No behavior change in `packages/clock`.
-- No state manager or state model rewrite.
-- No import/export extraction.
-- No provider extraction.
-- No marker accessibility API changes yet.
+- No UX changes.
+- No CSS changes.
+- No storage schema changes.
+- No import/export format changes.
+- No provider controller extraction.
+- No import/export controller extraction.
+- No clock-shell split continuation.
+- No state manager, event bus, Redux, Zustand or MobX.
+- No `packages/clock` public API changes.
 - No production cleanup for the dev stamp yet.
 
 ## Gate
 
-Final T072 CLI gate passed:
+Final T074 CLI gate passed:
 
 ```powershell
 npm.cmd run docs:check
@@ -45,6 +47,6 @@ npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
-Browser verification must cover app load, clock display, existing events, display preferences, location/timezone change, adding and deleting an event, marker tooltip/menu behavior where available and no console errors or warnings.
+Browser verification must cover app load, clock display, existing events, display preferences, location/timezone change, adding and deleting an event and no console errors or warnings.
 
-Browser verification passed in the Codex in-app browser against the built app served from `apps/web/dist`. Verification covered app load, one active clock SVG, existing events and markers, display preferences open/close, location/timezone change, adding and deleting an event, marker tooltip, timer menu, clock context menu and no console errors or warnings.
+Browser verification was attempted against a locally served app. The server started successfully on `127.0.0.1:4174`, but Edge headless crashed before CDP verification could complete in this Codex environment.
