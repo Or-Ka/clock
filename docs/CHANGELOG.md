@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added repository-owned Vercel deployment configuration for the npm workspace and official Vite application.
+- Pinned deployment builds to Node.js 24, deterministic `npm ci` installation and the `apps/web/dist` output directory.
+- Added an SPA navigation fallback and Vercel import instructions.
 - Extracted a narrow import/export controller for browser file mechanics, JSON parsing, status messages and listener cleanup while preserving export schema version `1`.
 - Added focused import/export controller tests for export, import success/error and lifecycle cleanup.
 - Extracted provider refresh orchestration for sunrise/sunset and Hebcal data into a narrow provider controller.

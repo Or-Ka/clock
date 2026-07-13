@@ -35,6 +35,18 @@ npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
+## Deploying To Vercel
+
+Import the repository into Vercel and keep the project Root Directory at the repository root. The committed `vercel.json` configures:
+
+- Node.js `24.x`.
+- `npm ci` for dependency installation.
+- `npm run build` for the workspace build.
+- `apps/web/dist` as the deployment output.
+- An `index.html` fallback for direct SPA navigation.
+
+No Vercel environment variables are currently required. After importing the repository, click **Deploy**; later pushes to the production branch will deploy automatically.
+
 ## Documentation
 
 Start with [docs/README.md](docs/README.md). The app migration is documented in [docs/APP_MIGRATION.md](docs/APP_MIGRATION.md).
