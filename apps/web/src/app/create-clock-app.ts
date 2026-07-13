@@ -22,6 +22,7 @@ import {
   setEventLayerEvents
 } from "../app-state/app-state.js";
 import { createProviderController, dateKeyForLocation } from "../data/provider-controller.js";
+import { createImportExportController } from "../data/import-export-controller.js";
 import { LOCATION_OPTIONS, getLocationById, type AppLocation } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
 import { createSettingsController } from "../settings/settings-controller.js";
@@ -581,6 +582,19 @@ function startClockApp(deps: ClockAppDeps): () => void {
     closeEventVisualEditor,
     closeTimerActionMenu
   });
+  const importExportController = createImportExportController<AppExportState>({
+    document,
+    window,
+    elements: {
+      exportButton: exportAppStateButton,
+      importButton: importAppStateButton,
+      fileInput: importAppStateFileInput,
+      status: importExportStatus
+    },
+    createExportState,
+    applyImportedState: importAppState,
+    exportFileName: () => `analog-event-clock-${currentDateKey()}.json`
+  });
 
   syncTimeZoneToLocation();
   renderZmanitSetControls();
@@ -597,6 +611,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
   void refreshHebcalDetails(true);
   settingsController.start();
   lifecycle.add(() => settingsController.destroy());
+  importExportController.start();
+  lifecycle.add(() => importExportController.destroy());
 
   for (const toggle of layerToggles) {
     addLifecycleEventListener(toggle, "change", () => {
@@ -646,16 +662,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     alertSettings = { enabled: alertsEnabledInput.checked };
     syncAlertGlobalControls();
     syncEventList();
-  });
-
-  addLifecycleEventListener(exportAppStateButton, "click", exportAppState);
-
-  addLifecycleEventListener(importAppStateButton, "click", () => {
-    importAppStateFileInput.click();
-  });
-
-  addLifecycleEventListener(importAppStateFileInput, "change", (event) => {
-    void importAppStateFromInput(event);
   });
 
   const eventEditorController = createEventEditorController({
@@ -2384,9 +2390,9 @@ function startClockApp(deps: ClockAppDeps): () => void {
     void Notification.requestPermission();
   }
 
-  function exportAppState(): void {
+  function createExportState(): AppExportState {
     const snapshot = appState.getSnapshot();
-    const state: AppExportState = {
+    return {
       version: 1,
       exportedAt: new Date().toISOString(),
       selectedLocationId: snapshot.location.id,
@@ -2400,35 +2406,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
       alertSettings: { ...alertSettings },
       eventAlertOverrides: { ...eventAlertOverrides }
     };
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `analog-event-clock-${currentDateKey()}.json`;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    importExportStatus.textContent = "הייצוא נשמר כקובץ JSON.";
-  }
-
-  async function importAppStateFromInput(event: Event): Promise<void> {
-    const input = event.target;
-    if (!(input instanceof HTMLInputElement)) {
-      return;
-    }
-
-    const file = input.files?.[0];
-    if (file === undefined) {
-      return;
-    }
-
-    try {
-      importAppState(JSON.parse(await file.text()));
-      importExportStatus.textContent = "הייבוא הושלם.";
-    } catch (error) {
-      importExportStatus.textContent = error instanceof Error ? error.message : "לא ניתן לייבא את הקובץ.";
-    } finally {
-      input.value = "";
-    }
   }
 
   function importAppState(payload: unknown): void {

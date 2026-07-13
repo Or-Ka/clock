@@ -204,6 +204,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   it("adds per-event alerts with global disable and import export controls", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
+    const importExportController = readAppFile("data/import-export-controller.ts");
     const css = readAppFile("styles.css");
 
     expect(html).toContain('id="alerts-enabled"');
@@ -222,9 +223,13 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("playAlertSound");
     expect(main).toContain("showDesktopAlert");
     expect(main).toContain("Notification.requestPermission");
-    expect(main).toContain("exportAppState");
+    expect(main).toContain("createImportExportController");
+    expect(main).toContain("createExportState");
     expect(main).toContain("importAppState");
     expect(main).toContain("AppExportState");
+    expect(importExportController).toContain("serializeExportState");
+    expect(importExportController).toContain("file.text()");
+    expect(importExportController).toContain("createObjectURL");
     expect(main).toContain("dataset.eventAlertId");
 
     expect(css).toContain(".event-alert-controls");
