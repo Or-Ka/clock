@@ -528,9 +528,9 @@ function startClockApp(deps: ClockAppDeps): () => void {
     state: appState,
     timeSource,
     dayTimesLayerId: DAY_TIMES_LAYER_ID,
-    dayTimesLayerTitle: "׳–׳׳ ׳™ ׳”׳™׳•׳",
-    sunriseTitle: "׳–׳¨׳™׳—׳”",
-    sunsetTitle: "׳©׳§׳™׳¢׳”"
+    dayTimesLayerTitle: "זמני היום",
+    sunriseTitle: "זריחה",
+    sunsetTitle: "שקיעה"
   });
   const clockShellController = createClockShellController({
     document,

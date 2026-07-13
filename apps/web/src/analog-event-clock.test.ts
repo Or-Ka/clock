@@ -72,6 +72,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(providerController).toContain("SunriseSunsetEventLayerProvider");
     expect(providerController).toContain("currentParshaRangeStartDateKey");
     expect(providerController).toContain("addDaysToDateKey(civilDate, -1)");
+    expect(main).toContain('dayTimesLayerTitle: "זמני היום"');
+    expect(main).toContain('sunriseTitle: "זריחה"');
+    expect(main).toContain('sunsetTitle: "שקיעה"');
+    expect(main).not.toContain("׳–׳");
+    expect(main).not.toContain("×”×™×•×ם");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
     expect(main).toContain("DEFAULT_ZMANIT_TIME_SETS");
