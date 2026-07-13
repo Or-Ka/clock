@@ -4,38 +4,36 @@ Updated: 2026-07-13
 
 ## Active Task
 
-T075: Extract Data/Provider Controller
+T076: Extract Import/Export Controller
 
 ## Context
 
-T074 introduced a small internal `app-state` API around the existing state held by `create-clock-app.ts`. It did not replace the state manager, change the state shape, or change storage, import/export, CSS, UX or `packages/clock`.
+T075 extracted provider request orchestration and left import/export browser mechanics, JSON parsing and state restoration inside `create-clock-app.ts`.
 
-T075 extracts a conservative provider/data controller for sunrise/sunset and Hebcal refresh orchestration while keeping app state ownership and rendering side effects inside `create-clock-app.ts`.
+T076 extracts a conservative import/export controller for the stable browser and UI boundary while keeping application state restoration and its rendering side effects in `create-clock-app.ts`.
 
-Completed in T075:
+Completed in T076:
 
-- Added `apps/web/src/data/provider-controller.ts`.
-- Moved sunrise/sunset cache keys, abort controller ownership, provider construction and `loadLayer()` calls into the provider controller.
-- Moved Hebcal cache keys, abort controller ownership, URL/date orchestration and detail parsing into the provider controller.
-- Routed provider reads through the T074 app-state API for location, timezone and event-layer access.
-- Kept `create-clock-app.ts` responsible for state mutation, status text, fixed day-time resolution, zmanit tick calculation, special-layer refresh, event-list rendering and clock-shell refreshes.
-- Added focused tests in `apps/web/src/data/provider-controller.test.ts`.
-- Updated source-level app assertions to expect the provider boundary.
+- Added `apps/web/src/data/import-export-controller.ts`.
+- Moved export/import button listeners and cleanup into the controller.
+- Moved JSON download creation, file reading, JSON parsing, status messages and file-input reset into the controller.
+- Kept export schema version `1` and the current file name.
+- Kept export snapshot assembly and imported state application in `create-clock-app.ts` through explicit callbacks.
+- Added focused controller tests for export, import success/error and cleanup.
 
 ## Out Of Scope
 
-- No UX changes.
-- No CSS changes.
+- No UX or CSS changes.
 - No storage schema changes.
-- No import/export format changes.
+- No import/export schema changes.
+- No app state shape changes.
+- No relocation of cross-surface state restoration side effects.
 - No `packages/clock` changes.
-- No state manager, event bus, Redux, Zustand or MobX.
-- No import/export controller extraction.
-- No T076 work.
+- No T077 work.
 
 ## Gate
 
-Final T075 CLI gate:
+Final T076 CLI gate:
 
 ```powershell
 npm.cmd run docs:check

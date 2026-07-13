@@ -39,7 +39,7 @@ Responsibilities:
 
 ## Application Structure
 
-After T075, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, a small internal state/domain API, and a provider/data controller:
+After T076, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, a small internal state/domain API, a provider/data controller, and an import/export browser boundary:
 
 ```text
 apps/web/
@@ -58,6 +58,7 @@ apps/web/
       clock-shell-controller.ts
     data/
       hebcal-service.ts
+      import-export-controller.ts
       locations.ts
       provider-controller.ts
     event-editor/
@@ -79,6 +80,8 @@ The settings controller owns settings listeners and cleanup while receiving expl
 
 `data/provider-controller.ts` owns provider refresh mechanics for sunrise/sunset and Hebcal details: cache keys, abort controllers, provider construction, `loadLayer()` calls, Hebcal date/window calculation and parsed date-display details. `create-clock-app.ts` still applies provider results to app state and UI.
 
+`data/import-export-controller.ts` owns import/export button listeners, JSON download creation, file reading, JSON parsing, status messages, input reset and listener cleanup. `create-clock-app.ts` still assembles schema-version-1 export state and applies imported state because restoration coordinates most state slices and UI surfaces.
+
 ## Decisions In Force
 
 - The core library remains independent of the official web app.
@@ -86,4 +89,4 @@ The settings controller owns settings listeners and cleanup while receiving expl
 - The app is Hebrew-first and RTL.
 - The current refactor is behavior-preserving.
 - Historical prototype screens must not be included in the official production build.
-- The state/domain API and provider controller are internal to `apps/web`; they must not change storage, import/export or `packages/clock` contracts.
+- The state/domain API, provider controller and import/export controller are internal to `apps/web`; they must not change storage, import/export or `packages/clock` contracts.

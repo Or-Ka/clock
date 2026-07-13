@@ -4,7 +4,7 @@ Updated: 2026-07-13
 
 ## Active Task
 
-T075: Extract Data/Provider Controller
+T076: Extract Import/Export Controller
 
 ## T068 Checklist
 
@@ -123,3 +123,17 @@ T075: Extract Data/Provider Controller
 - `[x]` Run final docs/lint/typecheck/tests/build gate.
 - `[ ]` Complete browser verification outside the current Edge headless tooling blocker if automation remains unavailable.
 - `[x]` Create T075 commits.
+
+## T076 Checklist
+
+- `[x]` Confirm `main` is clean and up to date with `origin/main`.
+- `[x]` Choose the T076 boundary explicitly after T075.
+- `[x]` Create a narrow import/export controller.
+- `[x]` Move export/import listeners and cleanup out of `create-clock-app.ts`.
+- `[x]` Move JSON download, file reading, parsing, status and input reset into the controller.
+- `[x]` Keep export snapshot assembly and imported state application in `create-clock-app.ts`.
+- `[x]` Keep UX, CSS, storage schema, import/export schema, app state shape and `packages/clock` unchanged.
+- `[x]` Add focused import/export controller tests.
+- `[x]` Run final docs/lint/typecheck/tests/build gate.
+- `[ ]` Complete browser verification if browser control is available.
+- `[x]` Create T076 commits.

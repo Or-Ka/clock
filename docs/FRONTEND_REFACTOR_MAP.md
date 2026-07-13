@@ -1,31 +1,32 @@
 # Frontend Refactor Map
 
-Updated: 2026-07-07
+Updated: 2026-07-13
 
 ## Scope
 
-T069-T075 refactor and review the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, storage schema, import/export schema or the app state shape.
+T069-T076 refactor and review the official Analog Event Clock Beta application under `apps/web` without changing UI behavior, CSS architecture, `packages/clock`, storage schema, import/export schema or the app state shape.
 
 T073 is a review and stabilization checkpoint after T069-T072. No product code was changed in this checkpoint.
 
-T074 introduced a small internal state/domain API around existing app state. It does not introduce a state manager and does not change the state shape. T075 introduced a small provider/data controller around sunrise/sunset and Hebcal refresh orchestration.
+T074 introduced a small internal state/domain API around existing app state. It does not introduce a state manager and does not change the state shape. T075 introduced a small provider/data controller around sunrise/sunset and Hebcal refresh orchestration. T076 introduced a narrow import/export controller around stable browser file mechanics and UI listeners.
 
 ## Current Branch
 
-`main`
+`refactor/import-export-controller`
 
 ## Current Boundaries
 
 - `apps/web/src/main.ts`: small entrypoint only. It imports styles, creates `createClockApp({ document, window })`, starts the app and disposes it during HMR.
 - `apps/web/src/app/app-elements.ts`: typed application DOM binding.
 - `apps/web/src/app/lifecycle.ts`: cleanup registry for app-owned listeners, timers and observers.
-- `apps/web/src/app/create-clock-app.ts`: temporary application boundary. It still owns the current app state, startup orchestration, import/export, storage, display side effects, event rendering, overlays, floating clock and alert runtime behavior.
+- `apps/web/src/app/create-clock-app.ts`: temporary application boundary. It still owns the current app state, startup orchestration, export snapshot assembly, imported state restoration, storage, display side effects, event rendering, overlays, floating clock and alert runtime behavior.
 - `apps/web/src/app-state/app-state.ts`: internal DOM-free state/domain API around existing app state, plus pure event-layer helpers.
 - `apps/web/src/settings/settings-elements.ts`: settings-focused element subset from the app DOM binding.
 - `apps/web/src/settings/settings-controller.ts`: shallow settings listener/controller boundary.
 - `apps/web/src/clock-shell/clock-shell-controller.ts`: shallow live clock shell wiring/controller boundary.
 - `apps/web/src/data/locations.ts`: location metadata and lookup.
 - `apps/web/src/data/hebcal-service.ts`: Hebcal URL/date/detail helpers.
+- `apps/web/src/data/import-export-controller.ts`: import/export browser file mechanics, UI listeners and cleanup.
 - `apps/web/src/data/provider-controller.ts`: provider refresh controller for sunrise/sunset and Hebcal details.
 - `apps/web/src/ui/event-icons.ts`: event icon options and SVG/HTML icon helpers.
 - `apps/web/src/event-editor/event-validation.ts`: event time and offset validation.
@@ -52,7 +53,7 @@ Remaining in `main.ts`:
 - `app.start()`.
 - HMR disposal via `app.destroy()`.
 
-`create-clock-app.ts` remains a large temporary application boundary after T074. This is not a new intended architecture; it is the staging area that allowed `main.ts`, settings, event-editor, the first clock-shell responsibilities and the first state/domain API to be separated without changing behavior.
+`create-clock-app.ts` remains a large temporary application boundary after T076. This is not a new intended architecture; it is the staging area that allowed `main.ts`, settings, event-editor, the first clock-shell responsibilities, state/domain API, provider mechanics and import/export browser mechanics to be separated without changing behavior.
 
 ## State/Domain API
 
@@ -92,10 +93,10 @@ Moved from direct access in `create-clock-app.ts` to the state/domain API:
 - Rendered event map replacement in event-list rendering.
 - Export snapshot reads for selected location, derived events and display preferences.
 
-Still intentionally left in `create-clock-app.ts` after T074:
+Still intentionally left in `create-clock-app.ts` after T076:
 
 - The actual state variables.
-- Import/export parsing and UI status.
+- Export snapshot assembly and imported state restoration.
 - Storage reads and legacy display-mode migration.
 - Display preference side effects on document CSS variables and floating window styles.
 - Event rendering, tooltip/timer/context menu behavior, countdown rendering, floating clock lifecycle and alerts.
@@ -141,12 +142,35 @@ Still intentionally kept in `create-clock-app.ts`:
 
 This keeps the provider boundary data-focused while `create-clock-app.ts` remains the owner of state writes and UI side effects.
 
+## Import/Export Boundary
+
+T076 added `apps/web/src/data/import-export-controller.ts`.
+
+Moved from `create-clock-app.ts`:
+
+- Export and import button listeners.
+- Export JSON serialization, Blob creation, object URL lifecycle and download link activation.
+- Import file reading and `JSON.parse()`.
+- Import/export success and error status messages.
+- File-input reset and listener cleanup.
+
+Still intentionally kept in `create-clock-app.ts`:
+
+- Schema-version-1 export snapshot assembly.
+- Validation and application of imported state.
+- Location/timezone/provider resynchronization after restore.
+- Zmanit, event-layer, display preference, visual override and alert state replacement.
+- Rendering and controller synchronization after restore.
+
+This keeps the controller independent of the app state shape. A broader extraction was rejected because imported state restoration currently touches nearly every state slice and UI surface and would turn the controller into a callback-heavy replacement monolith.
+
 ## Lifecycle Cleanup
 
-After T075, the application boundary registers these resources with the lifecycle registry:
+After T076, the application boundary registers these resources with the lifecycle registry:
 
 - Clock-shell controller cleanup.
 - Settings controller cleanup.
+- Import/export controller cleanup.
 - Event-editor controller cleanup.
 - Document `pointerdown` listener used by app menus.
 - Status timer.
@@ -223,21 +247,21 @@ Still intentionally kept in `create-clock-app.ts`:
 - Clock context menu rendering and display-mode actions.
 - Countdown arc rendering and state.
 - Floating clock/Picture-in-Picture window creation and mount restoration.
-- Provider/data refreshes, import/export and storage.
+- Provider result application, imported state restoration and storage.
 - The document `pointerdown` listener because it coordinates settings, event visual editor, timer menu and clock context menu closing.
 
 The clock-shell controller has not become a new monolith. It is still a narrow shell adapter around the live clock instance and shell-level DOM wiring. T074 reduced only the rendered-event lookup and event-layer handoff by routing them through `appState`; tooltip, timer, context and floating-window callback pressure remains.
 
 ## Remaining Responsibilities In `create-clock-app.ts`
 
-`create-clock-app.ts` still owns these responsibilities after T075:
+`create-clock-app.ts` still owns these responsibilities after T076:
 
 - App state shape and all mutable state variables, now partly wrapped by `appState`.
 - Event layer mutations and resolved event list rendering.
 - Zmanit set editing, fixed day-time editing and derived event resolution.
 - Applying provider results to app state and UI.
 - Storage reads for display mode and legacy display mode migration.
-- Import/export JSON creation, parsing and state restoration.
+- Export snapshot assembly and imported state validation/application.
 - Display preference application and CSS variable side effects.
 - Tooltip, timer menu, context menu and countdown SVG rendering.
 - Floating clock/Picture-in-Picture window lifecycle and overlay relocation.
@@ -254,6 +278,7 @@ This file is still the temporary monolith. T074 did not move ownership out of it
 - `applyEventLayers()` updates the clock shell, event list and marker visuals as one operation. It now reads event layers through `appState`.
 - Provider refreshes still cause the app boundary to update day-time layers, fixed day-time status, zmanit ticks, special layers and rendered clock state in one flow.
 - Import restore replaces location, zmanit sets, personal events, derived events, fixed day-time events, display preferences, visual overrides and alert settings, then manually resyncs every dependent UI surface.
+- `import-export-controller.ts` deliberately receives only `createExportState` and `applyImportedState`; widening that interface before the state/domain boundary is clearer would recreate the current coupling in callback form.
 - Floating clock behavior moves the shell mount and overlay elements between documents, so tooltip/menu/countdown ownership cannot be moved cleanly without a clearer state and shell API.
 - Countdown state is app-owned but renders directly into the clock SVG.
 - Alert checks depend on the rendered visual event map, global alert settings and per-event overrides.
@@ -261,9 +286,9 @@ This file is still the temporary monolith. T074 did not move ownership out of it
 ## Rejected Next Steps
 
 - Continue Clock Shell Split: rejected as the immediate next step after T074. Tooltip, timer, context menu, countdown and floating-clock behavior are not only shell concerns; they depend on shared app state, display preferences, rendered events and alert timing.
-- Extract Import/Export Controller: rejected as the immediate next step after T074. Import restore touches nearly every state slice and UI surface, though it remains a reasonable future candidate after T075.
+- Extract Import/Export Controller: rejected as the immediate next step after T074. T076 later accepted only the stable browser/file subset after T075 clarified provider state pressure; imported state restoration remains app-owned.
 - Continue State/Domain APIs: rejected as a standalone next step after T074. The useful pressure point was provider orchestration, and T075 used the existing API for that extraction.
 
 ## Recommended Next Step
 
-T075 completed the recommended provider/data controller extraction. The next step should be chosen explicitly rather than started automatically. Import/export remains a reasonable future boundary candidate because provider refresh state is now clearer.
+T076 completed the conservative import/export browser boundary extraction. The next step should be chosen explicitly after reviewing the remaining callback pressure and app-owned side effects rather than started automatically.
