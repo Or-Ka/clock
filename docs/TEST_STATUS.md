@@ -1,6 +1,6 @@
 # Test Status
 
-Updated: 2026-07-07
+Updated: 2026-07-13
 
 ## Baseline Before Migration
 
@@ -250,3 +250,23 @@ Final T076 CLI gate passed:
 - `npm.cmd run build --workspace @clock/clock`
 
 Browser verification could not start because the in-app browser control tool is not exposed in the current session. T076 is not browser verified; this is an environment/tooling blocker, not an observed application failure.
+
+## T077 Vercel Deployment Checks
+
+The Vercel-equivalent local install and the full project gate passed:
+
+- `npm.cmd ci`
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`146` tests)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Deployment-output verification passed:
+
+- `apps/web/dist/index.html` exists.
+- All three `/assets/` references in the generated HTML resolve to files in `apps/web/dist`.
+- The Vite production preview loaded with Hebrew `lang`, RTL `dir`, a rendered analog clock, `12` event rows and Jerusalem day-time data.
+- No horizontal overflow was detected.
+- No console errors or warnings were recorded.

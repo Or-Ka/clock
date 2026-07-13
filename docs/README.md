@@ -34,6 +34,12 @@ npm.cmd run dev
 
 This starts `@clock/web` from `apps/web` through Vite on `127.0.0.1`.
 
+## Deploying The Official App
+
+The repository root contains `vercel.json`. Import the repository into Vercel without selecting `apps/web` as a separate Root Directory. The committed configuration runs the root workspace build and publishes `apps/web/dist`.
+
+No environment variables are currently required for deployment.
+
 ## Gates
 
 ```powershell

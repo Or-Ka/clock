@@ -13,11 +13,27 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T076: Extract Import/Export Controller
+T077: Prepare Vercel Deployment
 
 ## Current Branch
 
-`refactor/import-export-controller`
+`chore/vercel-deployment`
+
+## Deployment Readiness
+
+- Vercel is configured from the repository root.
+- Node.js is pinned to major version `24.x`.
+- Dependency installation uses the committed lockfile through `npm ci`.
+- The root workspace build produces the deployable site in `apps/web/dist`.
+- Direct SPA navigation falls back to `index.html`.
+- No deployment environment variables are currently required.
+
+## T077 Gate
+
+- `npm.cmd ci` passed after stopping a stale local Vite process that held `esbuild.exe` open.
+- Documentation, lint, typecheck, all `146` tests and both builds passed.
+- The generated `apps/web/dist/index.html` references three production assets; all three exist.
+- Browser verification of the production preview passed with Hebrew/RTL content, a rendered clock, loaded Jerusalem day-time data, no horizontal overflow and no console errors or warnings.
 
 ## Migration Status
 

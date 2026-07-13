@@ -4,7 +4,31 @@ Updated: 2026-07-13
 
 ## Current Branch
 
-`refactor/import-export-controller`
+`chore/vercel-deployment`
+
+## T077 Progress
+
+T077 prepares the repository for Vercel deployment without changing product behavior:
+
+- Added a root-level `vercel.json`.
+- Pinned Vercel builds to Node.js `24.x`.
+- Configured `npm ci`, the root workspace build and `apps/web/dist` output.
+- Added an `index.html` rewrite for direct SPA navigation.
+- Documented that Vercel should import the repository root and that no environment variables are currently required.
+
+T077 verification passed:
+
+- `npm.cmd ci`
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`146` tests)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Production-preview browser check with no console errors or warnings.
+- Generated-asset check with zero missing references.
+
+The next external step is to import the Git repository into Vercel with the repository root selected. No Vercel environment variables are required. A custom domain can be attached after the first successful deployment.
 
 ## Completed Migration Task
 

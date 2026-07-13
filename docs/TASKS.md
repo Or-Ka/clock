@@ -4,7 +4,7 @@ Updated: 2026-07-13
 
 ## Active Task
 
-T076: Extract Import/Export Controller
+T077: Prepare Vercel Deployment
 
 ## T068 Checklist
 
@@ -137,3 +137,16 @@ T076: Extract Import/Export Controller
 - `[x]` Run final docs/lint/typecheck/tests/build gate.
 - `[ ]` Complete browser verification if browser control is available.
 - `[x]` Create T076 commits.
+
+## T077 Checklist
+
+- `[x]` Confirm `main` is clean and synchronized with `origin/main`.
+- `[x]` Create branch `chore/vercel-deployment`.
+- `[x]` Pin Node.js `24.x` for Vercel builds.
+- `[x]` Add root-level `vercel.json` for the npm workspace and Vite app.
+- `[x]` Use `npm ci` and the root workspace build.
+- `[x]` Publish `apps/web/dist`.
+- `[x]` Add an SPA fallback to `index.html`.
+- `[x]` Document Vercel import settings and environment-variable requirements.
+- `[x]` Run the final docs/lint/typecheck/tests/build gate.
+- `[x]` Verify the generated deployment output.
