@@ -1,6 +1,6 @@
 # Tasks
 
-Updated: 2026-07-07
+Updated: 2026-07-13
 
 ## Active Task
 
@@ -122,4 +122,4 @@ T075: Extract Data/Provider Controller
 - `[x]` Add focused provider-controller tests.
 - `[x]` Run final docs/lint/typecheck/tests/build gate.
 - `[ ]` Complete browser verification outside the current Edge headless tooling blocker if automation remains unavailable.
-- `[ ]` Create T075 commits.
+- `[x]` Create T075 commits.

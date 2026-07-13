@@ -1,10 +1,10 @@
 # Session Handoff
 
-Updated: 2026-07-07
+Updated: 2026-07-13
 
 ## Current Branch
 
-`main`
+`refactor/frontend-architecture-app`
 
 ## Completed Migration Task
 
@@ -201,3 +201,9 @@ Not extracted in T075:
 - `packages/clock`.
 
 Next recommended work after T075 should not start automatically. A reasonable future T076 candidate is import/export boundary extraction, now that provider refresh state has a clearer boundary.
+
+T075 commits:
+
+- `ba883e3 refactor extract data provider controller`
+- `0efac6c docs update T075 provider boundary`
+- `3c833e9 fix provider event Hebrew encoding`

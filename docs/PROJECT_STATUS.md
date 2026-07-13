@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-07
+Updated: 2026-07-13
 
 ## Current State
 
@@ -17,7 +17,7 @@ T075: Extract Data/Provider Controller
 
 ## Current Branch
 
-`main`
+`refactor/frontend-architecture-app`
 
 ## Migration Status
 
