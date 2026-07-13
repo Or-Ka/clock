@@ -41,6 +41,7 @@ describe("Analog Event Clock Hebrew UI", () => {
   it("includes a location selector and day-times API status text", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
+    const providerController = readAppFile("data/provider-controller.ts");
 
     expect(html).toContain('<select id="location">');
     expect(html).toContain("ירושלים");
@@ -65,11 +66,17 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain("אירועים מיוחדים");
     expect(html).toContain("שעות זמניות</option>");
     expect(html).toContain("API זריחה ושקיעה");
-    expect(main).toContain("SunriseSunsetEventLayerProvider");
+    expect(main).toContain("createProviderController");
     expect(main).toContain("refreshDayTimesLayer");
     expect(main).toContain("refreshHebcalDetails");
-    expect(main).toContain("currentParshaRangeStartDateKey");
-    expect(main).toContain("addDaysToDateKey(civilDate, -1)");
+    expect(providerController).toContain("SunriseSunsetEventLayerProvider");
+    expect(providerController).toContain("currentParshaRangeStartDateKey");
+    expect(providerController).toContain("addDaysToDateKey(civilDate, -1)");
+    expect(main).toContain('dayTimesLayerTitle: "זמני היום"');
+    expect(main).toContain('sunriseTitle: "זריחה"');
+    expect(main).toContain('sunsetTitle: "שקיעה"');
+    expect(main).not.toContain("׳–׳");
+    expect(main).not.toContain("×”×™×•×ם");
     expect(main).toContain("currentDateKey");
     expect(main).toContain("createZmanitTicks");
     expect(main).toContain("DEFAULT_ZMANIT_TIME_SETS");

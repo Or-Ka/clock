@@ -4,8 +4,8 @@ Updated: 2026-07-07
 
 ## Open
 
-- `apps/web/src/app/create-clock-app.ts` is still a large temporary application boundary. T071 extracted the first settings listener boundary, T072 extracted live clock-shell wiring and T074 introduced an internal state/domain API, but provider coordination, import/export parsing, tooltip/timer/context/floating clock state, alert behavior and many rendering side effects still remain in the application boundary.
-- `apps/web/src/app-state/app-state.ts` is intentionally only an internal API around existing state. It is not yet a provider, import/export or UI controller boundary.
+- `apps/web/src/app/create-clock-app.ts` is still a large temporary application boundary. T071 extracted the first settings listener boundary, T072 extracted live clock-shell wiring, T074 introduced an internal state/domain API and T075 extracted provider refresh mechanics, but provider result application, import/export parsing, tooltip/timer/context/floating clock state, alert behavior and many rendering side effects still remain in the application boundary.
+- `apps/web/src/app-state/app-state.ts` and `apps/web/src/data/provider-controller.ts` are intentionally internal APIs. They are not a general state manager, import/export controller or UI controller boundary.
 - `apps/web/src/styles.css` remains a single stylesheet. CSS splitting is deferred.
 - The current app layout still exposes many management controls on the main page. UX redesign is deferred.
 - The developer stamp still ships with the active app pending a separate production cleanup decision.
