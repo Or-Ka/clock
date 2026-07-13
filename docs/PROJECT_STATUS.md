@@ -13,11 +13,11 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T075: Extract Data/Provider Controller
+T076: Extract Import/Export Controller
 
 ## Current Branch
 
-`refactor/frontend-architecture-app`
+`refactor/import-export-controller`
 
 ## Migration Status
 
@@ -44,12 +44,26 @@ Extracted so far:
 - `clock-shell/clock-shell-controller.ts`
 - `data/locations.ts`
 - `data/hebcal-service.ts`
+- `data/import-export-controller.ts`
 - `data/provider-controller.ts`
 - `ui/event-icons.ts`
 - `event-editor/event-validation.ts`
 - `event-editor/event-editor-controller.ts`
 
-`main.ts` is a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns application state, startup orchestration and runtime cleanup. T074 added an internal `app-state` API so part of that state access now goes through named methods and pure event-layer helpers instead of scattered direct mutations. T075 added a small provider controller for sunrise/sunset and Hebcal refresh orchestration.
+`main.ts` is a small entrypoint that imports styles, creates the app, starts it and wires HMR disposal. `create-clock-app.ts` owns application state, startup orchestration and runtime cleanup. T074 added an internal `app-state` API so part of that state access now goes through named methods and pure event-layer helpers instead of scattered direct mutations. T075 added a small provider controller for sunrise/sunset and Hebcal refresh orchestration. T076 added a narrow import/export controller for browser file mechanics while leaving export snapshot assembly and imported state restoration in the application boundary.
+
+## T076 Gate
+
+T076 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test`
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification could not start because the in-app browser control tool is not exposed in the current session. T076 is not browser verified; this is an environment/tooling blocker, not an observed application failure.
 
 ## T075 Gate
 

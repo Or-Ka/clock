@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Extracted a narrow import/export controller for browser file mechanics, JSON parsing, status messages and listener cleanup while preserving export schema version `1`.
+- Added focused import/export controller tests for export, import success/error and lifecycle cleanup.
+- Extracted provider refresh orchestration for sunrise/sunset and Hebcal data into a narrow provider controller.
+- Added focused provider controller tests for caching, location changes and Hebrew-date detail refresh.
 - Introduced an internal app state/domain API for existing location, timezone, display preference, event-layer, derived-event and rendered-event state.
 - Added pure event-layer domain helpers and focused state/domain API tests.
 - Routed part of `create-clock-app.ts` state access through the new app-state API without changing state shape, UX, CSS, storage, import/export or `packages/clock`.

@@ -4,7 +4,7 @@ Updated: 2026-07-13
 
 ## Current Branch
 
-`refactor/frontend-architecture-app`
+`refactor/import-export-controller`
 
 ## Completed Migration Task
 
@@ -200,10 +200,37 @@ Not extracted in T075:
 - CSS or UX changes.
 - `packages/clock`.
 
-Next recommended work after T075 should not start automatically. A reasonable future T076 candidate is import/export boundary extraction, now that provider refresh state has a clearer boundary.
+T076 was selected explicitly after T075 as a conservative import/export boundary extraction. The controller should own stable browser/file/UI mechanics, while `create-clock-app.ts` keeps import state restoration and cross-surface rendering side effects.
 
 T075 commits:
 
 - `ba883e3 refactor extract data provider controller`
 - `0efac6c docs update T075 provider boundary`
 - `3c833e9 fix provider event Hebrew encoding`
+
+## T076 Progress
+
+T076 extracted stable import/export browser mechanics:
+
+- Added `apps/web/src/data/import-export-controller.ts`.
+- The controller owns export/import button listeners, JSON serialization and download creation, file reading, JSON parsing, status messages, file-input reset and cleanup.
+- `create-clock-app.ts` supplies the version-1 export snapshot and applies imported state through two explicit callbacks.
+- Imported state restoration remains in `create-clock-app.ts` because it updates location, zmanit sets, event layers, display preferences, visual overrides, alerts and dependent UI surfaces.
+- Added `apps/web/src/data/import-export-controller.test.ts` covering export, import success/error, repeated start and cleanup.
+
+Not changed in T076:
+
+- Export schema version and file name.
+- UX, CSS, storage schema and app state shape.
+- `packages/clock`.
+
+T076 CLI verification passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`146` tests)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification could not start because the in-app browser control tool is not exposed in the current session. This is an environment/tooling blocker, not an observed application failure.

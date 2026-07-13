@@ -224,3 +224,29 @@ Final T075 CLI gate passed:
 - `npm.cmd run build --workspace @clock/clock`
 
 Browser verification was attempted after the product-code change. A local static preview server started on `127.0.0.1:4176`, but the Codex in-app browser blocked the local URL with `ERR_BLOCKED_BY_CLIENT` before the app loaded. T075 is not browser verified; manual browser verification is required before merge. This is an environment/tooling blocker, not an observed application failure.
+
+## T076 Import/Export Controller Checks
+
+Added focused tests:
+
+- `apps/web/src/data/import-export-controller.test.ts`
+
+The import/export controller tests cover:
+
+- Serializing and downloading the current schema-version-1 state.
+- Reading and applying a selected JSON file.
+- Showing application validation errors and resetting the file input.
+- Guarding repeated `start()` calls and removing listeners on `destroy()`.
+
+The source-level app tests now assert that `create-clock-app.ts` uses `createImportExportController()` and that serialization, file reading and download creation live in `data/import-export-controller.ts`.
+
+Final T076 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`146` tests)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification could not start because the in-app browser control tool is not exposed in the current session. T076 is not browser verified; this is an environment/tooling blocker, not an observed application failure.
