@@ -23,7 +23,6 @@ export function hebcalUrlForDate(start: string, end: string, timeZone: string): 
     end,
     maj: "on",
     min: "on",
-    mod: "on",
     nx: "on",
     mf: "on",
     ss: "on",
