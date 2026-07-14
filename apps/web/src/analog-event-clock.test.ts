@@ -177,6 +177,9 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("--display-font-family");
     expect(css).toContain("--display-clock-size");
     expect(css).toContain("--clock-font-boost");
+    expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+    expect(css).toContain(".management-panel-content button");
+    expect(css).not.toContain(".display-preferences-toggle {\n  grid-column:");
     expect(css).toContain("--event-sunrise-color");
     expect(css).toContain(':root[data-display-mode="clockOnly"] .event-panel');
     expect(css).toContain(':root[data-display-mode="clockOnly"] .clock-toolbar');

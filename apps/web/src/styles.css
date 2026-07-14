@@ -226,7 +226,6 @@ h2 {
 }
 
 .display-preferences-toggle {
-  grid-column: 1;
   position: relative;
   z-index: 1;
 }
@@ -438,10 +437,14 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
   border-block: 1px solid color-mix(in srgb, var(--display-muted-color) 22%, transparent);
 }
 
 button.management-tab {
+  width: 100%;
+  min-width: 0;
   min-height: 58px;
   border: 0;
   border-radius: 0;
@@ -449,9 +452,10 @@ button.management-tab {
   color: var(--display-muted-color);
   background: transparent;
   font-family: "Noto Sans Hebrew", var(--display-font-family);
-  font-size: 0.82rem;
+  font-size: clamp(0.72rem, 1.5vw, 0.82rem);
   font-weight: 350;
   letter-spacing: 0.015em;
+  white-space: nowrap;
 }
 
 button.management-tab:hover,
@@ -767,7 +771,8 @@ input {
   background: transparent;
 }
 
-:where(.management-panel-content, .display-preferences-panel) button {
+.management-panel-content button,
+.display-preferences-panel button {
   min-height: 36px;
   border: 0;
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 30%, transparent);
@@ -779,8 +784,10 @@ input {
   font-weight: 400;
 }
 
-:where(.management-panel-content, .display-preferences-panel) button:hover,
-:where(.management-panel-content, .display-preferences-panel) button:active {
+.management-panel-content button:hover,
+.management-panel-content button:active,
+.display-preferences-panel button:hover,
+.display-preferences-panel button:active {
   border-color: var(--display-text-color);
   color: var(--display-text-color);
   background: transparent;
