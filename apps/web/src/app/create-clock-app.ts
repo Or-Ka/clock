@@ -858,7 +858,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     if (!clockContextMenu.hidden && !clockContextMenu.contains(target) && !mount.contains(target)) {
       closeClockContextMenu();
     }
-
   };
   addLifecycleEventListener(document, "pointerdown", handleDocumentPointerDown);
 
@@ -890,6 +889,14 @@ function startClockApp(deps: ClockAppDeps): () => void {
         }
 
         openManagementTab(tabId);
+      });
+      addLifecycleEventListener(tab, "dblclick", (event) => {
+        if (tab.getAttribute("aria-selected") !== "true") {
+          return;
+        }
+
+        event.preventDefault();
+        collapseManagementPanels();
       });
       addLifecycleEventListener(tab, "keydown", (event) => {
         if (!(event instanceof KeyboardEvent) || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) {
@@ -924,6 +931,13 @@ function startClockApp(deps: ClockAppDeps): () => void {
     eventsManagementPanel.hidden = tabId !== "events";
     settingsController.setDisplayPreferencesOpen(tabId === "display");
     syncManagementTabButtons(tabId);
+  }
+
+  function collapseManagementPanels(): void {
+    locationManagementPanel.hidden = true;
+    eventsManagementPanel.hidden = true;
+    settingsController.setDisplayPreferencesOpen(false);
+    syncManagementTabButtons(undefined);
   }
 
   function syncManagementTabButtons(activeTab: ManagementTabId | undefined): void {
@@ -2780,6 +2794,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     cell.className = className;
     if (text !== undefined) {
       cell.textContent = text;
+      cell.title = text;
     }
     return cell;
   }

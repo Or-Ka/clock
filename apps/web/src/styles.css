@@ -1353,9 +1353,10 @@ a:focus-visible {
 
 .unified-event-table {
   width: 100%;
-  min-width: 1100px;
+  min-width: 1280px;
   border: 0;
   border-collapse: collapse;
+  table-layout: fixed;
   color: var(--display-text-color);
   background: transparent;
   text-align: start;
@@ -1363,10 +1364,10 @@ a:focus-visible {
 
 .unified-event-table th {
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 30%, transparent);
-  padding: 0 10px 12px;
+  padding: 0 8px 8px;
   color: var(--display-muted-color);
-  font-size: 0.68rem;
-  font-weight: 500;
+  font-size: 0.62rem;
+  font-weight: 450;
   letter-spacing: 0.06em;
   text-align: start;
 }
@@ -1374,23 +1375,36 @@ a:focus-visible {
 .unified-event-table td {
   min-width: 0;
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 16%, transparent);
-  padding: 15px 10px;
+  padding: 7px 8px;
   vertical-align: middle;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unified-event-table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--display-text-color) 2.8%, transparent);
+}
+
+.unified-event-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--display-text-color) 5%, transparent);
 }
 
 .unified-event-table tr[data-event-status="next"] td {
-  background: color-mix(in srgb, var(--display-accent-color) 5%, transparent);
+  background: color-mix(in srgb, var(--display-accent-color) 7%, transparent);
 }
 
 .event-title-cell {
   width: 16%;
-  font-weight: 500;
+  font-weight: 450;
 }
 
 .event-type-cell {
   width: 9%;
   color: var(--display-muted-color);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 300;
 }
 
@@ -1398,7 +1412,7 @@ a:focus-visible {
   direction: ltr;
   width: 9%;
   font-family: "Libre Baskerville", serif;
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   text-align: start;
   white-space: nowrap;
@@ -1407,8 +1421,8 @@ a:focus-visible {
 .event-details-cell {
   width: 30%;
   color: var(--display-muted-color);
-  font-size: 0.76rem;
-  line-height: 1.5;
+  font-size: 0.68rem;
+  line-height: 1.25;
 }
 
 .event-alert-cell {
@@ -1470,27 +1484,38 @@ a:focus-visible {
 
 .fixed-event-inline-editor {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-wrap: nowrap;
+  gap: 3px;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .fixed-event-inline-editor select,
 .fixed-event-inline-editor input {
   width: auto;
-  min-width: 72px;
-  min-height: 30px;
+  min-width: 0;
+  min-height: 25px;
   border: 0;
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 34%, transparent);
   border-radius: 0;
-  padding: 3px 4px;
+  padding: 2px 3px;
   color: var(--display-text-color);
   background: transparent;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
 }
 
 .fixed-event-inline-editor select:first-child {
-  max-width: 158px;
+  flex: 1.5 1 120px;
+  max-width: 132px;
+}
+
+.fixed-event-inline-editor select:not(:first-child) {
+  flex: 1 1 62px;
+}
+
+.fixed-event-inline-editor input {
+  flex: 0 0 42px;
 }
 
 .event-alert-form {
@@ -1521,40 +1546,49 @@ a:focus-visible {
 
 .event-alert-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px 8px;
+  flex-wrap: nowrap;
+  gap: 3px 5px;
+  align-items: center;
   grid-column: auto;
-  padding-block-start: 2px;
+  min-width: 0;
+  padding-block-start: 0;
+  overflow: hidden;
 }
 
 .event-alert-check {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
   color: var(--display-muted-color);
-  font-size: 0.74rem;
+  font-size: 0.64rem;
   font-weight: 400;
   white-space: nowrap;
 }
 
 .event-alert-check input {
-  width: 16px;
-  min-height: 16px;
+  width: 13px;
+  min-height: 13px;
   margin: 0;
   accent-color: var(--display-accent-color);
 }
 
 .event-alert-controls select,
 .event-alert-controls input[type="number"] {
-  min-height: 28px;
+  width: 54px;
+  min-width: 0;
+  min-height: 25px;
   border: 0;
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 34%, transparent);
   border-radius: 0;
-  padding: 3px 6px;
+  padding: 2px 3px;
   background: transparent;
-  font-size: 0.74rem;
+  font-size: 0.64rem;
+}
+
+.event-alert-controls input[type="number"] {
+  width: 40px;
 }
 
 .form-error {

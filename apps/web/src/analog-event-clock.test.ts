@@ -158,6 +158,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("root.dataset.displayMode");
     expect(main).toContain("applyDisplayPreferences");
     expect(main).toContain("syncDisplayPreferenceControls");
+    expect(main).toContain('addLifecycleEventListener(tab, "dblclick"');
+    expect(main).toContain("collapseManagementPanels");
     expect(main).toContain("createEventVisualEditor");
     expect(main).toContain("EVENT_ICON_OPTIONS");
     expect(main).toContain("data-event-visual-id");
@@ -180,6 +182,9 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
     expect(css).toContain(".management-panel-content button");
     expect(css).not.toContain(".display-preferences-toggle {\n  grid-column:");
+    expect(css).toContain("table-layout: fixed");
+    expect(css).toContain("tbody tr:nth-child(even)");
+    expect(css).toContain("flex-wrap: nowrap");
     expect(css).toContain("--event-sunrise-color");
     expect(css).toContain(':root[data-display-mode="clockOnly"] .event-panel');
     expect(css).toContain(':root[data-display-mode="clockOnly"] .clock-toolbar');
