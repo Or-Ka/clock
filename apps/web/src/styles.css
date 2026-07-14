@@ -416,7 +416,7 @@ h2 {
 }
 
 .event-panel {
-  order: 2;
+  order: 3;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
@@ -433,68 +433,55 @@ h2 {
     margin 220ms ease;
 }
 
-.management-panel,
-.management-panel-toggle {
+.management-tabs {
+  order: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  border-block: 1px solid color-mix(in srgb, var(--display-muted-color) 22%, transparent);
+}
+
+button.management-tab {
+  min-height: 58px;
+  border: 0;
+  border-radius: 0;
+  padding: 15px 8px;
+  color: var(--display-muted-color);
+  background: transparent;
+  font-family: "Noto Sans Hebrew", var(--display-font-family);
+  font-size: 0.82rem;
+  font-weight: 350;
+  letter-spacing: 0.015em;
+}
+
+button.management-tab:hover,
+button.management-tab:active {
+  color: var(--display-text-color);
+  background: color-mix(in srgb, var(--display-text-color) 2.5%, transparent);
+}
+
+button.management-tab[aria-selected="true"] {
+  color: var(--display-text-color);
+  background: transparent;
+  box-shadow: inset 0 -1px var(--display-text-color);
+  font-weight: 500;
+}
+
+.management-panel {
   width: 100%;
   border: 0;
-  border-block-start: 1px solid color-mix(in srgb, var(--display-muted-color) 26%, transparent);
   border-radius: 0;
   color: var(--display-text-color);
   background: transparent;
 }
 
-.management-panel > summary,
-.management-panel-toggle {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 4px;
-  min-height: 76px;
-  padding: 20px 4px;
-  text-align: start;
-  cursor: pointer;
-  list-style: none;
-}
-
-.management-panel > summary::-webkit-details-marker {
-  display: none;
-}
-
-.management-panel > summary span,
-.management-panel-toggle span {
-  font-family: "Noto Sans Hebrew", var(--display-font-family);
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.015em;
-}
-
-.management-panel > summary small,
-.management-panel-toggle small {
-  color: var(--display-muted-color);
-  font-size: 0.76rem;
-  font-weight: 300;
-}
-
-.management-panel > summary:hover,
-.management-panel-toggle:hover {
-  border-color: color-mix(in srgb, var(--display-text-color) 42%, transparent);
-  background: transparent;
-}
-
-.management-panel[open] > summary {
-  border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 18%, transparent);
-}
-
 .management-panel-content {
-  padding: 30px 4px 44px;
+  padding: 42px 2px 54px;
 }
 
 .events-management-content {
   display: grid;
   gap: 38px;
-}
-
-.management-panel-toggle {
-  order: 3;
 }
 
 :root[data-display-mode="clockOnly"] .clock-app {
@@ -523,7 +510,7 @@ h2 {
 
 :root[data-display-mode="clockOnly"] .event-panel,
 :root[data-display-mode="clockOnly"] .display-preferences-panel,
-:root[data-display-mode="clockOnly"] .management-panel-toggle {
+:root[data-display-mode="clockOnly"] .management-tabs {
   max-height: 0;
   margin: 0;
   opacity: 0;
@@ -559,7 +546,7 @@ h2 {
 :root[data-display-mode="floatingClock"] .clock-toolbar,
 :root[data-display-mode="floatingClock"] .event-panel,
 :root[data-display-mode="floatingClock"] .display-preferences-panel,
-:root[data-display-mode="floatingClock"] .management-panel-toggle {
+:root[data-display-mode="floatingClock"] .management-tabs {
   max-height: 0;
   margin: 0;
   opacity: 0;
@@ -625,7 +612,7 @@ h2 {
 
 .control-group {
   display: grid;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -646,8 +633,8 @@ h2 {
 
 .add-event-actions button[aria-expanded="true"] {
   border-color: var(--display-accent-color);
-  color: var(--display-background-color);
-  background: var(--display-accent-color);
+  color: var(--display-text-color);
+  background: transparent;
 }
 
 .add-event-form {
@@ -657,7 +644,7 @@ h2 {
 
 .settings-block {
   display: grid;
-  gap: 12px;
+  gap: 18px;
   min-width: 0;
   min-height: 0;
   border: 0;
@@ -682,11 +669,11 @@ h2 {
 }
 
 .layer-controls legend {
-  padding-inline: 4px;
+  padding-inline: 0;
   color: var(--display-muted-color);
-  font-size: 0.86rem;
-  font-weight: 800;
-  background: var(--display-background-color);
+  font-size: 0.74rem;
+  font-weight: 400;
+  background: transparent;
 }
 
 .layer-controls label {
@@ -694,6 +681,8 @@ h2 {
   align-items: center;
   gap: 8px;
   color: var(--display-text-color);
+  font-size: 0.78rem;
+  font-weight: 350;
 }
 
 .layer-controls input {
@@ -741,8 +730,9 @@ h2 {
 
 label {
   color: var(--display-muted-color);
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.015em;
 }
 
 select,
@@ -756,6 +746,44 @@ input {
   background: var(--display-panel-color);
   caret-color: var(--display-accent-color);
   font-variant-numeric: tabular-nums;
+}
+
+:where(.management-panel-content, .display-preferences-panel) select,
+:where(.management-panel-content, .display-preferences-panel)
+  input:not([type="checkbox"]):not([type="range"]):not([type="color"]):not([type="file"]) {
+  min-height: 36px;
+  border: 0;
+  border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 30%, transparent);
+  border-radius: 0;
+  padding: 6px 1px;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 350;
+}
+
+:where(.management-panel-content, .display-preferences-panel) select:disabled,
+:where(.management-panel-content, .display-preferences-panel) input:disabled {
+  border-color: color-mix(in srgb, var(--display-muted-color) 16%, transparent);
+  background: transparent;
+}
+
+:where(.management-panel-content, .display-preferences-panel) button {
+  min-height: 36px;
+  border: 0;
+  border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 30%, transparent);
+  border-radius: 0;
+  padding: 6px 1px;
+  color: var(--display-muted-color);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+:where(.management-panel-content, .display-preferences-panel) button:hover,
+:where(.management-panel-content, .display-preferences-panel) button:active {
+  border-color: var(--display-text-color);
+  color: var(--display-text-color);
+  background: transparent;
 }
 
 select option {
@@ -790,17 +818,18 @@ input[type="color"] {
   display: grid;
   gap: 12px;
   margin: 0;
-  border: 1px solid color-mix(in srgb, var(--display-muted-color) 34%, transparent);
-  border-radius: 10px;
-  padding: 12px;
-  background: color-mix(in srgb, var(--display-background-color) 56%, transparent);
+  border: 0;
+  border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 20%, transparent);
+  border-radius: 0;
+  padding: 0 0 24px;
+  background: transparent;
 }
 
 .clock-appearance-controls legend {
-  padding-inline: 6px;
+  padding-inline: 0;
   color: var(--display-text-color);
-  font-size: 0.88rem;
-  font-weight: 800;
+  font-size: 0.76rem;
+  font-weight: 450;
 }
 
 .clock-appearance-grid {
@@ -842,21 +871,33 @@ input[type="color"] {
 }
 
 .display-preferences-panel {
-  order: 4;
+  order: 3;
   position: static;
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 40px;
   width: 100%;
   max-height: none;
   overflow: visible;
   border: 0;
   border-block-end: 1px solid color-mix(in srgb, var(--display-muted-color) 26%, transparent);
   border-radius: 0;
-  padding: 28px 4px 44px;
+  padding: 42px 2px 54px;
   color: var(--display-text-color);
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
+}
+
+#display-preferences-title,
+.display-preferences-panel > .clock-appearance-controls,
+.display-preferences-panel > .display-color-grid,
+.display-preferences-panel > .user-guide-menu {
+  grid-column: 1 / -1;
+}
+
+#display-preferences-title {
+  display: none;
 }
 
 .display-color-grid {
@@ -885,13 +926,14 @@ input[type="color"] {
   align-items: center;
   justify-content: space-between;
   min-height: 38px;
-  border: 1px solid color-mix(in srgb, var(--display-muted-color) 54%, transparent);
-  border-radius: 6px;
-  padding: 7px 10px;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 0;
   color: var(--display-text-color);
-  background: color-mix(in srgb, var(--display-panel-color) 78%, var(--display-accent-color));
+  background: transparent;
   cursor: pointer;
-  font-weight: 850;
+  font-size: 0.78rem;
+  font-weight: 400;
   list-style: none;
 }
 
@@ -900,21 +942,14 @@ input[type="color"] {
 }
 
 .user-guide-menu summary::after {
-  content: "+";
-  display: grid;
-  place-items: center;
-  width: 22px;
-  min-width: 22px;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  color: var(--display-background-color);
-  background: var(--display-accent-color);
-  font-weight: 900;
-  line-height: 1;
+  content: "פתיחה";
+  color: var(--display-muted-color);
+  font-size: 0.7rem;
+  font-weight: 350;
 }
 
 .user-guide-menu[open] summary::after {
-  content: "-";
+  content: "סגירה";
 }
 
 .guide-content {
@@ -1391,8 +1426,9 @@ a:focus-visible {
 .zmanit-set-form h3 {
   margin: 0;
   color: var(--display-text-color);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   line-height: 1.2;
+  font-weight: 450;
 }
 
 .zmanit-boundary-grid,
@@ -1492,7 +1528,7 @@ a:focus-visible {
   min-width: 0;
   color: var(--display-muted-color);
   font-size: 0.74rem;
-  font-weight: 800;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -1524,8 +1560,14 @@ a:focus-visible {
 .helper-text {
   margin: 0;
   color: var(--display-muted-color);
-  font-size: 0.83rem;
+  font-size: 0.76rem;
+  font-weight: 350;
   line-height: 1.45;
+}
+
+.management-panel-content h2 {
+  font-size: 0.82rem;
+  font-weight: 450;
 }
 
 .helper-text a {
@@ -1901,8 +1943,10 @@ a:focus-visible {
   }
 
   .event-panel,
+  .display-preferences-panel,
   .add-event-actions,
   .time-fields,
+  .clock-appearance-grid,
   .display-color-grid,
   .guide-section,
   .event-alert-form-grid,

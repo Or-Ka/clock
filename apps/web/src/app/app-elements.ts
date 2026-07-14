@@ -56,6 +56,9 @@ export type AppElements = {
   readonly importExportStatus: HTMLElement;
   readonly layerToggles: readonly HTMLInputElement[];
   readonly zmanitLayerToggle: HTMLInputElement;
+  readonly managementTabs: readonly HTMLButtonElement[];
+  readonly locationManagementPanel: HTMLElement;
+  readonly eventsManagementPanel: HTMLElement;
   readonly displayPreferencesToggle: HTMLButtonElement;
   readonly displayPreferencesPanel: HTMLElement;
   readonly clockThemeSelect: HTMLSelectElement;
@@ -139,6 +142,9 @@ export function bindAppElements(root: ParentNode): AppElements {
     importExportStatus: getRequiredElement<HTMLElement>(root, "#import-export-status"),
     layerToggles: Array.from(root.querySelectorAll<HTMLInputElement>("[data-layer-toggle]")),
     zmanitLayerToggle: getRequiredElement<HTMLInputElement>(root, "[data-zmanit-layer-toggle]"),
+    managementTabs: Array.from(root.querySelectorAll<HTMLButtonElement>("[data-management-tab]")),
+    locationManagementPanel: getRequiredElement<HTMLElement>(root, "#location-management-panel"),
+    eventsManagementPanel: getRequiredElement<HTMLElement>(root, "#events-management-panel"),
     displayPreferencesToggle: getRequiredElement<HTMLButtonElement>(root, "#display-preferences-toggle"),
     displayPreferencesPanel: getRequiredElement<HTMLElement>(root, "#display-preferences-panel"),
     clockThemeSelect: getRequiredElement<HTMLSelectElement>(root, "#clock-theme"),

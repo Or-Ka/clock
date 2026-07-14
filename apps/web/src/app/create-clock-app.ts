@@ -88,6 +88,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   type DisplayFontFamily = "system" | "serif" | "mono" | "rounded";
   type ClockTheme = "dark" | "light" | "wood";
   type ClockDialStyle = "roman" | "serif" | "minimal";
+  type ManagementTabId = "location" | "events" | "display";
   type ClockAppearance = {
     readonly theme: ClockTheme;
     readonly dialStyle: ClockDialStyle;
@@ -510,6 +511,9 @@ function startClockApp(deps: ClockAppDeps): () => void {
     importExportStatus,
     layerToggles,
     zmanitLayerToggle,
+    managementTabs,
+    locationManagementPanel,
+    eventsManagementPanel,
     displayPreferencesToggle,
     displayPreferencesPanel,
     clockThemeSelect,
@@ -689,6 +693,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   void refreshHebcalDetails(true);
   settingsController.start();
   lifecycle.add(() => settingsController.destroy());
+  startManagementTabs();
   importExportController.start();
   lifecycle.add(() => importExportController.destroy());
 
@@ -854,13 +859,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
       closeClockContextMenu();
     }
 
-    if (
-      !displayPreferencesPanel.hidden &&
-      !displayPreferencesPanel.contains(target) &&
-      !displayPreferencesToggle.contains(target)
-    ) {
-      settingsController.setDisplayPreferencesOpen(false);
-    }
   };
   addLifecycleEventListener(document, "pointerdown", handleDocumentPointerDown);
 
@@ -871,6 +869,74 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }, 30_000);
   lifecycle.add(() => window.clearInterval(statusTimer));
   addLifecycleEventListener(window, "beforeunload", destroyClock);
+
+  function startManagementTabs(): void {
+    for (const tab of managementTabs) {
+      addLifecycleEventListener(tab, "click", () => {
+        const tabId = tab.dataset.managementTab;
+        if (!isManagementTabId(tabId)) {
+          return;
+        }
+
+        if (tabId === "display") {
+          if (displayPreferencesPanel.hidden) {
+            openManagementTab("display");
+          } else {
+            locationManagementPanel.hidden = true;
+            eventsManagementPanel.hidden = true;
+            syncManagementTabButtons("display");
+          }
+          return;
+        }
+
+        openManagementTab(tabId);
+      });
+      addLifecycleEventListener(tab, "keydown", (event) => {
+        if (!(event instanceof KeyboardEvent) || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) {
+          return;
+        }
+
+        event.preventDefault();
+        const currentIndex = managementTabs.indexOf(tab);
+        const direction = event.key === "ArrowLeft" ? 1 : -1;
+        const nextTab = managementTabs[(currentIndex + direction + managementTabs.length) % managementTabs.length];
+        nextTab?.focus();
+        nextTab?.click();
+      });
+    }
+
+    const displayPanelObserver = new MutationObserver(() => {
+      if (!displayPreferencesPanel.hidden) {
+        locationManagementPanel.hidden = true;
+        eventsManagementPanel.hidden = true;
+        syncManagementTabButtons("display");
+      } else if (displayPreferencesToggle.getAttribute("aria-selected") === "true") {
+        syncManagementTabButtons(undefined);
+      }
+    });
+    displayPanelObserver.observe(displayPreferencesPanel, { attributes: true, attributeFilter: ["hidden"] });
+    lifecycle.add(() => displayPanelObserver.disconnect());
+    syncManagementTabButtons(undefined);
+  }
+
+  function openManagementTab(tabId: ManagementTabId): void {
+    locationManagementPanel.hidden = tabId !== "location";
+    eventsManagementPanel.hidden = tabId !== "events";
+    settingsController.setDisplayPreferencesOpen(tabId === "display");
+    syncManagementTabButtons(tabId);
+  }
+
+  function syncManagementTabButtons(activeTab: ManagementTabId | undefined): void {
+    for (const tab of managementTabs) {
+      const isActive = tab.dataset.managementTab === activeTab;
+      tab.setAttribute("aria-selected", String(isActive));
+      tab.setAttribute("aria-expanded", String(isActive));
+    }
+  }
+
+  function isManagementTabId(value: string | undefined): value is ManagementTabId {
+    return value === "location" || value === "events" || value === "display";
+  }
 
   function renderZmanitSetControls(): void {
     zmanitSetSelect.replaceChildren(...zmanitTimeSets.map((set) => createOption(set.id, set.title)));
@@ -1699,7 +1765,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     );
     const preferences = createClockContextMenuButton("העדפות תצוגה", () => {
       settingsController.setDisplayMode("fullMode");
-      settingsController.setDisplayPreferencesOpen(true);
+      openManagementTab("display");
       closeClockContextMenu();
     });
 

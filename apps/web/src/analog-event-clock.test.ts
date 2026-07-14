@@ -26,7 +26,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('<html lang="he" dir="rtl">');
     expect(html).toContain("<title>שעון אירועים אנלוגי Beta</title>");
     expect(html).not.toContain("<h1>");
-    expect(html).not.toContain("<nav");
+    expect(html).toContain('<nav class="management-tabs"');
     expect(html).not.toContain("שלב 1");
     expect(html).not.toContain("שלב 2");
     expect(html).not.toContain("שלב 3");
@@ -61,8 +61,12 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('data-event-form-toggle="special"');
     expect(html).toContain('data-add-event-form="regular"');
     expect(html).toContain('data-add-event-form="special"');
-    expect(html).toContain('class="management-panel"');
-    expect(html).toContain("אירועים רגילים, מיוחדים וקבועים בטבלה אחת");
+    expect(html).toContain('class="management-tabs"');
+    expect(html).toContain('data-management-tab="location"');
+    expect(html).toContain('data-management-tab="events"');
+    expect(html).toContain('data-management-tab="display"');
+    expect(html).toContain('id="location-management-panel"');
+    expect(html).toContain('id="events-management-panel"');
     expect(html).toContain('class="unified-event-table"');
     expect(html).toContain('<tbody id="event-list" class="event-list"></tbody>');
     expect(html).not.toContain('id="fixed-day-time-list"');
@@ -108,7 +112,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("layer.id === DAY_TIMES_LAYER_ID");
   });
 
-  it("adds collapsible display preferences and in-list event visual editing", () => {
+  it("adds tabbed display preferences and in-list event visual editing", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
     const clockShell = readAppFile("clock-shell/clock-shell-controller.ts");

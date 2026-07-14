@@ -17,7 +17,8 @@
         <section
           id="display-preferences-panel"
           class="display-preferences-panel"
-          aria-labelledby="display-preferences-title"
+          role="tabpanel"
+          aria-labelledby="display-preferences-toggle"
           hidden
         >
           <h2 id="display-preferences-title">העדפות תצוגה</h2>
@@ -282,12 +283,53 @@
           </details>
         </section>
 
+        <nav class="management-tabs" aria-label="ניהול השעון" role="tablist">
+          <button
+            id="location-management-tab"
+            class="management-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-expanded="false"
+            aria-controls="location-management-panel"
+            data-management-tab="location"
+          >
+            מיקום וזמנים
+          </button>
+          <button
+            id="events-management-tab"
+            class="management-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-expanded="false"
+            aria-controls="events-management-panel"
+            data-management-tab="events"
+          >
+            אירועים
+          </button>
+          <button
+            id="display-preferences-toggle"
+            class="management-tab display-preferences-toggle"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-expanded="false"
+            aria-controls="display-preferences-panel"
+            data-management-tab="display"
+          >
+            תצוגה
+          </button>
+        </nav>
+
         <aside class="event-panel" aria-label="ניהול אירועים">
-          <details class="management-panel">
-            <summary>
-              <span>מיקום וזמנים</span>
-              <small>מיקום, שעות זמניות, שכבות ונתונים</small>
-            </summary>
+          <section
+            id="location-management-panel"
+            class="management-panel"
+            role="tabpanel"
+            aria-labelledby="location-management-tab"
+            hidden
+          >
             <div class="management-panel-content">
               <section class="settings-block" aria-labelledby="location-settings-title">
                 <h2 id="location-settings-title">הגדרות מיקום</h2>
@@ -440,13 +482,15 @@
                 </fieldset>
               </section>
             </div>
-          </details>
+          </section>
 
-          <details class="management-panel events-management-panel">
-            <summary>
-              <span>כל האירועים</span>
-              <small>אירועים רגילים, מיוחדים וקבועים בטבלה אחת</small>
-            </summary>
+          <section
+            id="events-management-panel"
+            class="management-panel events-management-panel"
+            role="tabpanel"
+            aria-labelledby="events-management-tab"
+            hidden
+          >
             <div class="management-panel-content events-management-content">
               <section class="settings-block add-event-block" aria-labelledby="add-event-title">
                 <h2 id="add-event-title">הוספת אירוע</h2>
@@ -680,19 +724,8 @@
                 </p>
               </section>
             </div>
-          </details>
+          </section>
         </aside>
-
-        <button
-          id="display-preferences-toggle"
-          class="display-preferences-toggle management-panel-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="display-preferences-panel"
-        >
-          <span>העדפות תצוגה</span>
-          <small>מראה השעון, צבעים ומצבי תצוגה</small>
-        </button>
       </section>
     </main>
     <div class="dev-stamp no-print">
