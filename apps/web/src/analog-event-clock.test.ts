@@ -38,7 +38,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain("רשימת אירועים");
   });
 
-  it("includes a location selector and day-times API status text", () => {
+  it("groups location controls and every event type into minimal management panels", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
     const providerController = readAppFile("data/provider-controller.ts");
@@ -61,7 +61,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('data-event-form-toggle="special"');
     expect(html).toContain('data-add-event-form="regular"');
     expect(html).toContain('data-add-event-form="special"');
-    expect(html).toContain('id="fixed-day-time-list"');
+    expect(html).toContain('class="management-panel"');
+    expect(html).toContain("אירועים רגילים, מיוחדים וקבועים בטבלה אחת");
+    expect(html).toContain('class="unified-event-table"');
+    expect(html).toContain('<tbody id="event-list" class="event-list"></tbody>');
+    expect(html).not.toContain('id="fixed-day-time-list"');
     expect(html).toContain('id="fixed-day-time-status"');
     expect(html).toContain("אירועים מיוחדים");
     expect(html).toContain("שעות זמניות</option>");
@@ -123,8 +127,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('id="display-font-scale"');
     expect(html).toContain('id="display-clock-scale"');
     expect(html).toContain('id="display-background-color"');
-    expect(html).not.toContain('data-event-symbol-control');
-    expect(html).not.toContain('data-event-color-control');
+    expect(html).not.toContain("data-event-symbol-control");
+    expect(html).not.toContain("data-event-color-control");
 
     for (const templateId of ["classic", "night", "paper", "focus", "festival"]) {
       expect(main).toContain(`${templateId}: {`);
@@ -260,11 +264,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).not.toContain('zmanitSetId: "tefillin-tefila"');
     expect(main).not.toContain('id: "tefillin-tefila"');
     expect(main).toContain('id: "sunrise-sunset"');
-    expect(main).toContain('fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS');
+    expect(main).toContain("fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS");
     expect(main).toContain('setSelect.dataset.fixedField = "zmanitSetId"');
     expect(main).toContain('offsetUnit: "zmanit-hours"');
-    expect(main).toContain('id: `${idPrefix}-${definition.id}`');
-    expect(main).toContain('existingLayer.id === DAY_TIMES_LAYER_ID');
+    expect(main).toContain("id: `${idPrefix}-${definition.id}`");
+    expect(main).toContain("existingLayer.id === DAY_TIMES_LAYER_ID");
   });
 
   it("keeps add-event forms collapsed behind explicit event-type choices", () => {
@@ -276,8 +280,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('id="event-form"');
     expect(html).toContain('id="derived-event-form"');
     expect(html).toContain("שמירה");
-    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע</button>");
-    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע מיוחד</button>");
+    expect(html).not.toContain('<button type="submit">הוספת אירוע</button>');
+    expect(html).not.toContain('<button type="submit">הוספת אירוע מיוחד</button>');
   });
 
   it("adds automatic Shabbat times only for Friday and Saturday", () => {

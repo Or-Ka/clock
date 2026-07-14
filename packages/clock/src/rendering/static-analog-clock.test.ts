@@ -41,8 +41,12 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelectorAll('[data-clock-part="clock-hour-number"]')).toHaveLength(0);
     expect(container.querySelector('[data-clock-part="outer-ring"]')).toBeNull();
     expect(container.querySelector('[data-clock-part="inner-ring"]')).not.toBeNull();
-    expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="outer"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="outer"]')).toHaveLength(24);
+    expect(container.querySelectorAll('[data-clock-dial-label="roman"]')).toHaveLength(12);
+    expect(container.querySelectorAll('[data-clock-dial-label="serif"]')).toHaveLength(12);
     expect(container.querySelectorAll('[data-clock-part="ring-hour-label"][data-clock-ring="inner"]')).toHaveLength(12);
+    expect(container.querySelector('[data-clock-part="outer-frame"]')).not.toBeNull();
+    expect(container.querySelector('[data-clock-part="wood-grain"]')).not.toBeNull();
     expect(container.querySelectorAll("linearGradient")).toHaveLength(0);
     expect(container.querySelector('[data-clock-part="face"]')?.getAttribute("fill")).toBe("#101b26");
     expect(container.querySelector('[data-clock-part="face"]')?.getAttribute("stroke")).toBe("#6f879b");
@@ -53,7 +57,7 @@ describe("createStaticAnalogClock", () => {
     expect(svg?.dataset.clockMinuteAngle).toBe("180");
   });
 
-  it("places the rotated ring labels on top of their rings", () => {
+  it("places traditional outer labels and 24-hour inner labels on their rings", () => {
     const container = document.createElement("div");
 
     createStaticAnalogClock({
@@ -65,14 +69,16 @@ describe("createStaticAnalogClock", () => {
     const outerSix = getRingLabel(container, "outer", "06");
     const innerZero = getRingLabel(container, "inner", "00");
     const innerEighteen = getRingLabel(container, "inner", "18");
+    const romanTwelve = container.querySelector<SVGTextElement>('[data-clock-dial-label="roman"][data-clock-hour="12"]');
 
     expect(Number(outerTwelve.getAttribute("y"))).toBeLessThan(100);
     expect(Number(outerSix.getAttribute("y"))).toBeGreaterThan(100);
     expect(Number(innerZero.getAttribute("y"))).toBeLessThan(100);
     expect(Number(innerEighteen.getAttribute("y"))).toBeGreaterThan(100);
-    expect(distanceFromPoint(outerTwelve)).toBeCloseTo(88, 0);
+    expect(distanceFromPoint(outerTwelve)).toBeCloseTo(82, 0);
     expect(distanceFromPoint(innerZero)).toBeCloseTo(74, 0);
-    expect(outerTwelve.getAttribute("font-family")).toContain("Georgia");
+    expect(outerTwelve.textContent).toBe("12");
+    expect(romanTwelve?.textContent).toBe("XII");
     expect(outerTwelve.getAttribute("fill")).toBe("#f7f1de");
     expect(outerTwelve.getAttribute("stroke")).toBe("#101b26");
     expect(innerZero.getAttribute("fill")).toBe("#b9c7d5");
@@ -115,10 +121,10 @@ describe("createStaticAnalogClock", () => {
       time: { hour: 12, minute: 0, second: 15 }
     });
 
-    expect(container.querySelector('[data-clock-part="hour-hand"]')?.getAttribute("stroke-width")).toBe("3.2");
-    expect(container.querySelector('[data-clock-part="minute-hand"]')?.getAttribute("stroke-width")).toBe("2.4");
-    expect(container.querySelector('[data-clock-part="second-hand"]')?.getAttribute("stroke-width")).toBe("1");
-    expect(container.querySelector('[data-clock-part="second-hand"]')?.getAttribute("stroke-linecap")).toBe("butt");
+    expect(container.querySelector('[data-clock-part="hour-hand"]')?.getAttribute("stroke-width")).toBe("2.5");
+    expect(container.querySelector('[data-clock-part="minute-hand"]')?.getAttribute("stroke-width")).toBe("1.65");
+    expect(container.querySelector('[data-clock-part="second-hand"]')?.getAttribute("stroke-width")).toBe("0.55");
+    expect(container.querySelector('[data-clock-part="second-hand"]')?.getAttribute("stroke-linecap")).toBe("round");
     expect(container.querySelector("svg")?.dataset.clockSecondAngle).toBe("90");
   });
 

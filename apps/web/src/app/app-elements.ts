@@ -30,7 +30,6 @@ export type AppElements = {
   readonly derivedOffsetUnitSelect: HTMLSelectElement;
   readonly derivedEventAlertControls: AlertFormElements;
   readonly derivedError: HTMLElement;
-  readonly fixedDayTimeList: HTMLElement;
   readonly fixedDayTimeStatus: HTMLElement;
   readonly zmanitSetSelect: HTMLSelectElement;
   readonly zmanitSetStatus: HTMLElement;
@@ -48,7 +47,7 @@ export type AppElements = {
   readonly zmanitSetNewButton: HTMLButtonElement;
   readonly zmanitSetRemoveButton: HTMLButtonElement;
   readonly zmanitSetEditorStatus: HTMLElement;
-  readonly eventList: HTMLUListElement;
+  readonly eventList: HTMLTableSectionElement;
   readonly eventError: HTMLElement;
   readonly alertsEnabledInput: HTMLInputElement;
   readonly exportAppStateButton: HTMLButtonElement;
@@ -59,6 +58,9 @@ export type AppElements = {
   readonly zmanitLayerToggle: HTMLInputElement;
   readonly displayPreferencesToggle: HTMLButtonElement;
   readonly displayPreferencesPanel: HTMLElement;
+  readonly clockThemeSelect: HTMLSelectElement;
+  readonly clockDialStyleSelect: HTMLSelectElement;
+  readonly clockInnerRingInput: HTMLInputElement;
   readonly displayTemplateSelect: HTMLSelectElement;
   readonly displayModeSelect: HTMLSelectElement;
   readonly displayFontFamilySelect: HTMLSelectElement;
@@ -111,7 +113,6 @@ export function bindAppElements(root: ParentNode): AppElements {
       unit: getRequiredElement<HTMLSelectElement>(root, "#derived-event-alert-offset-unit")
     },
     derivedError: getRequiredElement<HTMLElement>(root, "#derived-event-error"),
-    fixedDayTimeList: getRequiredElement<HTMLElement>(root, "#fixed-day-time-list"),
     fixedDayTimeStatus: getRequiredElement<HTMLElement>(root, "#fixed-day-time-status"),
     zmanitSetSelect: getRequiredElement<HTMLSelectElement>(root, "#zmanit-set"),
     zmanitSetStatus: getRequiredElement<HTMLElement>(root, "#zmanit-set-status"),
@@ -129,7 +130,7 @@ export function bindAppElements(root: ParentNode): AppElements {
     zmanitSetNewButton: getRequiredElement<HTMLButtonElement>(root, "#zmanit-set-new"),
     zmanitSetRemoveButton: getRequiredElement<HTMLButtonElement>(root, "#zmanit-set-delete"),
     zmanitSetEditorStatus: getRequiredElement<HTMLElement>(root, "#zmanit-set-editor-status"),
-    eventList: getRequiredElement<HTMLUListElement>(root, "#event-list"),
+    eventList: getRequiredElement<HTMLTableSectionElement>(root, "#event-list"),
     eventError: getRequiredElement<HTMLElement>(root, "#event-error"),
     alertsEnabledInput: getRequiredElement<HTMLInputElement>(root, "#alerts-enabled"),
     exportAppStateButton: getRequiredElement<HTMLButtonElement>(root, "#export-app-state"),
@@ -140,6 +141,9 @@ export function bindAppElements(root: ParentNode): AppElements {
     zmanitLayerToggle: getRequiredElement<HTMLInputElement>(root, "[data-zmanit-layer-toggle]"),
     displayPreferencesToggle: getRequiredElement<HTMLButtonElement>(root, "#display-preferences-toggle"),
     displayPreferencesPanel: getRequiredElement<HTMLElement>(root, "#display-preferences-panel"),
+    clockThemeSelect: getRequiredElement<HTMLSelectElement>(root, "#clock-theme"),
+    clockDialStyleSelect: getRequiredElement<HTMLSelectElement>(root, "#clock-dial-style"),
+    clockInnerRingInput: getRequiredElement<HTMLInputElement>(root, "#clock-inner-ring"),
     displayTemplateSelect: getRequiredElement<HTMLSelectElement>(root, "#display-template"),
     displayModeSelect: getRequiredElement<HTMLSelectElement>(root, "#display-mode"),
     displayFontFamilySelect: getRequiredElement<HTMLSelectElement>(root, "#display-font-family"),

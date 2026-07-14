@@ -10,19 +10,7 @@
     <main class="clock-app">
       <section class="workspace" aria-label="שעון והגדרות">
         <section class="clock-panel" aria-label="שעון חי עם טבעות אירועים">
-          <div class="clock-toolbar">
-            <button
-              id="display-preferences-toggle"
-              class="icon-button display-preferences-toggle"
-              type="button"
-              aria-label="העדפות תצוגה"
-              aria-expanded="false"
-              aria-controls="display-preferences-panel"
-            >
-              ⚙
-            </button>
-            <p id="clock-status" aria-live="polite">--:--</p>
-          </div>
+          <p id="clock-status" class="visually-hidden" aria-live="polite"></p>
           <div class="clock-mount" id="phase3-clock"></div>
         </section>
 
@@ -33,6 +21,38 @@
           hidden
         >
           <h2 id="display-preferences-title">העדפות תצוגה</h2>
+
+          <fieldset class="clock-appearance-controls">
+            <legend>מראה השעון</legend>
+
+            <div class="clock-appearance-grid">
+              <div class="control-group">
+                <label for="clock-theme">גימור</label>
+                <select id="clock-theme">
+                  <option value="dark">Dark · שחור</option>
+                  <option value="light">Light · לבן</option>
+                  <option value="wood">Woody · עץ</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="clock-dial-style">סגנון שעות</label>
+                <select id="clock-dial-style">
+                  <option value="roman">Roman · I–XII</option>
+                  <option value="serif">Serif · 1–12</option>
+                  <option value="minimal">Minimal · קווים</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="clock-inner-ring-toggle" for="clock-inner-ring">
+              <span>
+                <strong>טבעת שעות פנימית</strong>
+                <small>הצגת שעות הלילה במספרים קטנים</small>
+              </span>
+              <input id="clock-inner-ring" type="checkbox" checked />
+            </label>
+          </fieldset>
 
           <div class="control-group">
             <label for="display-template">סגנון תצוגה</label>
@@ -107,11 +127,15 @@
                 <div>
                   <h3 id="guide-overview-title">המסך הראשי</h3>
                   <p>
-                    השעון מציג טבעת יום וטבעת לילה, אירועים על החוגה, זמן נוכחי, תאריך עברי ולועזי,
-                    וסימון לאירוע הבא. מעבר עם העכבר על סימון מציג פרטים וזמן שנותר.
+                    השעון מציג טבעת יום וטבעת לילה, אירועים על החוגה, זמן נוכחי, תאריך עברי ולועזי, וסימון לאירוע הבא.
+                    מעבר עם העכבר על סימון מציג פרטים וזמן שנותר.
                   </p>
                 </div>
-                <figure class="guide-shot guide-shot-clock" role="img" aria-label="צילום מסך סכמטי של השעון הראשי עם אירועים">
+                <figure
+                  class="guide-shot guide-shot-clock"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של השעון הראשי עם אירועים"
+                >
                   <span class="guide-shot-toolbar"></span>
                   <span class="guide-clock-face">
                     <span class="guide-clock-hand guide-clock-hour"></span>
@@ -135,7 +159,11 @@
                     <li>גודל טקסט, גודל שעון, צבע רקע, פאנלים, טקסט, הדגשה ופני שעון.</li>
                   </ul>
                 </div>
-                <figure class="guide-shot guide-shot-preferences" role="img" aria-label="צילום מסך סכמטי של העדפות התצוגה">
+                <figure
+                  class="guide-shot guide-shot-preferences"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של העדפות התצוגה"
+                >
                   <span class="guide-field guide-field-wide"></span>
                   <span class="guide-field"></span>
                   <span class="guide-field"></span>
@@ -157,12 +185,14 @@
                     <li>אפשר ליצור סט חדש, לשמור שינויים או למחוק סט מותאם.</li>
                   </ul>
                 </div>
-                <figure class="guide-shot guide-shot-location" role="img" aria-label="צילום מסך סכמטי של הגדרות מיקום וסט שעות זמניות">
+                <figure
+                  class="guide-shot guide-shot-location"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של הגדרות מיקום וסט שעות זמניות"
+                >
                   <span class="guide-field guide-field-wide"></span>
                   <span class="guide-field guide-field-wide"></span>
-                  <span class="guide-mini-grid">
-                    <span></span><span></span><span></span><span></span>
-                  </span>
+                  <span class="guide-mini-grid"> <span></span><span></span><span></span><span></span> </span>
                   <span class="guide-actions"></span>
                   <figcaption>מיקום, אזור זמן וסט זמני</figcaption>
                 </figure>
@@ -173,12 +203,19 @@
                   <h3 id="guide-events-title">אירועים והתראות</h3>
                   <ul class="guide-list">
                     <li>אירוע רגיל: סוג אירוע, שם, שעה, דקה והתראה.</li>
-                    <li>אירוע מיוחד: מבוסס על זריחה, שקיעה או שעה זמנית 1-12, לפני/אחרי וביחידות דקות, שעות או שעות זמניות.</li>
+                    <li>
+                      אירוע מיוחד: מבוסס על זריחה, שקיעה או שעה זמנית 1-12, לפני/אחרי וביחידות דקות, שעות או שעות
+                      זמניות.
+                    </li>
                     <li>התראה לכל אירוע: הפעלה, צליל, התראת דסקטופ, תזמון לפני/אחרי וכמות.</li>
                     <li>ברשימת האירועים אפשר למחוק אירועים אישיים ומיוחדים.</li>
                   </ul>
                 </div>
-                <figure class="guide-shot guide-shot-events" role="img" aria-label="צילום מסך סכמטי של הוספת אירוע ורשימת אירועים">
+                <figure
+                  class="guide-shot guide-shot-events"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של הוספת אירוע ורשימת אירועים"
+                >
                   <span class="guide-two-buttons"></span>
                   <span class="guide-field guide-field-wide"></span>
                   <span class="guide-field"></span>
@@ -194,12 +231,19 @@
                   <h3 id="guide-layers-title">שכבות, אירועים קבועים ונתונים</h3>
                   <ul class="guide-list">
                     <li>שכבות תצוגה: זמני היום, אירועים אישיים, אירועים מיוחדים ושעות זמניות.</li>
-                    <li>אירועים קבועים: עלות השחר, טלית ותפילין, סוף זמן קריאת שמע, סוף זמן תפילה, חצות, פלג המנחה וצאת הכוכבים.</li>
+                    <li>
+                      אירועים קבועים: עלות השחר, טלית ותפילין, סוף זמן קריאת שמע, סוף זמן תפילה, חצות, פלג המנחה וצאת
+                      הכוכבים.
+                    </li>
                     <li>לכל אירוע קבוע אפשר לבחור סט, בסיס, לפני/אחרי, כמות ויחידה.</li>
                     <li>התראות גלובליות, ייצוא לקובץ JSON וייבוא הגדרות מקובץ JSON.</li>
                   </ul>
                 </div>
-                <figure class="guide-shot guide-shot-layers" role="img" aria-label="צילום מסך סכמטי של שכבות תצוגה וייבוא ייצוא">
+                <figure
+                  class="guide-shot guide-shot-layers"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של שכבות תצוגה וייבוא ייצוא"
+                >
                   <span class="guide-checkline"></span>
                   <span class="guide-checkline"></span>
                   <span class="guide-checkline"></span>
@@ -221,7 +265,11 @@
                     <li>לחיצה על סמל אירוע ברשימה מאפשרת לשנות סמל וצבע.</li>
                   </ul>
                 </div>
-                <figure class="guide-shot guide-shot-actions" role="img" aria-label="צילום מסך סכמטי של תפריט פעולות וטיימר על השעון">
+                <figure
+                  class="guide-shot guide-shot-actions"
+                  role="img"
+                  aria-label="צילום מסך סכמטי של תפריט פעולות וטיימר על השעון"
+                >
                   <span class="guide-clock-face guide-clock-face-small">
                     <span class="guide-countdown-arc"></span>
                     <span class="guide-clock-event guide-clock-event-a"></span>
@@ -235,340 +283,416 @@
         </section>
 
         <aside class="event-panel" aria-label="ניהול אירועים">
-          <section class="settings-block" aria-labelledby="location-settings-title">
-            <h2 id="location-settings-title">הגדרות מיקום</h2>
+          <details class="management-panel">
+            <summary>
+              <span>מיקום וזמנים</span>
+              <small>מיקום, שעות זמניות, שכבות ונתונים</small>
+            </summary>
+            <div class="management-panel-content">
+              <section class="settings-block" aria-labelledby="location-settings-title">
+                <h2 id="location-settings-title">הגדרות מיקום</h2>
 
-            <div class="control-group">
-              <label for="location">מיקום</label>
-              <select id="location">
-                <option value="jerusalem">ירושלים</option>
-                <option value="tel-aviv">תל אביב</option>
-                <option value="haifa">חיפה</option>
-                <option value="london">לונדון</option>
-                <option value="new-york">ניו יורק</option>
-              </select>
-            </div>
-
-            <div class="control-group">
-              <label for="timezone">אזור זמן של המיקום</label>
-              <select id="timezone" disabled aria-describedby="day-times-status">
-                <option value="Asia/Jerusalem">Asia/Jerusalem</option>
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">America/New_York</option>
-                <option value="Europe/London">Europe/London</option>
-              </select>
-            </div>
-
-            <p id="day-times-status" class="helper-text" aria-live="polite">
-              זמני זריחה ושקיעה ייטענו לפי המיקום והתאריך של היום.
-            </p>
-
-            <div class="control-group">
-              <label for="zmanit-set">בחר סט שעות זמניות</label>
-              <select id="zmanit-set" aria-describedby="zmanit-set-status"></select>
-            </div>
-
-            <p id="zmanit-set-status" class="helper-text" aria-live="polite"></p>
-
-            <form id="zmanit-set-form" class="zmanit-set-form" aria-labelledby="zmanit-set-editor-title">
-              <h3 id="zmanit-set-editor-title">עריכת סט שעות זמניות</h3>
-
-              <div class="time-fields">
                 <div class="control-group">
-                  <label for="zmanit-set-editor">סט לעריכה</label>
-                  <select id="zmanit-set-editor"></select>
+                  <label for="location">מיקום</label>
+                  <select id="location">
+                    <option value="jerusalem">ירושלים</option>
+                    <option value="tel-aviv">תל אביב</option>
+                    <option value="haifa">חיפה</option>
+                    <option value="london">לונדון</option>
+                    <option value="new-york">ניו יורק</option>
+                  </select>
                 </div>
-                <div class="control-group">
-                  <label for="zmanit-set-title-input">שם הסט</label>
-                  <input id="zmanit-set-title-input" type="text" maxlength="42" />
-                </div>
-              </div>
 
-              <div class="zmanit-boundary-grid">
-                <fieldset class="zmanit-boundary-controls">
-                  <legend>תחילה</legend>
-                  <select id="zmanit-start-base" aria-label="בסיס תחילת הסט">
-                    <option value="sunrise">זריחה</option>
-                    <option value="sunset">שקיעה</option>
+                <div class="control-group">
+                  <label for="timezone">אזור זמן של המיקום</label>
+                  <select id="timezone" disabled aria-describedby="day-times-status">
+                    <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">America/New_York</option>
+                    <option value="Europe/London">Europe/London</option>
                   </select>
-                  <select id="zmanit-start-direction" aria-label="כיוון תחילת הסט">
-                    <option value="before">לפני</option>
-                    <option value="after">אחרי</option>
-                  </select>
-                  <input id="zmanit-start-offset" type="number" min="0" max="720" step="0.25" inputmode="decimal" aria-label="כמות תחילת הסט" />
-                  <select id="zmanit-start-unit" aria-label="יחידת תחילת הסט">
-                    <option value="minutes">דקות</option>
-                    <option value="hours">שעות</option>
-                    <option value="zmanit-hours">שעות זמניות</option>
-                  </select>
+                </div>
+
+                <p id="day-times-status" class="helper-text" aria-live="polite">
+                  זמני זריחה ושקיעה ייטענו לפי המיקום והתאריך של היום.
+                </p>
+
+                <div class="control-group">
+                  <label for="zmanit-set">בחר סט שעות זמניות</label>
+                  <select id="zmanit-set" aria-describedby="zmanit-set-status"></select>
+                </div>
+
+                <p id="zmanit-set-status" class="helper-text" aria-live="polite"></p>
+
+                <form id="zmanit-set-form" class="zmanit-set-form" aria-labelledby="zmanit-set-editor-title">
+                  <h3 id="zmanit-set-editor-title">עריכת סט שעות זמניות</h3>
+
+                  <div class="time-fields">
+                    <div class="control-group">
+                      <label for="zmanit-set-editor">סט לעריכה</label>
+                      <select id="zmanit-set-editor"></select>
+                    </div>
+                    <div class="control-group">
+                      <label for="zmanit-set-title-input">שם הסט</label>
+                      <input id="zmanit-set-title-input" type="text" maxlength="42" />
+                    </div>
+                  </div>
+
+                  <div class="zmanit-boundary-grid">
+                    <fieldset class="zmanit-boundary-controls">
+                      <legend>תחילה</legend>
+                      <select id="zmanit-start-base" aria-label="בסיס תחילת הסט">
+                        <option value="sunrise">זריחה</option>
+                        <option value="sunset">שקיעה</option>
+                      </select>
+                      <select id="zmanit-start-direction" aria-label="כיוון תחילת הסט">
+                        <option value="before">לפני</option>
+                        <option value="after">אחרי</option>
+                      </select>
+                      <input
+                        id="zmanit-start-offset"
+                        type="number"
+                        min="0"
+                        max="720"
+                        step="0.25"
+                        inputmode="decimal"
+                        aria-label="כמות תחילת הסט"
+                      />
+                      <select id="zmanit-start-unit" aria-label="יחידת תחילת הסט">
+                        <option value="minutes">דקות</option>
+                        <option value="hours">שעות</option>
+                        <option value="zmanit-hours">שעות זמניות</option>
+                      </select>
+                    </fieldset>
+
+                    <fieldset class="zmanit-boundary-controls">
+                      <legend>סוף</legend>
+                      <select id="zmanit-end-base" aria-label="בסיס סוף הסט">
+                        <option value="sunrise">זריחה</option>
+                        <option value="sunset">שקיעה</option>
+                      </select>
+                      <select id="zmanit-end-direction" aria-label="כיוון סוף הסט">
+                        <option value="before">לפני</option>
+                        <option value="after">אחרי</option>
+                      </select>
+                      <input
+                        id="zmanit-end-offset"
+                        type="number"
+                        min="0"
+                        max="720"
+                        step="0.25"
+                        inputmode="decimal"
+                        aria-label="כמות סוף הסט"
+                      />
+                      <select id="zmanit-end-unit" aria-label="יחידת סוף הסט">
+                        <option value="minutes">דקות</option>
+                        <option value="hours">שעות</option>
+                        <option value="zmanit-hours">שעות זמניות</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="zmanit-set-actions">
+                    <button id="zmanit-set-new" type="button">סט חדש</button>
+                    <button id="zmanit-set-save" type="submit">שמור</button>
+                    <button id="zmanit-set-delete" type="button">מחק</button>
+                  </div>
+                  <p id="zmanit-set-editor-status" class="helper-text" aria-live="polite"></p>
+                </form>
+
+                <fieldset class="layer-controls" aria-label="שכבות תצוגה">
+                  <legend>שכבות תצוגה</legend>
+                  <label>
+                    <input type="checkbox" data-layer-toggle="day-times" checked />
+                    זמני היום
+                  </label>
+                  <label>
+                    <input type="checkbox" data-layer-toggle="personal" checked />
+                    אירועים אישיים
+                  </label>
+                  <label>
+                    <input type="checkbox" data-layer-toggle="special" checked />
+                    אירועים מיוחדים
+                  </label>
+                  <label>
+                    <input type="checkbox" data-zmanit-layer-toggle checked />
+                    שעות זמניות
+                  </label>
                 </fieldset>
 
-                <fieldset class="zmanit-boundary-controls">
-                  <legend>סוף</legend>
-                  <select id="zmanit-end-base" aria-label="בסיס סוף הסט">
-                    <option value="sunrise">זריחה</option>
-                    <option value="sunset">שקיעה</option>
-                  </select>
-                  <select id="zmanit-end-direction" aria-label="כיוון סוף הסט">
-                    <option value="before">לפני</option>
-                    <option value="after">אחרי</option>
-                  </select>
-                  <input id="zmanit-end-offset" type="number" min="0" max="720" step="0.25" inputmode="decimal" aria-label="כמות סוף הסט" />
-                  <select id="zmanit-end-unit" aria-label="יחידת סוף הסט">
-                    <option value="minutes">דקות</option>
-                    <option value="hours">שעות</option>
-                    <option value="zmanit-hours">שעות זמניות</option>
-                  </select>
+                <fieldset class="layer-controls alert-master-controls" aria-label="הגדרות התראות ויבוא יצוא">
+                  <legend>התראות ונתונים</legend>
+                  <label>
+                    <input id="alerts-enabled" type="checkbox" checked />
+                    התראות פעילות
+                  </label>
+                  <div class="import-export-actions">
+                    <button id="export-app-state" type="button">ייצוא</button>
+                    <button id="import-app-state" type="button">ייבוא</button>
+                    <input
+                      id="import-app-state-file"
+                      class="visually-hidden"
+                      type="file"
+                      accept="application/json,.json"
+                    />
+                  </div>
+                  <p id="import-export-status" class="helper-text" aria-live="polite"></p>
                 </fieldset>
-              </div>
-
-              <div class="zmanit-set-actions">
-                <button id="zmanit-set-new" type="button">סט חדש</button>
-                <button id="zmanit-set-save" type="submit">שמור</button>
-                <button id="zmanit-set-delete" type="button">מחק</button>
-              </div>
-              <p id="zmanit-set-editor-status" class="helper-text" aria-live="polite"></p>
-            </form>
-
-            <fieldset class="layer-controls" aria-label="שכבות תצוגה">
-              <legend>שכבות תצוגה</legend>
-              <label>
-                <input type="checkbox" data-layer-toggle="day-times" checked />
-                זמני היום
-              </label>
-              <label>
-                <input type="checkbox" data-layer-toggle="personal" checked />
-                אירועים אישיים
-              </label>
-              <label>
-                <input type="checkbox" data-layer-toggle="special" checked />
-                אירועים מיוחדים
-              </label>
-              <label>
-                <input type="checkbox" data-zmanit-layer-toggle checked />
-                שעות זמניות
-              </label>
-            </fieldset>
-
-            <fieldset class="layer-controls alert-master-controls" aria-label="הגדרות התראות ויבוא יצוא">
-              <legend>התראות ונתונים</legend>
-              <label>
-                <input id="alerts-enabled" type="checkbox" checked />
-                התראות פעילות
-              </label>
-              <div class="import-export-actions">
-                <button id="export-app-state" type="button">ייצוא</button>
-                <button id="import-app-state" type="button">ייבוא</button>
-                <input id="import-app-state-file" class="visually-hidden" type="file" accept="application/json,.json" />
-              </div>
-              <p id="import-export-status" class="helper-text" aria-live="polite"></p>
-            </fieldset>
-          </section>
-
-          <section class="settings-block add-event-block" aria-labelledby="add-event-title">
-            <h2 id="add-event-title">הוספת אירוע</h2>
-            <div class="add-event-actions" role="group" aria-label="בחירת סוג אירוע להוספה">
-              <button type="button" data-event-form-toggle="regular" aria-controls="event-form" aria-expanded="false">
-                אירוע רגיל
-              </button>
-              <button
-                type="button"
-                data-event-form-toggle="special"
-                aria-controls="derived-event-form"
-                aria-expanded="false"
-              >
-                אירוע מיוחד
-              </button>
+              </section>
             </div>
+          </details>
 
-          <form
-            id="event-form"
-            class="event-form add-event-form"
-            data-add-event-form="regular"
-            aria-labelledby="event-settings-title"
-            hidden
-            novalidate
-          >
-            <h2 id="event-settings-title">הגדרות אירוע</h2>
-
-            <div class="control-group">
-              <label for="event-kind">סוג אירוע</label>
-              <select id="event-kind">
-                <option value="custom">אירוע מותאם</option>
-                <option value="sunrise">זריחה</option>
-                <option value="sunset">שקיעה</option>
-              </select>
-            </div>
-
-            <div class="control-group">
-              <label for="event-title">שם האירוע</label>
-              <input id="event-title" type="text" value="ריכוז" maxlength="18" />
-            </div>
-
-            <div class="time-fields">
-              <div class="control-group">
-                <label for="event-hour">שעה</label>
-                <input id="event-hour" type="number" min="0" max="23" value="14" inputmode="numeric" />
-              </div>
-              <div class="control-group">
-                <label for="event-minute">דקה</label>
-                <input id="event-minute" type="number" min="0" max="59" value="30" inputmode="numeric" />
-              </div>
-            </div>
-
-            <fieldset class="event-alert-form" data-alert-form-settings="regular">
-              <legend>התראה</legend>
-              <div class="event-alert-form-grid">
-                <label class="event-alert-check">
-                  <input id="event-alert-enabled" type="checkbox" />
-                  פעילה
-                </label>
-                <label class="event-alert-check">
-                  <input id="event-alert-sound" type="checkbox" checked />
-                  קול
-                </label>
-                <label class="event-alert-check">
-                  <input id="event-alert-desktop" type="checkbox" />
-                  דסקטופ
-                </label>
-                <div class="control-group">
-                  <label for="event-alert-direction">תזמון</label>
-                  <select id="event-alert-direction">
-                    <option value="before">לפני</option>
-                    <option value="after">אחרי</option>
-                  </select>
+          <details class="management-panel events-management-panel">
+            <summary>
+              <span>כל האירועים</span>
+              <small>אירועים רגילים, מיוחדים וקבועים בטבלה אחת</small>
+            </summary>
+            <div class="management-panel-content events-management-content">
+              <section class="settings-block add-event-block" aria-labelledby="add-event-title">
+                <h2 id="add-event-title">הוספת אירוע</h2>
+                <div class="add-event-actions" role="group" aria-label="בחירת סוג אירוע להוספה">
+                  <button
+                    type="button"
+                    data-event-form-toggle="regular"
+                    aria-controls="event-form"
+                    aria-expanded="false"
+                  >
+                    אירוע רגיל
+                  </button>
+                  <button
+                    type="button"
+                    data-event-form-toggle="special"
+                    aria-controls="derived-event-form"
+                    aria-expanded="false"
+                  >
+                    אירוע מיוחד
+                  </button>
                 </div>
-                <div class="control-group">
-                  <label for="event-alert-offset">כמות</label>
-                  <input id="event-alert-offset" type="number" min="0" step="1" value="5" inputmode="numeric" />
+
+                <form
+                  id="event-form"
+                  class="event-form add-event-form"
+                  data-add-event-form="regular"
+                  aria-labelledby="event-settings-title"
+                  hidden
+                  novalidate
+                >
+                  <h2 id="event-settings-title">הגדרות אירוע</h2>
+
+                  <div class="control-group">
+                    <label for="event-kind">סוג אירוע</label>
+                    <select id="event-kind">
+                      <option value="custom">אירוע מותאם</option>
+                      <option value="sunrise">זריחה</option>
+                      <option value="sunset">שקיעה</option>
+                    </select>
+                  </div>
+
+                  <div class="control-group">
+                    <label for="event-title">שם האירוע</label>
+                    <input id="event-title" type="text" value="ריכוז" maxlength="18" />
+                  </div>
+
+                  <div class="time-fields">
+                    <div class="control-group">
+                      <label for="event-hour">שעה</label>
+                      <input id="event-hour" type="number" min="0" max="23" value="14" inputmode="numeric" />
+                    </div>
+                    <div class="control-group">
+                      <label for="event-minute">דקה</label>
+                      <input id="event-minute" type="number" min="0" max="59" value="30" inputmode="numeric" />
+                    </div>
+                  </div>
+
+                  <fieldset class="event-alert-form" data-alert-form-settings="regular">
+                    <legend>התראה</legend>
+                    <div class="event-alert-form-grid">
+                      <label class="event-alert-check">
+                        <input id="event-alert-enabled" type="checkbox" />
+                        פעילה
+                      </label>
+                      <label class="event-alert-check">
+                        <input id="event-alert-sound" type="checkbox" checked />
+                        קול
+                      </label>
+                      <label class="event-alert-check">
+                        <input id="event-alert-desktop" type="checkbox" />
+                        דסקטופ
+                      </label>
+                      <div class="control-group">
+                        <label for="event-alert-direction">תזמון</label>
+                        <select id="event-alert-direction">
+                          <option value="before">לפני</option>
+                          <option value="after">אחרי</option>
+                        </select>
+                      </div>
+                      <div class="control-group">
+                        <label for="event-alert-offset">כמות</label>
+                        <input id="event-alert-offset" type="number" min="0" step="1" value="5" inputmode="numeric" />
+                      </div>
+                      <div class="control-group">
+                        <label for="event-alert-offset-unit">יחידה</label>
+                        <select id="event-alert-offset-unit">
+                          <option value="minutes">דקות</option>
+                          <option value="hours">שעות</option>
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <p id="event-error" class="form-error" role="alert" aria-live="polite"></p>
+                  <button type="submit">שמירה</button>
+                </form>
+
+                <form
+                  id="derived-event-form"
+                  class="event-form add-event-form"
+                  data-add-event-form="special"
+                  aria-labelledby="special-event-settings-title"
+                  hidden
+                  novalidate
+                >
+                  <h2 id="special-event-settings-title">הגדרות אירוע מיוחד</h2>
+
+                  <div class="control-group">
+                    <label for="derived-event-title">שם אירוע מיוחד</label>
+                    <input id="derived-event-title" type="text" value="לפני שקיעה" maxlength="18" />
+                  </div>
+
+                  <div class="control-group">
+                    <label for="derived-event-base">מבוסס על</label>
+                    <select id="derived-event-base">
+                      <option value="sunset">שקיעה</option>
+                      <option value="sunrise">זריחה</option>
+                      <option value="zmanit-1">שעה זמנית 1</option>
+                      <option value="zmanit-2">שעה זמנית 2</option>
+                      <option value="zmanit-3">שעה זמנית 3</option>
+                      <option value="zmanit-4">שעה זמנית 4</option>
+                      <option value="zmanit-5">שעה זמנית 5</option>
+                      <option value="zmanit-6">שעה זמנית 6</option>
+                      <option value="zmanit-7">שעה זמנית 7</option>
+                      <option value="zmanit-8">שעה זמנית 8</option>
+                      <option value="zmanit-9">שעה זמנית 9</option>
+                      <option value="zmanit-10">שעה זמנית 10</option>
+                      <option value="zmanit-11">שעה זמנית 11</option>
+                      <option value="zmanit-12">שעה זמנית 12</option>
+                    </select>
+                  </div>
+
+                  <div class="time-fields">
+                    <div class="control-group">
+                      <label for="derived-event-direction">כיוון</label>
+                      <select id="derived-event-direction">
+                        <option value="before">לפני</option>
+                        <option value="after">אחרי</option>
+                      </select>
+                    </div>
+                    <div class="control-group">
+                      <label for="derived-event-offset">כמות</label>
+                      <input
+                        id="derived-event-offset"
+                        type="number"
+                        min="0"
+                        step="0.25"
+                        value="1"
+                        inputmode="decimal"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="control-group">
+                    <label for="derived-event-offset-unit">יחידה</label>
+                    <select id="derived-event-offset-unit">
+                      <option value="hours">שעות</option>
+                      <option value="minutes">דקות</option>
+                      <option value="zmanit-hours">שעות זמניות</option>
+                    </select>
+                  </div>
+
+                  <fieldset class="event-alert-form" data-alert-form-settings="special">
+                    <legend>התראה</legend>
+                    <div class="event-alert-form-grid">
+                      <label class="event-alert-check">
+                        <input id="derived-event-alert-enabled" type="checkbox" />
+                        פעילה
+                      </label>
+                      <label class="event-alert-check">
+                        <input id="derived-event-alert-sound" type="checkbox" checked />
+                        קול
+                      </label>
+                      <label class="event-alert-check">
+                        <input id="derived-event-alert-desktop" type="checkbox" />
+                        דסקטופ
+                      </label>
+                      <div class="control-group">
+                        <label for="derived-event-alert-direction">תזמון</label>
+                        <select id="derived-event-alert-direction">
+                          <option value="before">לפני</option>
+                          <option value="after">אחרי</option>
+                        </select>
+                      </div>
+                      <div class="control-group">
+                        <label for="derived-event-alert-offset">כמות</label>
+                        <input
+                          id="derived-event-alert-offset"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value="5"
+                          inputmode="numeric"
+                        />
+                      </div>
+                      <div class="control-group">
+                        <label for="derived-event-alert-offset-unit">יחידה</label>
+                        <select id="derived-event-alert-offset-unit">
+                          <option value="minutes">דקות</option>
+                          <option value="hours">שעות</option>
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <p id="derived-event-error" class="form-error" role="alert" aria-live="polite"></p>
+                  <button type="submit">שמירה</button>
+                </form>
+              </section>
+
+              <section class="settings-block event-list-block" aria-labelledby="event-list-title">
+                <h2 id="event-list-title">כל האירועים</h2>
+                <div class="unified-event-table-wrap">
+                  <table class="unified-event-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">אירוע</th>
+                        <th scope="col">סוג</th>
+                        <th scope="col">שעה</th>
+                        <th scope="col">פרטים וחישוב</th>
+                        <th scope="col">התראה</th>
+                        <th scope="col" aria-label="פעולות"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="event-list" class="event-list"></tbody>
+                  </table>
                 </div>
-                <div class="control-group">
-                  <label for="event-alert-offset-unit">יחידה</label>
-                  <select id="event-alert-offset-unit">
-                    <option value="minutes">דקות</option>
-                    <option value="hours">שעות</option>
-                  </select>
-                </div>
-              </div>
-            </fieldset>
-
-            <p id="event-error" class="form-error" role="alert" aria-live="polite"></p>
-            <button type="submit">שמירה</button>
-          </form>
-
-          <form
-            id="derived-event-form"
-            class="event-form add-event-form"
-            data-add-event-form="special"
-            aria-labelledby="special-event-settings-title"
-            hidden
-            novalidate
-          >
-            <h2 id="special-event-settings-title">הגדרות אירוע מיוחד</h2>
-
-            <div class="control-group">
-              <label for="derived-event-title">שם אירוע מיוחד</label>
-              <input id="derived-event-title" type="text" value="לפני שקיעה" maxlength="18" />
+                <p id="fixed-day-time-status" class="helper-text" aria-live="polite"></p>
+                <p class="helper-text">
+                  זמני הזריחה והשקיעה נטענים מ־<a href="https://sunrise-sunset.org/api">API זריחה ושקיעה</a>.
+                </p>
+              </section>
             </div>
-
-            <div class="control-group">
-              <label for="derived-event-base">מבוסס על</label>
-              <select id="derived-event-base">
-                <option value="sunset">שקיעה</option>
-                <option value="sunrise">זריחה</option>
-                <option value="zmanit-1">שעה זמנית 1</option>
-                <option value="zmanit-2">שעה זמנית 2</option>
-                <option value="zmanit-3">שעה זמנית 3</option>
-                <option value="zmanit-4">שעה זמנית 4</option>
-                <option value="zmanit-5">שעה זמנית 5</option>
-                <option value="zmanit-6">שעה זמנית 6</option>
-                <option value="zmanit-7">שעה זמנית 7</option>
-                <option value="zmanit-8">שעה זמנית 8</option>
-                <option value="zmanit-9">שעה זמנית 9</option>
-                <option value="zmanit-10">שעה זמנית 10</option>
-                <option value="zmanit-11">שעה זמנית 11</option>
-                <option value="zmanit-12">שעה זמנית 12</option>
-              </select>
-            </div>
-
-            <div class="time-fields">
-              <div class="control-group">
-                <label for="derived-event-direction">כיוון</label>
-                <select id="derived-event-direction">
-                  <option value="before">לפני</option>
-                  <option value="after">אחרי</option>
-                </select>
-              </div>
-              <div class="control-group">
-                <label for="derived-event-offset">כמות</label>
-                <input id="derived-event-offset" type="number" min="0" step="0.25" value="1" inputmode="decimal" />
-              </div>
-            </div>
-
-            <div class="control-group">
-              <label for="derived-event-offset-unit">יחידה</label>
-              <select id="derived-event-offset-unit">
-                <option value="hours">שעות</option>
-                <option value="minutes">דקות</option>
-                <option value="zmanit-hours">שעות זמניות</option>
-              </select>
-            </div>
-
-            <fieldset class="event-alert-form" data-alert-form-settings="special">
-              <legend>התראה</legend>
-              <div class="event-alert-form-grid">
-                <label class="event-alert-check">
-                  <input id="derived-event-alert-enabled" type="checkbox" />
-                  פעילה
-                </label>
-                <label class="event-alert-check">
-                  <input id="derived-event-alert-sound" type="checkbox" checked />
-                  קול
-                </label>
-                <label class="event-alert-check">
-                  <input id="derived-event-alert-desktop" type="checkbox" />
-                  דסקטופ
-                </label>
-                <div class="control-group">
-                  <label for="derived-event-alert-direction">תזמון</label>
-                  <select id="derived-event-alert-direction">
-                    <option value="before">לפני</option>
-                    <option value="after">אחרי</option>
-                  </select>
-                </div>
-                <div class="control-group">
-                  <label for="derived-event-alert-offset">כמות</label>
-                  <input id="derived-event-alert-offset" type="number" min="0" step="1" value="5" inputmode="numeric" />
-                </div>
-                <div class="control-group">
-                  <label for="derived-event-alert-offset-unit">יחידה</label>
-                  <select id="derived-event-alert-offset-unit">
-                    <option value="minutes">דקות</option>
-                    <option value="hours">שעות</option>
-                  </select>
-                </div>
-              </div>
-            </fieldset>
-
-            <p id="derived-event-error" class="form-error" role="alert" aria-live="polite"></p>
-            <button type="submit">שמירה</button>
-          </form>
-          </section>
-
-          <section class="settings-block event-list-block" aria-labelledby="event-list-title">
-            <h2 id="event-list-title">רשימת אירועים</h2>
-            <ul id="event-list" class="event-list" aria-label="רשימת אירועים"></ul>
-            <p class="helper-text">
-              זמני הזריחה והשקיעה נטענים מ־<a href="https://sunrise-sunset.org/api">API זריחה ושקיעה</a>.
-            </p>
-          </section>
-
-          <section class="settings-block fixed-day-times-block" aria-labelledby="fixed-day-times-title">
-            <h2 id="fixed-day-times-title">אירועים קבועים</h2>
-            <div class="fixed-day-time-list" id="fixed-day-time-list" aria-label="אירועים קבועים לפי זריחה ושקיעה"></div>
-            <p id="fixed-day-time-status" class="helper-text" aria-live="polite"></p>
-          </section>
+          </details>
         </aside>
+
+        <button
+          id="display-preferences-toggle"
+          class="display-preferences-toggle management-panel-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="display-preferences-panel"
+        >
+          <span>העדפות תצוגה</span>
+          <small>מראה השעון, צבעים ומצבי תצוגה</small>
+        </button>
       </section>
     </main>
     <div class="dev-stamp no-print">
