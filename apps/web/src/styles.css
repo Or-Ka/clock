@@ -696,6 +696,12 @@ button.management-tab[aria-selected="true"] {
   accent-color: var(--display-accent-color);
 }
 
+.layer-controls:not(.alert-master-controls) {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px 24px;
+  align-items: center;
+}
+
 .event-panel > .management-panel:first-child .settings-block {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px 32px;
@@ -1356,7 +1362,7 @@ a:focus-visible {
   min-width: 1280px;
   border: 0;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
   color: var(--display-text-color);
   background: transparent;
   text-align: start;
@@ -1397,12 +1403,14 @@ a:focus-visible {
 }
 
 .event-title-cell {
-  width: 16%;
+  width: 1%;
+  min-width: 116px;
   font-weight: 450;
 }
 
 .event-type-cell {
-  width: 9%;
+  width: 1%;
+  min-width: 74px;
   color: var(--display-muted-color);
   font-size: 0.68rem;
   font-weight: 300;
@@ -1410,7 +1418,8 @@ a:focus-visible {
 
 .event-time-cell {
   direction: ltr;
-  width: 9%;
+  width: 1%;
+  min-width: 82px;
   font-family: "Libre Baskerville", serif;
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
@@ -1419,18 +1428,21 @@ a:focus-visible {
 }
 
 .event-details-cell {
-  width: 30%;
+  width: auto;
+  min-width: 330px;
   color: var(--display-muted-color);
   font-size: 0.68rem;
   line-height: 1.25;
 }
 
 .event-alert-cell {
-  width: 31%;
+  width: auto;
+  min-width: 370px;
 }
 
 .event-actions-cell {
-  width: 5%;
+  width: 1%;
+  min-width: 48px;
   text-align: end;
 }
 
@@ -1452,17 +1464,22 @@ a:focus-visible {
   font-weight: 450;
 }
 
-.zmanit-boundary-grid,
-.zmanit-set-actions {
+.zmanit-set-form > .time-fields {
+  grid-template-columns: minmax(160px, 220px) minmax(220px, 360px);
+  gap: 24px;
+  justify-content: start;
+}
+
+.zmanit-boundary-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
 }
 
 .zmanit-boundary-controls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   min-width: 0;
   margin: 0;
   border: 0;
@@ -1472,14 +1489,21 @@ a:focus-visible {
 }
 
 .zmanit-boundary-controls legend {
-  padding-inline: 4px;
+  padding-inline: 0;
   color: var(--display-muted-color);
   font-size: 0.74rem;
-  font-weight: 850;
+  font-weight: 400;
 }
 
 .zmanit-set-actions {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: start;
+}
+
+.zmanit-set-actions button {
+  min-width: 92px;
 }
 
 .fixed-event-inline-editor {
@@ -1981,6 +2005,11 @@ a:focus-visible {
 
   .clock-mount {
     width: min(340px, 90vw);
+  }
+
+  .zmanit-set-form > .time-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
   .event-panel,

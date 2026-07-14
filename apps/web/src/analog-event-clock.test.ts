@@ -182,7 +182,9 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
     expect(css).toContain(".management-panel-content button");
     expect(css).not.toContain(".display-preferences-toggle {\n  grid-column:");
-    expect(css).toContain("table-layout: fixed");
+    expect(css).toContain("table-layout: auto");
+    expect(css).toContain("grid-template-columns: repeat(auto-fit, minmax(130px, 1fr))");
+    expect(css).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
     expect(css).toContain("tbody tr:nth-child(even)");
     expect(css).toContain("flex-wrap: nowrap");
     expect(css).toContain("--event-sunrise-color");
