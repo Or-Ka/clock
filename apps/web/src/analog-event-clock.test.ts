@@ -26,7 +26,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('<html lang="he" dir="rtl">');
     expect(html).toContain("<title>שעון אירועים אנלוגי Beta</title>");
     expect(html).not.toContain("<h1>");
-    expect(html).not.toContain("<nav");
+    expect(html).toContain('<nav class="management-tabs"');
     expect(html).not.toContain("שלב 1");
     expect(html).not.toContain("שלב 2");
     expect(html).not.toContain("שלב 3");
@@ -38,7 +38,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain("רשימת אירועים");
   });
 
-  it("includes a location selector and day-times API status text", () => {
+  it("groups location controls and every event type into minimal management panels", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
     const providerController = readAppFile("data/provider-controller.ts");
@@ -61,7 +61,15 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('data-event-form-toggle="special"');
     expect(html).toContain('data-add-event-form="regular"');
     expect(html).toContain('data-add-event-form="special"');
-    expect(html).toContain('id="fixed-day-time-list"');
+    expect(html).toContain('class="management-tabs"');
+    expect(html).toContain('data-management-tab="location"');
+    expect(html).toContain('data-management-tab="events"');
+    expect(html).toContain('data-management-tab="display"');
+    expect(html).toContain('id="location-management-panel"');
+    expect(html).toContain('id="events-management-panel"');
+    expect(html).toContain('class="unified-event-table"');
+    expect(html).toContain('<tbody id="event-list" class="event-list"></tbody>');
+    expect(html).not.toContain('id="fixed-day-time-list"');
     expect(html).toContain('id="fixed-day-time-status"');
     expect(html).toContain("אירועים מיוחדים");
     expect(html).toContain("שעות זמניות</option>");
@@ -104,7 +112,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("layer.id === DAY_TIMES_LAYER_ID");
   });
 
-  it("adds collapsible display preferences and in-list event visual editing", () => {
+  it("adds tabbed display preferences and in-list event visual editing", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
     const clockShell = readAppFile("clock-shell/clock-shell-controller.ts");
@@ -123,8 +131,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('id="display-font-scale"');
     expect(html).toContain('id="display-clock-scale"');
     expect(html).toContain('id="display-background-color"');
-    expect(html).not.toContain('data-event-symbol-control');
-    expect(html).not.toContain('data-event-color-control');
+    expect(html).not.toContain("data-event-symbol-control");
+    expect(html).not.toContain("data-event-color-control");
 
     for (const templateId of ["classic", "night", "paper", "focus", "festival"]) {
       expect(main).toContain(`${templateId}: {`);
@@ -150,6 +158,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("root.dataset.displayMode");
     expect(main).toContain("applyDisplayPreferences");
     expect(main).toContain("syncDisplayPreferenceControls");
+    expect(main).toContain('addLifecycleEventListener(tab, "dblclick"');
+    expect(main).toContain("collapseManagementPanels");
     expect(main).toContain("createEventVisualEditor");
     expect(main).toContain("EVENT_ICON_OPTIONS");
     expect(main).toContain("data-event-visual-id");
@@ -169,6 +179,14 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("--display-font-family");
     expect(css).toContain("--display-clock-size");
     expect(css).toContain("--clock-font-boost");
+    expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+    expect(css).toContain(".management-panel-content button");
+    expect(css).not.toContain(".display-preferences-toggle {\n  grid-column:");
+    expect(css).toContain("table-layout: auto");
+    expect(css).toContain("grid-template-columns: repeat(auto-fit, minmax(130px, 1fr))");
+    expect(css).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
+    expect(css).toContain("tbody tr:nth-child(even)");
+    expect(css).toContain("flex-wrap: nowrap");
     expect(css).toContain("--event-sunrise-color");
     expect(css).toContain(':root[data-display-mode="clockOnly"] .event-panel');
     expect(css).toContain(':root[data-display-mode="clockOnly"] .clock-toolbar');
@@ -260,11 +278,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).not.toContain('zmanitSetId: "tefillin-tefila"');
     expect(main).not.toContain('id: "tefillin-tefila"');
     expect(main).toContain('id: "sunrise-sunset"');
-    expect(main).toContain('fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS');
+    expect(main).toContain("fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS");
     expect(main).toContain('setSelect.dataset.fixedField = "zmanitSetId"');
     expect(main).toContain('offsetUnit: "zmanit-hours"');
-    expect(main).toContain('id: `${idPrefix}-${definition.id}`');
-    expect(main).toContain('existingLayer.id === DAY_TIMES_LAYER_ID');
+    expect(main).toContain("id: `${idPrefix}-${definition.id}`");
+    expect(main).toContain("existingLayer.id === DAY_TIMES_LAYER_ID");
   });
 
   it("keeps add-event forms collapsed behind explicit event-type choices", () => {
@@ -276,8 +294,8 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('id="event-form"');
     expect(html).toContain('id="derived-event-form"');
     expect(html).toContain("שמירה");
-    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע</button>");
-    expect(html).not.toContain("<button type=\"submit\">הוספת אירוע מיוחד</button>");
+    expect(html).not.toContain('<button type="submit">הוספת אירוע</button>');
+    expect(html).not.toContain('<button type="submit">הוספת אירוע מיוחד</button>');
   });
 
   it("adds automatic Shabbat times only for Friday and Saturday", () => {

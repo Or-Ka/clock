@@ -154,20 +154,43 @@ function createClockDom(): ClockDom {
   svg.style.height = "100%";
   appendClockEffects(svg);
 
+  const outerFrame = createSvgElement("circle");
+  outerFrame.setAttribute("cx", "100");
+  outerFrame.setAttribute("cy", "100");
+  outerFrame.setAttribute("r", "99");
+  outerFrame.setAttribute("fill", "none");
+  outerFrame.setAttribute("stroke", CLOCK_COLORS.faceStroke);
+  outerFrame.setAttribute("stroke-width", "1.8");
+  outerFrame.dataset.clockPart = "outer-frame";
+  svg.append(outerFrame);
+
+  const innerFrame = createSvgElement("circle");
+  innerFrame.setAttribute("cx", "100");
+  innerFrame.setAttribute("cy", "100");
+  innerFrame.setAttribute("r", "96.8");
+  innerFrame.setAttribute("fill", "none");
+  innerFrame.setAttribute("stroke", CLOCK_COLORS.faceStroke);
+  innerFrame.setAttribute("stroke-width", "0.75");
+  innerFrame.dataset.clockPart = "inner-frame";
+  svg.append(innerFrame);
+
   const face = createSvgElement("circle");
   face.setAttribute("cx", "100");
   face.setAttribute("cy", "100");
-  face.setAttribute("r", "98");
+  face.setAttribute("r", "96.2");
   face.setAttribute("fill", CLOCK_COLORS.faceFill);
   face.setAttribute("stroke", CLOCK_COLORS.faceStroke);
   face.setAttribute("stroke-width", "1.2");
   face.dataset.clockPart = "face";
   svg.append(face);
 
+  appendWoodGrain(svg);
+
   appendMinuteTicks(svg);
   const innerRing = createRing("inner", 74);
   svg.append(innerRing);
-  appendRingHourLabels(svg, "outer", [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 88);
+  appendOuterHourLabels(svg, "serif", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 82);
+  appendOuterHourLabels(svg, "roman", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 82);
   appendRingHourLabels(svg, "inner", [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], 74);
 
   const eventLayer = createSvgElement("g");
@@ -181,15 +204,25 @@ function createClockDom(): ClockDom {
   const currentTimeMarker = createCurrentTimeMarker();
   svg.append(currentTimeMarker);
 
-  const hourHand = createHand("hour-hand", 34, 3.2, CLOCK_COLORS.hand);
-  const minuteHand = createHand("minute-hand", 50, 2.4, CLOCK_COLORS.hand);
-  const secondHand = createHand("second-hand", 56, 1, CLOCK_COLORS.secondHand);
+  const hourHand = createHand("hour-hand", 42, 2.5, CLOCK_COLORS.hand);
+  const minuteHand = createHand("minute-hand", 59, 1.65, CLOCK_COLORS.hand);
+  const secondHand = createHand("second-hand", 64, 0.55, CLOCK_COLORS.secondHand);
   svg.append(hourHand, minuteHand, secondHand);
+
+  const pinRing = createSvgElement("circle");
+  pinRing.setAttribute("cx", "100");
+  pinRing.setAttribute("cy", "100");
+  pinRing.setAttribute("r", "3.1");
+  pinRing.setAttribute("fill", "none");
+  pinRing.setAttribute("stroke", "currentColor");
+  pinRing.setAttribute("stroke-width", "0.8");
+  pinRing.dataset.clockPart = "center-pin-ring";
+  svg.append(pinRing);
 
   const pin = createSvgElement("circle");
   pin.setAttribute("cx", "100");
   pin.setAttribute("cy", "100");
-  pin.setAttribute("r", "4");
+  pin.setAttribute("r", "1.75");
   pin.setAttribute("fill", "currentColor");
   pin.dataset.clockPart = "center-pin";
   svg.append(pin);
@@ -212,6 +245,33 @@ function createClockDom(): ClockDom {
     minuteHand,
     secondHand
   };
+}
+
+function appendWoodGrain(svg: SVGSVGElement): void {
+  const grain = createSvgElement("g");
+  grain.dataset.clockPart = "wood-grain";
+  grain.setAttribute("fill", "none");
+  grain.setAttribute("aria-hidden", "true");
+
+  const paths = [
+    "M38 35 C62 30 78 40 101 35 S143 29 162 38",
+    "M24 56 C49 49 69 62 96 55 S143 45 176 57",
+    "M18 78 C43 70 72 84 102 76 S155 68 182 79",
+    "M15 101 C46 91 72 108 105 99 S158 91 185 102",
+    "M19 124 C45 116 74 132 102 123 S151 114 181 126",
+    "M27 146 C53 137 75 154 103 145 S143 136 172 147",
+    "M42 166 C65 158 82 173 103 166 S137 157 157 166"
+  ];
+
+  for (const pathData of paths) {
+    const path = createSvgElement("path");
+    path.setAttribute("d", pathData);
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "0.45");
+    grain.append(path);
+  }
+
+  svg.append(grain);
 }
 
 function appendClockEffects(svg: SVGSVGElement): void {
@@ -303,8 +363,8 @@ function appendMinuteTicks(svg: SVGSVGElement): void {
   for (let minute = 0; minute < 60; minute += 1) {
     const isHourTick = minute % 5 === 0;
     const angle = minute * 6;
-    const outer = pointOnClock(angle, isHourTick ? 98 : 96);
-    const inner = pointOnClock(angle, isHourTick ? 88 : 93);
+    const outer = pointOnClock(angle, isHourTick ? 95.5 : 94.5);
+    const inner = pointOnClock(angle, isHourTick ? 88 : 92.5);
     const tick = createSvgElement("line");
     tick.setAttribute("x1", String(inner.x));
     tick.setAttribute("y1", String(inner.y));
@@ -317,6 +377,37 @@ function appendMinuteTicks(svg: SVGSVGElement): void {
     tick.dataset.clockTickKind = isHourTick ? "hour" : "minute";
     tick.dataset.clockTickMinute = String(minute);
     svg.append(tick);
+  }
+}
+
+function appendOuterHourLabels(
+  svg: SVGSVGElement,
+  style: "roman" | "serif",
+  hours: readonly number[],
+  radius: number
+): void {
+  for (const hour of hours) {
+    const angle = (hour % 12) * 30;
+    const point = pointOnClock(angle, radius);
+    const label = createSvgElement("text");
+    label.textContent = style === "roman" ? romanHour(hour) : String(hour);
+    label.setAttribute("x", String(point.x));
+    label.setAttribute("y", String(point.y));
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("dominant-baseline", "central");
+    label.setAttribute("font-size", style === "roman" ? "8.8" : "10.2");
+    label.setAttribute("font-weight", style === "roman" ? "400" : "500");
+    label.setAttribute("fill", CLOCK_COLORS.outerLabel);
+    label.setAttribute("paint-order", "stroke");
+    label.setAttribute("stroke", CLOCK_COLORS.textHalo);
+    label.setAttribute("stroke-width", "1.7");
+    label.setAttribute("stroke-linejoin", "round");
+    label.dataset.clockPart = "ring-hour-label";
+    label.dataset.clockRing = "outer";
+    label.dataset.clockHour = pad(hour);
+    label.dataset.clockAngle = String(angle);
+    label.dataset.clockDialLabel = style;
+    svg.append(label);
   }
 }
 
@@ -356,11 +447,15 @@ function createHand(part: string, length: number, width: number, stroke: string)
   hand.setAttribute("x1", "100");
   hand.setAttribute("y1", "100");
   hand.setAttribute("stroke", stroke);
-  hand.setAttribute("stroke-linecap", "butt");
+  hand.setAttribute("stroke-linecap", "round");
   hand.setAttribute("stroke-width", String(width));
   hand.dataset.clockPart = part;
   hand.dataset.clockLength = String(length);
   return hand;
+}
+
+function romanHour(hour: number): string {
+  return ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"][hour % 12] ?? "";
 }
 
 function createDateDisplay(): {
@@ -516,7 +611,9 @@ function compactObservanceLines(observances: readonly string[]): string[] {
 }
 
 function applyEvents(dom: ClockDom, events: readonly ResolvedInstantEvent[]): void {
-  dom.eventLayer.replaceChildren(...events.map((event, index) => createEventMarker(event, markerLayerIndex(events, event, index))));
+  dom.eventLayer.replaceChildren(
+    ...events.map((event, index) => createEventMarker(event, markerLayerIndex(events, event, index)))
+  );
   dom.svg.dataset.clockEventCount = String(events.length);
 }
 
@@ -542,7 +639,10 @@ function createZmanitTickMarker(tick: ZmanitTick): SVGGElement {
   group.dataset.zmanitSecond = String(tick.second);
   group.dataset.clockAngle = String(angle);
   group.dataset.clockRing = isNightRingTick ? "inner" : "outer";
-  group.setAttribute("aria-label", `${displayZmanitIndex(tick.index)}, ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`);
+  group.setAttribute(
+    "aria-label",
+    `${displayZmanitIndex(tick.index)}, ${formatTimeWithSeconds(tick.hour, tick.minute, tick.second)}`
+  );
 
   line.setAttribute("x1", String(inner.x));
   line.setAttribute("y1", String(inner.y));
@@ -605,7 +705,7 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
 function eventMarkerRadii(ring: ClockRing, layerIndex: number): { inner: number; outer: number } {
   if (ring === "outer") {
     const offset = layerIndex * 1.6;
-    return { inner: 89 - offset, outer: 98 - offset };
+    return { inner: 88.5 - offset, outer: 95.5 - offset };
   }
 
   const offset = layerIndex * 1.8;
@@ -613,9 +713,8 @@ function eventMarkerRadii(ring: ClockRing, layerIndex: number): { inner: number;
 }
 
 function markerLayerIndex(events: readonly ResolvedInstantEvent[], event: ResolvedInstantEvent, index: number): number {
-  return events
-    .slice(0, index)
-    .filter((candidate) => candidate.ring === event.ring && candidate.angle === event.angle).length;
+  return events.slice(0, index).filter((candidate) => candidate.ring === event.ring && candidate.angle === event.angle)
+    .length;
 }
 
 function ringDisplayAngle(angle: number): number {
