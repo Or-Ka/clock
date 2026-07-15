@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-13
+Updated: 2026-07-15
 
 ## Current State
 
@@ -13,11 +13,19 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T077: Prepare Vercel Deployment
+T078: Refresh Countdown Action Menu
 
 ## Current Branch
 
-`chore/vercel-deployment`
+`codex/refresh-countdown-menu`
+
+## T078 Gate
+
+- The countdown action menu now follows the active display colors, font and control styling.
+- Full, clock-only and floating-clock modes were browser verified, including a compact viewport requested at 200×200 (the browser runtime enforced a 240×200 minimum).
+- Dark and light display templates were browser verified.
+- The timer tooltip closes while the action menu is open, and the menu stays above the floating clock layer.
+- Documentation, lint, typecheck, all `147` tests, the web production build and the core-library build passed.
 
 ## Deployment Readiness
 

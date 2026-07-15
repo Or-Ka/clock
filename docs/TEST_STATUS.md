@@ -1,6 +1,6 @@
 # Test Status
 
-Updated: 2026-07-13
+Updated: 2026-07-15
 
 ## Baseline Before Migration
 
@@ -269,4 +269,27 @@ Deployment-output verification passed:
 - All three `/assets/` references in the generated HTML resolve to files in `apps/web/dist`.
 - The Vite production preview loaded with Hebrew `lang`, RTL `dir`, a rendered analog clock, `12` event rows and Jerusalem day-time data.
 - No horizontal overflow was detected.
+- No console errors or warnings were recorded.
+
+## T078 Countdown Action Menu Checks
+
+The source-level application test now asserts the refreshed menu structure, primary/secondary actions, tooltip suppression and compact floating-mode rules.
+
+Final T078 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`147` tests across `20` files)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Focused Prettier check for the three changed product/test files.
+
+Browser verification passed against the local Vite app:
+
+- The refreshed menu uses the active font and display colors in dark and light templates.
+- Full, clock-only and floating-clock modes open the menu successfully.
+- The floating layout is compact, above the clock layer and contained within the runtime's 240×200 minimum after requesting a 200×200 viewport.
+- Show and hide actions render the correct content and focus the primary action.
+- The event tooltip remains hidden while the action menu is open.
 - No console errors or warnings were recorded.

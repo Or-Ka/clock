@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Refreshed the countdown action menu to use the active display font, colors, field treatment and primary/secondary button language.
+- Added compact floating-clock/Picture-in-Picture layout, viewport-aware positioning and a layer above the floating clock.
+- Prevented event tooltip overlap while the countdown action menu is open and added regression coverage.
 - Added repository-owned Vercel deployment configuration for the npm workspace and official Vite application.
 - Pinned deployment builds to Node.js 24, deterministic `npm ci` installation and the `apps/web/dist` output directory.
 - Added an SPA navigation fallback and Vercel import instructions.

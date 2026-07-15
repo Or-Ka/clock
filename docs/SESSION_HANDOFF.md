@@ -1,10 +1,35 @@
 # Session Handoff
 
-Updated: 2026-07-13
+Updated: 2026-07-15
 
 ## Current Branch
 
-`chore/vercel-deployment`
+`codex/refresh-countdown-menu`
+
+## T078 Progress
+
+T078 refreshes the countdown action menu without changing countdown behavior or persistence:
+
+- Added a current-design dialog hierarchy with an eyebrow, title and contextual description.
+- Restyled the color field and primary/secondary actions with active display tokens.
+- Kept the selected display font through `--display-font-family`.
+- Added compact layout rules for floating-clock and Picture-in-Picture roots.
+- Positioned the menu from its measured size so it remains inside the viewport.
+- Raised the menu above the floating clock layer.
+- Suppressed the event tooltip while the countdown menu is open.
+- Added regression assertions to `analog-event-clock.test.ts`.
+
+T078 verification passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`147` tests)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+- Focused Prettier check for the three changed product/test files.
+- Browser checks for dark/light templates, all three display modes and a compact viewport requested at 200×200 (the browser runtime enforced a 240×200 minimum).
+- No browser console errors or warnings.
 
 ## T077 Progress
 
