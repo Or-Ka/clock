@@ -2,6 +2,26 @@
 
 Updated: 2026-07-15
 
+## T080 Floating Panel Design Checks
+
+The source-level application test now asserts the shared floating-panel classes, context-menu hierarchy, active mode state, theme-token styling, clean tab-like controls and overlay layer ordering.
+
+Final T080 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`150` tests across `21` files)
+- `npm.cmd run build`
+
+Browser verification passed against the production preview:
+
+- The event tooltip, timer action menu and clock context menu use the same surface, font, fine border and accent line.
+- Dark and light templates produce matching dark and light panel colors.
+- Timer and context-menu buttons are transparent, square and separated by tab-like lines.
+- The active display mode has an accent underline and the context menu reports the current mode.
+- Floating-clock mode applies compact context-menu spacing and keeps the panel above the clock.
+
 ## T079 Persistence And Defaults Checks
 
 Added focused coverage for safe browser JSON storage and source-level regression assertions for:

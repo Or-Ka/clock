@@ -171,6 +171,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("timer-action-menu-header");
     expect(main).toContain("timer-action-menu-button-primary");
     expect(main).toContain("timer-action-menu-button-secondary");
+    expect(main).toContain('className = "floating-panel timer-action-menu"');
+    expect(main).toContain('className = "floating-panel clock-context-menu"');
+    expect(main).toContain('className = "floating-panel clock-event-tooltip"');
+    expect(main).toContain("clock-context-menu-header");
+    expect(main).toContain("clock-context-menu-item");
     expect(main).toContain("closeClockTooltip");
     expect(main).toContain('hostWindow.document.documentElement.dataset.displayMode === "floatingClock"');
     expect(main).toContain("clock-event-tooltip");
@@ -211,6 +216,13 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("background: var(--display-accent-color)");
     expect(css).toContain(':root[data-display-mode="floatingClock"] .timer-action-menu');
     expect(css).toContain(':root[data-floating-clock-window="true"] .timer-action-menu');
+    expect(css).toContain(".floating-panel");
+    expect(css).toContain("font-family: var(--display-font-family)");
+    expect(css).toContain('clock-context-menu-item[data-active="true"]');
+    expect(css).toContain("box-shadow: inset 0 -1px var(--display-accent-color)");
+    expect(css).toContain("z-index: 2147483090");
+    expect(css).toContain("z-index: 2147483080");
+    expect(css).not.toContain("linear-gradient(145deg");
   });
 
   it("adds a no-print developer stamp with a hover gif tooltip", () => {

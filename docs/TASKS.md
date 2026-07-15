@@ -4,7 +4,7 @@ Updated: 2026-07-15
 
 ## Active Task
 
-T079: Persist User Configuration And Refresh Defaults
+T080: Unify Floating Panel Design
 
 ## T068 Checklist
 
@@ -177,3 +177,15 @@ T079: Persist User Configuration And Refresh Defaults
 - `[x]` Add focused regression tests.
 - `[x]` Run docs/lint/typecheck/tests/build checks.
 - `[x]` Browser verify defaults and reload restoration.
+
+## T080 Checklist
+
+- `[x]` Update local `main` from `origin/main`.
+- `[x]` Create branch `codex/unify-floating-panels`.
+- `[x]` Map all clock-triggered floating panels and current style rules.
+- `[x]` Apply active theme colors and selected font to every panel.
+- `[x]` Replace legacy button treatments with clean tab-like controls.
+- `[x]` Cover compact floating-clock and Picture-in-Picture layouts.
+- `[x]` Add focused regression assertions.
+- `[x]` Run docs/lint/typecheck/tests/build checks.
+- `[x]` Browser verify dark/light hover, timer and context-menu flows.

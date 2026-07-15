@@ -13,11 +13,27 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T079: Persist User Configuration And Refresh Defaults
+T080: Unify Floating Panel Design
 
 ## Current Branch
 
-`codex/persist-events-settings`
+`codex/unify-floating-panels`
+
+## T080 Scope
+
+- Bring the event hover tooltip, timer action menu and clock context menu into one current design language.
+- Use active display colors and the selected font in dark and light themes.
+- Replace legacy raised/boxed button treatments with clean tab-like lines and states.
+- Keep floating panels usable in full, clock-only, floating-clock and Picture-in-Picture modes.
+- Add regression coverage and browser verification.
+
+## T080 Gate
+
+- The event hover tooltip, timer action menu, clock context menu and event visual editor share one theme-aware surface and selected display font.
+- Timer and context-menu actions use flat tab-like lines instead of legacy raised controls.
+- Dark and light display templates were browser verified for hover, timer and secondary-click flows.
+- Floating-clock mode was browser verified with compact context-menu spacing and a layer above the clock.
+- Documentation, lint, typecheck, all `150` tests and the production build passed.
 
 ## T079 Scope
 
