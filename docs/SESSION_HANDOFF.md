@@ -4,7 +4,29 @@ Updated: 2026-07-15
 
 ## Current Branch
 
-`codex/persist-events-settings`
+`codex/unify-floating-panels`
+
+## T080 Progress
+
+T080 was opened for a user-requested visual unification of clock-triggered floating UI:
+
+- Event hover tooltip.
+- Timer action menu opened from an event.
+- Secondary-click clock context menu.
+- Theme-aware dark/light surfaces, selected display font, clean borders and tab-like buttons.
+- Full, clock-only, floating-clock and Picture-in-Picture modes.
+
+Implementation and verification are complete:
+
+- Added a shared `floating-panel` surface to the event tooltip, timer action menu, clock context menu and event visual editor.
+- Applied active display colors, the selected display font, a two-pixel corner radius and a fine accent line.
+- Converted timer and context-menu actions into flat, tab-like rows with divider and active states.
+- Added a context-menu heading that reports the active display mode.
+- Kept compact floating-clock and Picture-in-Picture rules and raised every panel above the floating clock layer.
+- Added focused source-level regression assertions.
+- Browser verified event hover, event click/timer and secondary-click context-menu flows in dark and light templates.
+- Browser verified the compact context menu in floating-clock mode.
+- `docs:check`, lint, typecheck, all `150` tests and the production build passed.
 
 ## T079 Progress
 

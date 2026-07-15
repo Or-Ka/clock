@@ -4,27 +4,28 @@ Updated: 2026-07-15
 
 ## Active Task
 
-T079: Persist User Configuration And Refresh Defaults
+T080: Unify Floating Panel Design
 
 ## Goal
 
-Make the application reopen with the user's events and configuration while improving the first-run defaults.
+Make every clock-triggered floating panel feel like part of the current clean, theme-aware interface.
 
 ## Scope
 
-- Default first-run location to Tel Aviv.
-- Remove the three personal sample events.
-- Make fixed day-time events use the selected default zmanit set consistently.
-- Save user-controlled location, zmanit sets, events, display preferences, visuals, alerts and layer visibility automatically.
-- Restore saved state safely on reload and preserve version-1 JSON import compatibility.
-- Add focused regression tests.
+- Restyle the event hover tooltip.
+- Restyle the timer action menu opened from an event.
+- Restyle the clock context menu opened with the secondary mouse button.
+- Align panel surfaces, typography, dividers, fields and buttons with the management tabs.
+- Derive dark/light colors from active display tokens.
+- Cover full, clock-only, floating-clock and Picture-in-Picture layouts.
+- Add focused regression tests and browser verification.
 
 ## Out Of Scope
 
+- No timer behavior or event-resolution changes.
 - No `packages/clock` API changes.
-- No provider algorithm changes.
-- No refresh warning when automatic persistence succeeds.
-- No server-side or account synchronization.
+- No broad page-layout redesign.
+- No storage-schema changes.
 
 ## Gate
 
@@ -37,15 +38,16 @@ npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
-Browser verification should cover first-run defaults, adding an event, reloading and restoring the event and settings.
+Browser verification must cover dark and light themes, event hover, event click/timer actions and the clock context menu.
 
 ## Result
 
-Completed on `codex/persist-events-settings`.
+Completed on `codex/unify-floating-panels`.
 
-- Tel Aviv is the first-run location and the personal layer starts empty.
-- Fixed day-time defaults all inherit the selected `sunrise-sunset` set.
-- The configurable application snapshot is saved automatically and restored safely from localStorage.
-- Version-1 JSON files remain import-compatible; new exports include layer visibility and clock appearance.
-- The full CLI gate passed with `150` tests.
-- Browser verification confirmed event, location and layer restoration after reload with no console errors or warnings.
+- Added one shared, theme-aware surface for the event tooltip, timer action menu, clock context menu and event visual editor.
+- Replaced raised controls with flat, tab-like rows, fine dividers and accent lines.
+- Added a context-menu header and an explicit active display-mode state.
+- Preserved compact rules for floating-clock and Picture-in-Picture layouts.
+- Added focused regression assertions.
+- Passed documentation, lint, typecheck, all `150` tests and the production build.
+- Browser verified dark and light themes for hover, timer and context-menu flows, plus the compact floating-clock context menu.

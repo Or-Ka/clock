@@ -1523,7 +1523,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function createEventVisualEditor(): HTMLDivElement {
     const editor = document.createElement("div");
-    editor.className = "event-visual-editor";
+    editor.className = "floating-panel event-visual-editor";
     editor.hidden = true;
     editor.setAttribute("role", "dialog");
     editor.setAttribute("aria-label", "בחירת סמל וצבע לאירוע");
@@ -1616,7 +1616,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function createClockTooltip(): HTMLDivElement {
     const tooltip = document.createElement("div");
-    tooltip.className = "clock-event-tooltip";
+    tooltip.className = "floating-panel clock-event-tooltip";
     tooltip.hidden = true;
     tooltip.setAttribute("role", "tooltip");
     document.body.append(tooltip);
@@ -1784,7 +1784,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function createTimerActionMenu(): HTMLDivElement {
     const menu = document.createElement("div");
-    menu.className = "timer-action-menu";
+    menu.className = "floating-panel timer-action-menu";
     menu.dir = "rtl";
     menu.hidden = true;
     menu.setAttribute("role", "dialog");
@@ -1795,7 +1795,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function createClockContextMenu(): HTMLDivElement {
     const menu = document.createElement("div");
-    menu.className = "clock-context-menu";
+    menu.className = "floating-panel clock-context-menu";
     menu.hidden = true;
     menu.setAttribute("role", "menu");
     menu.setAttribute("aria-label", "תפריט תצוגת שעון");
@@ -1825,9 +1825,16 @@ function startClockApp(deps: ClockAppDeps): () => void {
       closeClockContextMenu();
     });
 
+    const header = document.createElement("div");
+    header.className = "clock-context-menu-header";
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "clock-context-menu-eyebrow";
+    eyebrow.textContent = "תצוגת שעון";
     const title = document.createElement("p");
+    title.className = "clock-context-menu-title";
     title.textContent = displayModeLabel(currentMode);
-    clockContextMenu.replaceChildren(title, fullMode, clockOnly, floatingClock, preferences);
+    header.append(eyebrow, title);
+    clockContextMenu.replaceChildren(header, fullMode, clockOnly, floatingClock, preferences);
     clockContextMenu.hidden = false;
     const hostWindow = overlayWindow(clockContextMenu);
     const menuWidth = Math.min(220, Math.max(120, hostWindow.innerWidth - 12));
@@ -1836,6 +1843,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
     clockContextMenu.style.top = `${Math.min(hostWindow.innerHeight - 220, Math.max(8, y + 10))}px`;
     const activeButton =
       currentMode === "fullMode" ? fullMode : currentMode === "clockOnly" ? clockOnly : floatingClock;
+    activeButton.dataset.active = "true";
+    activeButton.setAttribute("aria-current", "true");
     activeButton.disabled = true;
     activeButton.focus();
   }
@@ -1843,6 +1852,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   function createClockContextMenuButton(label: string, action: () => void): HTMLButtonElement {
     const button = document.createElement("button");
     button.type = "button";
+    button.className = "clock-context-menu-item";
     button.setAttribute("role", "menuitem");
     button.textContent = label;
     button.addEventListener("click", action);

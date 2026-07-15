@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Unified the event tooltip, timer action menu, clock context menu and event visual editor under one theme-aware floating-panel design.
+- Replaced legacy raised menu controls with clean tab-like rows, fine dividers, active accent lines and the selected display font.
+- Added a current-mode context-menu header, compact floating-mode styling and regression coverage for overlay ordering.
 - Changed the first-run location to Tel Aviv and removed personal sample events.
 - Unified fixed day-time defaults under the selected `sunrise-sunset` zmanit set.
 - Added automatic localStorage persistence for events, location, zmanit configuration, display preferences, visuals, alerts, layer visibility and clock appearance.
