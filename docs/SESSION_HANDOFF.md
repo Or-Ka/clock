@@ -4,7 +4,29 @@ Updated: 2026-07-15
 
 ## Current Branch
 
-`codex/refresh-countdown-menu`
+`codex/persist-events-settings`
+
+## T079 Progress
+
+T079 was opened for user-requested first-run defaults and automatic persistence:
+
+- Tel Aviv should replace Jerusalem as the first-run location.
+- Personal sample events should be removed.
+- Fixed day-time calculations should use one selected zmanit set consistently.
+- The full user configuration should be saved to localStorage and restored after reload.
+- A refresh warning is intentionally unnecessary once automatic persistence is reliable.
+
+Implementation and verification are complete:
+
+- Added `data/browser-state-storage.ts` with safe JSON load/save helpers.
+- The complete configurable snapshot now restores automatically from `analog-event-clock-app-state`.
+- Existing display-mode and clock-appearance storage keys remain compatible.
+- New state writes are transactional during import/restore, preventing partial snapshots.
+- Failed automatic storage shows a visible recommendation to export a backup.
+- Added focused storage tests and source-level regression assertions.
+- Browser verification added an event at 17:42, changed the location to Haifa, disabled the special layer, reloaded, and confirmed all three values were restored.
+- Browser console verification found no errors or warnings.
+- `docs:check`, lint, typecheck, all `150` tests and the production build passed.
 
 ## T078 Progress
 

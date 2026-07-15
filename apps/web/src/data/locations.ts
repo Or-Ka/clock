@@ -6,6 +6,8 @@ export type AppLocation = {
   readonly timeZone: string;
 };
 
+export const DEFAULT_LOCATION_ID = "tel-aviv";
+
 export const LOCATION_OPTIONS: readonly AppLocation[] = [
   { id: "jerusalem", title: "ירושלים", latitude: 31.7683, longitude: 35.2137, timeZone: "Asia/Jerusalem" },
   { id: "tel-aviv", title: "תל אביב", latitude: 32.0853, longitude: 34.7818, timeZone: "Asia/Jerusalem" },
@@ -21,5 +23,8 @@ export const LOCATION_OPTIONS: readonly AppLocation[] = [
 ];
 
 export function getLocationById(locationId: string): AppLocation {
-  return LOCATION_OPTIONS.find((location) => location.id === locationId) ?? LOCATION_OPTIONS[0]!;
+  return (
+    LOCATION_OPTIONS.find((location) => location.id === locationId) ??
+    LOCATION_OPTIONS.find((location) => location.id === DEFAULT_LOCATION_ID)!
+  );
 }

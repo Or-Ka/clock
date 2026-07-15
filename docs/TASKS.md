@@ -4,7 +4,7 @@ Updated: 2026-07-15
 
 ## Active Task
 
-T078: Refresh Countdown Action Menu
+T079: Persist User Configuration And Refresh Defaults
 
 ## T068 Checklist
 
@@ -164,3 +164,16 @@ T078: Refresh Countdown Action Menu
 - `[x]` Add focused regression assertions.
 - `[x]` Run docs/lint/typecheck/tests/build checks.
 - `[x]` Browser verify dark/light templates and all display modes.
+
+## T079 Checklist
+
+- `[x]` Confirm the previous task branch is clean.
+- `[x]` Create branch `codex/persist-events-settings`.
+- `[x]` Default first-run location to Tel Aviv.
+- `[x]` Remove personal sample events.
+- `[x]` Use one selected zmanit set consistently for fixed day-time calculations.
+- `[x]` Add automatic full-state browser persistence and safe restore.
+- `[x]` Preserve JSON import compatibility.
+- `[x]` Add focused regression tests.
+- `[x]` Run docs/lint/typecheck/tests/build checks.
+- `[x]` Browser verify defaults and reload restoration.

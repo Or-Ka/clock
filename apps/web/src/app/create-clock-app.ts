@@ -23,6 +23,7 @@ import {
 } from "../app-state/app-state.js";
 import { createProviderController, dateKeyForLocation } from "../data/provider-controller.js";
 import { createImportExportController } from "../data/import-export-controller.js";
+import { loadStoredJson, saveStoredJson } from "../data/browser-state-storage.js";
 import { LOCATION_OPTIONS, getLocationById, type AppLocation } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
 import { createSettingsController } from "../settings/settings-controller.js";
@@ -180,6 +181,13 @@ function startClockApp(deps: ClockAppDeps): () => void {
     readonly enabled: boolean;
   };
 
+  type LayerVisibilitySettings = {
+    readonly dayTimes: boolean;
+    readonly personal: boolean;
+    readonly special: boolean;
+    readonly zmanit: boolean;
+  };
+
   type AlertFormControls = {
     readonly enabled: HTMLInputElement;
     readonly sound: HTMLInputElement;
@@ -224,6 +232,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
     readonly eventVisualOverrides: Record<string, EventVisualStyle>;
     readonly alertSettings: EventAlertGlobalSettings;
     readonly eventAlertOverrides: Record<string, EventAlertSettings>;
+    readonly layerVisibility: LayerVisibilitySettings;
+    readonly clockAppearance: ClockAppearance;
   };
 
   const DAY_TIMES_LAYER_ID = "day-times";
@@ -252,8 +262,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       base: "set-start",
       direction: "after",
       offsetValue: 3,
-      offsetUnit: "zmanit-hours",
-      zmanitSetId: "alot-tzeit"
+      offsetUnit: "zmanit-hours"
     },
     {
       id: "sof-tefila",
@@ -278,8 +287,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       base: "sunset",
       direction: "after",
       offsetValue: 18,
-      offsetUnit: "minutes",
-      zmanitSetId: "alot-tzeit"
+      offsetUnit: "minutes"
     }
   ];
   const DEFAULT_ZMANIT_SET_ID: ZmanitTimeSetId = "sunrise-sunset";
@@ -344,6 +352,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   const DISPLAY_MODE_STORAGE_KEY = "analog-event-clock-display-mode";
   const LEGACY_DISPLAY_MODE_STORAGE_KEY = "dual-ring-events-display-mode";
   const CLOCK_APPEARANCE_STORAGE_KEY = "analog-event-clock-appearance";
+  const APP_STATE_STORAGE_KEY = "analog-event-clock-app-state";
   const DEFAULT_CLOCK_APPEARANCE: ClockAppearance = {
     theme: "dark",
     dialStyle: "roman",
@@ -556,6 +565,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   let renderedEventsById = new Map<string, VisualEvent>();
   let activeTooltipTarget: CountdownTarget | undefined;
   let activeCountdowns: Record<string, ActiveCountdown> = {};
+  let automaticPersistencePaused = false;
   let eventLayers: EventLayerDefinition[] = [
     emptyDayTimesLayer(),
     {
@@ -563,11 +573,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       title: "אירועים אישיים",
       kind: "personal",
       enabled: true,
-      events: [
-        { id: "standup-app", type: "instant", kind: "custom", title: "עמידה", hour: 9, minute: 15 },
-        { id: "review-app", type: "instant", kind: "custom", title: "סקירה", hour: 15, minute: 0 },
-        { id: "handoff-app", type: "instant", kind: "custom", title: "העברה", hour: 21, minute: 0 }
-      ]
+      events: []
     },
     emptySpecialLayer()
   ];
@@ -582,6 +588,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     getLocation: () => selectedLocation,
     setLocation(next) {
       selectedLocation = next;
+      persistAppState();
     },
     getTimeZone: () => timezoneSelect.value,
     setTimeZone(next) {
@@ -590,15 +597,18 @@ function startClockApp(deps: ClockAppDeps): () => void {
     getDisplayPreferences: () => displayPreferences,
     setDisplayPreferences(next) {
       displayPreferences = next;
+      persistAppState();
     },
     cloneDisplayPreferences,
     getEventLayers: () => eventLayers,
     setEventLayers(next) {
       eventLayers = next;
+      persistAppState();
     },
     getDerivedEvents: () => derivedEvents,
     setDerivedEvents(next) {
       derivedEvents = next;
+      persistAppState();
     },
     getRenderedEventsById: () => renderedEventsById,
     setRenderedEventsById(next) {
@@ -680,6 +690,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   renderZmanitSetControls();
   settingsController.syncDisplayPreferenceControls();
   syncClockAppearanceControls();
+  syncLayerVisibilityControls();
   syncAlertGlobalControls();
   applyDisplayPreferences();
   applyClockAppearance();
@@ -737,6 +748,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   addLifecycleEventListener(zmanitLayerToggle, "change", () => {
     clockShellController.setZmanitTicks(zmanitLayerToggle.checked ? zmanitTicks : []);
+    persistAppState();
   });
 
   addLifecycleEventListener(zmanitSetSelect, "change", () => {
@@ -771,6 +783,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     alertSettings = { enabled: alertsEnabledInput.checked };
     syncAlertGlobalControls();
     syncEventList();
+    persistAppState();
   });
 
   const eventEditorController = createEventEditorController({
@@ -801,6 +814,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       appState.setEventLayers(appendEventToLayer(appState.getEventLayers(), PERSONAL_LAYER_ID, nextEvent));
       syncAddEventFormVisibility(undefined);
       applyEventLayers();
+      persistAppState();
     },
     onDerivedEventSubmit(nextEvent, nextAlertSettings) {
       appState.setDerivedEvents([...appState.getDerivedEvents(), nextEvent]);
@@ -809,6 +823,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       refreshSpecialLayer();
       syncAddEventFormVisibility(undefined);
       applyEventLayers();
+      persistAppState();
     }
   });
   eventEditorController.start();
@@ -1140,6 +1155,18 @@ function startClockApp(deps: ClockAppDeps): () => void {
     clockInnerRingInput.checked = clockAppearance.showInnerRing;
   }
 
+  function syncLayerVisibilityControls(): void {
+    const layers = appState.getEventLayers();
+    for (const toggle of layerToggles) {
+      const layerId = toggle.dataset.layerToggle;
+      if (layerId === undefined) {
+        continue;
+      }
+
+      toggle.checked = layers.find((layer) => layer.id === layerId)?.enabled ?? true;
+    }
+  }
+
   function applyClockAppearance(): void {
     const root = document.documentElement;
     root.dataset.clockTheme = clockAppearance.theme;
@@ -1454,6 +1481,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     eventAlertOverrides = { ...eventAlertOverrides, [eventId]: next };
     requestDesktopPermissionIfNeeded(next);
+    persistAppState();
   }
 
   function eventVisualForEvent(event: Pick<VisualEvent, "id" | "kind">): EventVisualStyle {
@@ -1575,6 +1603,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     };
     syncEventList();
     clockShellController.syncEventVisuals();
+    persistAppState();
   }
 
   function getEventVisualEditorIconSelect(): HTMLSelectElement {
@@ -2599,6 +2628,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function createExportState(): AppExportState {
     const snapshot = appState.getSnapshot();
+    const layerEnabled = (layerId: string): boolean =>
+      snapshot.eventLayers.find((layer) => layer.id === layerId)?.enabled ?? true;
     return {
       version: 1,
       exportedAt: new Date().toISOString(),
@@ -2611,7 +2642,14 @@ function startClockApp(deps: ClockAppDeps): () => void {
       displayPreferences: snapshot.displayPreferences,
       eventVisualOverrides: { ...eventVisualOverrides },
       alertSettings: { ...alertSettings },
-      eventAlertOverrides: { ...eventAlertOverrides }
+      eventAlertOverrides: { ...eventAlertOverrides },
+      layerVisibility: {
+        dayTimes: layerEnabled(DAY_TIMES_LAYER_ID),
+        personal: layerEnabled(PERSONAL_LAYER_ID),
+        special: layerEnabled(SPECIAL_LAYER_ID),
+        zmanit: zmanitLayerToggle.checked
+      },
+      clockAppearance: { ...clockAppearance }
     };
   }
 
@@ -2620,80 +2658,118 @@ function startClockApp(deps: ClockAppDeps): () => void {
       throw new Error("קובץ הייבוא לא נראה תקין.");
     }
 
+    const previousPersistenceState = automaticPersistencePaused;
+    automaticPersistencePaused = true;
     const state = payload as Partial<AppExportState>;
-    if (
-      typeof state.selectedLocationId === "string" &&
-      LOCATION_OPTIONS.some((item) => item.id === state.selectedLocationId)
-    ) {
-      appState.setLocation(getLocationById(state.selectedLocationId));
-      locationSelect.value = appState.getLocation().id;
-      syncTimeZoneToLocation();
-      clockShellController.setTimeZone(appState.getTimeZone());
-      providerController.invalidateDayTimesCache();
-    }
+    try {
+      if (
+        typeof state.selectedLocationId === "string" &&
+        LOCATION_OPTIONS.some((item) => item.id === state.selectedLocationId)
+      ) {
+        appState.setLocation(getLocationById(state.selectedLocationId));
+        locationSelect.value = appState.getLocation().id;
+        syncTimeZoneToLocation();
+        clockShellController.setTimeZone(appState.getTimeZone());
+        providerController.invalidateDayTimesCache();
+      }
 
-    if (Array.isArray(state.zmanitTimeSets)) {
-      const importedSets = state.zmanitTimeSets.filter(isZmanitTimeSetDefinition).map(cloneZmanitTimeSet);
-      if (importedSets.length > 0) {
-        zmanitTimeSets = importedSets;
+      if (Array.isArray(state.zmanitTimeSets)) {
+        const importedSets = state.zmanitTimeSets.filter(isZmanitTimeSetDefinition).map(cloneZmanitTimeSet);
+        if (importedSets.length > 0) {
+          zmanitTimeSets = importedSets;
+        }
+      }
+
+      if (typeof state.selectedDefaultZmanitSetId === "string") {
+        selectedDefaultZmanitSetId = state.selectedDefaultZmanitSetId;
+      }
+      ensureSelectedZmanitSetIds();
+
+      if (Array.isArray(state.personalEvents)) {
+        const importedPersonalEvents = state.personalEvents.filter(isInstantEventDefinition);
+        appState.setEventLayers(
+          setEventLayerEvents(appState.getEventLayers(), PERSONAL_LAYER_ID, importedPersonalEvents)
+        );
+      }
+
+      if (Array.isArray(state.derivedEvents)) {
+        appState.setDerivedEvents(state.derivedEvents.filter(isDerivedEventDefinition));
+      }
+
+      if (Array.isArray(state.fixedDayTimeEvents)) {
+        fixedDayTimeEvents = state.fixedDayTimeEvents
+          .filter(isFixedDayTimeDefinition)
+          .map(removeMissingZmanitSetReference);
+      }
+
+      if (isDisplayPreferences(state.displayPreferences)) {
+        appState.setDisplayPreferences(state.displayPreferences);
+      }
+
+      if (isRecord(state.eventVisualOverrides)) {
+        eventVisualOverrides = Object.fromEntries(
+          Object.entries(state.eventVisualOverrides).filter((entry): entry is [string, EventVisualStyle] =>
+            isEventVisualStyle(entry[1])
+          )
+        );
+      }
+
+      if (isEventAlertGlobalSettings(state.alertSettings)) {
+        alertSettings = { ...state.alertSettings };
+      }
+
+      if (isRecord(state.eventAlertOverrides)) {
+        eventAlertOverrides = Object.fromEntries(
+          Object.entries(state.eventAlertOverrides).filter((entry): entry is [string, EventAlertSettings] =>
+            isEventAlertSettings(entry[1])
+          )
+        );
+      }
+
+      if (isLayerVisibilitySettings(state.layerVisibility)) {
+        const visibility = state.layerVisibility;
+        appState.setEventLayers(
+          appState
+            .getEventLayers()
+            .map((layer) =>
+              mergeLayerEnabled(
+                layer,
+                layer.id === DAY_TIMES_LAYER_ID
+                  ? visibility.dayTimes
+                  : layer.id === PERSONAL_LAYER_ID
+                    ? visibility.personal
+                    : layer.id === SPECIAL_LAYER_ID
+                      ? visibility.special
+                      : undefined
+              )
+            )
+        );
+        zmanitLayerToggle.checked = visibility.zmanit;
+      }
+
+      if (isClockAppearance(state.clockAppearance)) {
+        clockAppearance = { ...state.clockAppearance };
+        persistClockAppearance();
+      }
+
+      firedAlertKeys = new Set();
+      renderZmanitSetControls();
+      settingsController.syncDisplayPreferenceControls();
+      syncClockAppearanceControls();
+      syncLayerVisibilityControls();
+      syncAlertGlobalControls();
+      applyDisplayPreferences();
+      applyClockAppearance();
+      renderFixedDayTimeControls();
+      refreshSpecialLayer();
+      applyEventLayers();
+      void refreshDayTimesLayer(true);
+    } finally {
+      automaticPersistencePaused = previousPersistenceState;
+      if (!automaticPersistencePaused) {
+        persistAppState();
       }
     }
-
-    if (typeof state.selectedDefaultZmanitSetId === "string") {
-      selectedDefaultZmanitSetId = state.selectedDefaultZmanitSetId;
-    }
-    ensureSelectedZmanitSetIds();
-
-    if (Array.isArray(state.personalEvents)) {
-      const importedPersonalEvents = state.personalEvents.filter(isInstantEventDefinition);
-      appState.setEventLayers(
-        setEventLayerEvents(appState.getEventLayers(), PERSONAL_LAYER_ID, importedPersonalEvents)
-      );
-    }
-
-    if (Array.isArray(state.derivedEvents)) {
-      appState.setDerivedEvents(state.derivedEvents.filter(isDerivedEventDefinition));
-    }
-
-    if (Array.isArray(state.fixedDayTimeEvents)) {
-      fixedDayTimeEvents = state.fixedDayTimeEvents
-        .filter(isFixedDayTimeDefinition)
-        .map(removeMissingZmanitSetReference);
-    }
-
-    if (isDisplayPreferences(state.displayPreferences)) {
-      appState.setDisplayPreferences(state.displayPreferences);
-    }
-
-    if (isRecord(state.eventVisualOverrides)) {
-      eventVisualOverrides = Object.fromEntries(
-        Object.entries(state.eventVisualOverrides).filter((entry): entry is [string, EventVisualStyle] =>
-          isEventVisualStyle(entry[1])
-        )
-      );
-    }
-
-    if (isEventAlertGlobalSettings(state.alertSettings)) {
-      alertSettings = { ...state.alertSettings };
-    }
-
-    if (isRecord(state.eventAlertOverrides)) {
-      eventAlertOverrides = Object.fromEntries(
-        Object.entries(state.eventAlertOverrides).filter((entry): entry is [string, EventAlertSettings] =>
-          isEventAlertSettings(entry[1])
-        )
-      );
-    }
-
-    firedAlertKeys = new Set();
-    renderZmanitSetControls();
-    settingsController.syncDisplayPreferenceControls();
-    syncAlertGlobalControls();
-    applyDisplayPreferences();
-    renderFixedDayTimeControls();
-    refreshSpecialLayer();
-    applyEventLayers();
-    void refreshDayTimesLayer(true);
   }
 
   function personalLayerEvents(): readonly InstantEventDefinition[] {
@@ -2976,6 +3052,17 @@ function startClockApp(deps: ClockAppDeps): () => void {
     return value === "roman" || value === "serif" || value === "minimal";
   }
 
+  function isClockAppearance(value: unknown): value is ClockAppearance {
+    return (
+      isRecord(value) &&
+      typeof value.theme === "string" &&
+      isClockTheme(value.theme) &&
+      typeof value.dialStyle === "string" &&
+      isClockDialStyle(value.dialStyle) &&
+      typeof value.showInnerRing === "boolean"
+    );
+  }
+
   function isInstantEventKind(value: string | undefined): value is InstantEventKind {
     return value === "sunrise" || value === "sunset" || value === "custom";
   }
@@ -3081,6 +3168,16 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
   function isEventAlertGlobalSettings(value: unknown): value is EventAlertGlobalSettings {
     return isRecord(value) && typeof value.enabled === "boolean";
+  }
+
+  function isLayerVisibilitySettings(value: unknown): value is LayerVisibilitySettings {
+    return (
+      isRecord(value) &&
+      typeof value.dayTimes === "boolean" &&
+      typeof value.personal === "boolean" &&
+      typeof value.special === "boolean" &&
+      typeof value.zmanit === "boolean"
+    );
   }
 
   function isDisplayPreferences(value: unknown): value is DisplayPreferences {
@@ -3199,7 +3296,18 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function persistClockAppearance(): void {
-    localStorage.setItem(CLOCK_APPEARANCE_STORAGE_KEY, JSON.stringify(clockAppearance));
+    saveStoredJson(localStorage, CLOCK_APPEARANCE_STORAGE_KEY, clockAppearance);
+    persistAppState();
+  }
+
+  function persistAppState(): void {
+    if (automaticPersistencePaused) {
+      return;
+    }
+
+    if (!saveStoredJson(localStorage, APP_STATE_STORAGE_KEY, createExportState())) {
+      importExportStatus.textContent = "השמירה האוטומטית נכשלה. מומלץ לייצא גיבוי לפני רענון הדף.";
+    }
   }
 
   function round(value: number): number {
@@ -3317,6 +3425,18 @@ function startClockApp(deps: ClockAppDeps): () => void {
     eventVisualEditor.remove();
     timerActionMenu.remove();
     clockContextMenu.remove();
+  }
+
+  const storedAppState = loadStoredJson(localStorage, APP_STATE_STORAGE_KEY);
+  if (storedAppState === undefined) {
+    persistAppState();
+  } else {
+    try {
+      importAppState(storedAppState);
+    } catch {
+      importExportStatus.textContent = "המצב השמור לא היה תקין, ולכן נטענו ברירות המחדל.";
+      persistAppState();
+    }
   }
 
   return destroyClock;

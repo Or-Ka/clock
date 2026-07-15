@@ -13,11 +13,27 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T078: Refresh Countdown Action Menu
+T079: Persist User Configuration And Refresh Defaults
 
 ## Current Branch
 
-`codex/refresh-countdown-menu`
+`codex/persist-events-settings`
+
+## T079 Scope
+
+- Use Tel Aviv as the first-run location.
+- Start with no personal sample events.
+- Resolve fixed day-time events from one selected zmanit set unless the user explicitly changes it.
+- Persist the full configurable application snapshot automatically in browser storage and restore it on reload.
+- Keep the existing JSON import/export format compatible.
+
+## T079 Gate
+
+- First-run browser verification starts in Tel Aviv with no personal sample events.
+- All seven fixed day-time events show the selected `sunrise-sunset` set as their default.
+- A personal event, changed location and changed layer visibility survived a full browser reload.
+- Browser verification completed with no console errors or warnings.
+- Documentation, lint, typecheck, all `150` tests and the production build passed.
 
 ## T078 Gate
 
