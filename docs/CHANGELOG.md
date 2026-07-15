@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Changed the first-run location to Tel Aviv and removed personal sample events.
+- Unified fixed day-time defaults under the selected `sunrise-sunset` zmanit set.
+- Added automatic localStorage persistence for events, location, zmanit configuration, display preferences, visuals, alerts, layer visibility and clock appearance.
+- Added safe restore fallback, storage-failure messaging and version-1 JSON import compatibility for older exports.
 - Refreshed the countdown action menu to use the active display font, colors, field treatment and primary/secondary button language.
 - Added compact floating-clock/Picture-in-Picture layout, viewport-aware positioning and a layer above the floating clock.
 - Prevented event tooltip overlap while the countdown action menu is open and added regression coverage.

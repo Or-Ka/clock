@@ -46,6 +46,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain('<select id="location">');
     expect(html).toContain("ירושלים");
     expect(html).toContain("תל אביב");
+    expect(html).toContain('<option value="tel-aviv" selected>תל אביב</option>');
     expect(html).toContain("אזור זמן של המיקום");
     expect(html).toContain('id="day-times-status"');
     expect(html).toContain('id="zmanit-set"');
@@ -284,7 +285,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain('base: "sunset"');
     expect(main).toContain('base: "set-start"');
     expect(main).toContain('base: "set-end"');
-    expect(main).toContain('zmanitSetId: "alot-tzeit"');
+    expect(main).not.toContain('zmanitSetId: "alot-tzeit"');
     expect(main).not.toContain('zmanitSetId: "tefillin-tefila"');
     expect(main).not.toContain('id: "tefillin-tefila"');
     expect(main).toContain('id: "sunrise-sunset"');
@@ -376,6 +377,28 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("state.alertSettings");
     expect(main).toContain("analog-event-clock-${currentDateKey()}.json");
     expect(main).not.toContain("dual-ring-events-${currentDateKey()}.json");
+  });
+
+  it("starts clean in Tel Aviv and automatically persists the configurable application state", () => {
+    const html = readAppFile("index.html");
+    const main = readAppFile("app/create-clock-app.ts");
+    const locations = readAppFile("data/locations.ts");
+    const storage = readAppFile("data/browser-state-storage.ts");
+
+    expect(html).toContain('<option value="tel-aviv" selected>תל אביב</option>');
+    expect(locations).toContain('DEFAULT_LOCATION_ID = "tel-aviv"');
+    expect(main).toContain('const APP_STATE_STORAGE_KEY = "analog-event-clock-app-state"');
+    expect(main).toContain("events: []");
+    expect(main).not.toContain('id: "standup-app"');
+    expect(main).not.toContain('id: "review-app"');
+    expect(main).not.toContain('id: "handoff-app"');
+    expect(main).toContain("layerVisibility:");
+    expect(main).toContain("clockAppearance:");
+    expect(main).toContain("loadStoredJson(localStorage, APP_STATE_STORAGE_KEY)");
+    expect(main).toContain("saveStoredJson(localStorage, APP_STATE_STORAGE_KEY, createExportState())");
+    expect(main).toContain("persistAppState();");
+    expect(storage).toContain("JSON.parse");
+    expect(storage).toContain("JSON.stringify");
   });
 
   it("does not leave previous visible English legacy labels in place", () => {

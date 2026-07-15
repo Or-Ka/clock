@@ -58,6 +58,7 @@ apps/web/
       clock-shell-controller.ts
     data/
       hebcal-service.ts
+      browser-state-storage.ts
       import-export-controller.ts
       locations.ts
       provider-controller.ts
@@ -82,6 +83,8 @@ The settings controller owns settings listeners and cleanup while receiving expl
 
 `data/import-export-controller.ts` owns import/export button listeners, JSON download creation, file reading, JSON parsing, status messages, input reset and listener cleanup. `create-clock-app.ts` still assembles schema-version-1 export state and applies imported state because restoration coordinates most state slices and UI surfaces.
 
+`data/browser-state-storage.ts` is the narrow browser-storage boundary for safe JSON load/save. `create-clock-app.ts` owns snapshot assembly, validation, transactional restore and persistence triggers because those operations coordinate location, zmanit sets, events, display preferences, visuals, alerts, layer visibility and clock appearance. The automatic localStorage snapshot reuses the version-1 import/export shape and adds optional-compatible fields without breaking older JSON files.
+
 ## Decisions In Force
 
 - The core library remains independent of the official web app.
@@ -89,4 +92,6 @@ The settings controller owns settings listeners and cleanup while receiving expl
 - The app is Hebrew-first and RTL.
 - The current refactor is behavior-preserving.
 - Historical prototype screens must not be included in the official production build.
-- The state/domain API, provider controller and import/export controller are internal to `apps/web`; they must not change storage, import/export or `packages/clock` contracts.
+- The state/domain API, provider controller, import/export controller and browser-state storage helper are internal to `apps/web`.
+- JSON import remains compatible with version-1 exports; additional version-1 fields must remain optional on read.
+- `packages/clock` contracts remain unchanged by application persistence.

@@ -2,6 +2,26 @@
 
 Updated: 2026-07-15
 
+## T079 Persistence And Defaults Checks
+
+Added focused coverage for safe browser JSON storage and source-level regression assertions for:
+
+- Tel Aviv as the first-run location.
+- An empty personal-event layer.
+- One shared default zmanit set for fixed day-time events.
+- Automatic full-state save and restore.
+- Layer visibility and clock appearance in version-1-compatible snapshots.
+
+Final T079 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`150` tests)
+- `npm.cmd run build`
+
+Browser verification passed against the production build: a personal event, Haifa location and disabled special layer all survived reload; no console errors or warnings were recorded.
+
 ## Baseline Before Migration
 
 Passed before renaming:
