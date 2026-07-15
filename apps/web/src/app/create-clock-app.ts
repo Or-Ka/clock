@@ -1595,6 +1595,11 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function handleClockTooltipPointerOver(event: MouseEvent): void {
+    if (!timerActionMenu.hidden) {
+      closeClockTooltip();
+      return;
+    }
+
     const target = targetFromElement(event.target);
     if (target === undefined) {
       return;
@@ -1614,13 +1619,15 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function handleDocumentClockMouseMove(event: MouseEvent): void {
+    if (!timerActionMenu.hidden) {
+      closeClockTooltip();
+      return;
+    }
+
     const eventDocument = eventDocumentFromMouseEvent(event);
     const element = eventDocument.elementFromPoint(event.clientX, event.clientY);
     if (element === null || !mount.contains(element)) {
-      if (!clockTooltip.hidden) {
-        activeTooltipTarget = undefined;
-        clockTooltip.hidden = true;
-      }
+      closeClockTooltip();
       return;
     }
 
@@ -1645,6 +1652,10 @@ function startClockApp(deps: ClockAppDeps): () => void {
       return;
     }
 
+    closeClockTooltip();
+  }
+
+  function closeClockTooltip(): void {
     activeTooltipTarget = undefined;
     clockTooltip.hidden = true;
   }
@@ -1723,6 +1734,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     event.preventDefault();
     event.stopPropagation();
+    closeClockTooltip();
 
     if (element.dataset.clockPart === "countdown-arc") {
       openTimerActionMenu(target, "hide", event.clientX, event.clientY);
@@ -1744,6 +1756,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   function createTimerActionMenu(): HTMLDivElement {
     const menu = document.createElement("div");
     menu.className = "timer-action-menu";
+    menu.dir = "rtl";
     menu.hidden = true;
     menu.setAttribute("role", "dialog");
     menu.setAttribute("aria-label", "פעולת טיימר");
@@ -1812,21 +1825,45 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function openTimerActionMenu(target: CountdownTarget, action: "show" | "hide", x: number, y: number): void {
-    const question = document.createElement("p");
+    closeClockTooltip();
+    closeClockContextMenu();
+    timerActionMenu.dataset.action = action;
+    timerActionMenu.setAttribute("aria-label", `ספירה לאחור עד ${target.title}`);
+
+    const header = document.createElement("div");
+    header.className = "timer-action-menu-header";
+
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "timer-action-menu-eyebrow";
+    eyebrow.textContent = "ספירה לאחור";
+
+    const question = document.createElement("h2");
+    question.className = "timer-action-menu-title";
     question.textContent =
       action === "show" ? `להציג טיימר עד ${target.title}?` : `להסתיר את הטיימר עד ${target.title}?`;
+    header.append(eyebrow, question);
+
+    const description = document.createElement("p");
+    description.className = "timer-action-menu-description";
+    description.textContent =
+      action === "show" ? "בחרו צבע לקשת הספירה על גבי השעון." : "הקשת תוסר מהשעון עד להפעלה הבאה.";
 
     const colorInput = document.createElement("input");
     colorInput.type = "color";
+    colorInput.id = "timer-action-menu-color-input";
+    colorInput.setAttribute("aria-label", `צבע קשת הספירה עד ${target.title}`);
     colorInput.value = activeCountdowns[target.id]?.countdownColor ?? eventVisualForEvent(target).color;
 
     const colorControl = document.createElement("label");
     colorControl.className = "timer-action-menu-color";
-    colorControl.textContent = "צבע קשת";
-    colorControl.append(colorInput);
+    colorControl.htmlFor = colorInput.id;
+    const colorLabel = document.createElement("span");
+    colorLabel.textContent = "צבע הקשת";
+    colorControl.append(colorLabel, colorInput);
 
     const confirm = document.createElement("button");
     confirm.type = "button";
+    confirm.className = "timer-action-menu-button timer-action-menu-button-primary";
     confirm.textContent = action === "show" ? "הצג" : "הסתר";
     confirm.addEventListener("click", () => {
       if (action === "show") {
@@ -1841,6 +1878,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     const cancel = document.createElement("button");
     cancel.type = "button";
+    cancel.className = "timer-action-menu-button timer-action-menu-button-secondary";
     cancel.textContent = "בטל";
     cancel.addEventListener("click", closeTimerActionMenu);
 
@@ -1848,13 +1886,18 @@ function startClockApp(deps: ClockAppDeps): () => void {
     actions.className = "timer-action-menu-actions";
     actions.append(confirm, cancel);
 
-    timerActionMenu.replaceChildren(...(action === "show" ? [question, colorControl, actions] : [question, actions]));
+    timerActionMenu.replaceChildren(
+      ...(action === "show" ? [header, description, colorControl, actions] : [header, description, actions])
+    );
     timerActionMenu.hidden = false;
     const hostWindow = overlayWindow(timerActionMenu);
-    const menuWidth = Math.min(220, Math.max(120, hostWindow.innerWidth - 12));
+    const isCompactMode = hostWindow.document.documentElement.dataset.displayMode === "floatingClock";
+    const margin = isCompactMode ? 6 : 12;
+    const menuWidth = Math.min(isCompactMode ? 190 : 280, Math.max(120, hostWindow.innerWidth - margin * 2));
     timerActionMenu.style.width = `${menuWidth}px`;
-    timerActionMenu.style.left = `${Math.min(hostWindow.innerWidth - menuWidth - 6, Math.max(6, x + 10))}px`;
-    timerActionMenu.style.top = `${Math.min(hostWindow.innerHeight - 120, Math.max(8, y + 10))}px`;
+    const menuRect = timerActionMenu.getBoundingClientRect();
+    timerActionMenu.style.left = `${Math.min(hostWindow.innerWidth - menuRect.width - margin, Math.max(margin, x + 10))}px`;
+    timerActionMenu.style.top = `${Math.min(hostWindow.innerHeight - menuRect.height - margin, Math.max(margin, y + 10))}px`;
     confirm.focus();
   }
 
