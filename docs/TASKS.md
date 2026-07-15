@@ -1,10 +1,10 @@
 # Tasks
 
-Updated: 2026-07-13
+Updated: 2026-07-15
 
 ## Active Task
 
-T077: Prepare Vercel Deployment
+T078: Refresh Countdown Action Menu
 
 ## T068 Checklist
 
@@ -150,3 +150,17 @@ T077: Prepare Vercel Deployment
 - `[x]` Document Vercel import settings and environment-variable requirements.
 - `[x]` Run the final docs/lint/typecheck/tests/build gate.
 - `[x]` Verify the generated deployment output.
+
+## T078 Checklist
+
+- `[x]` Confirm `main` is clean and synchronized with `origin/main`.
+- `[x]` Create branch `codex/refresh-countdown-menu`.
+- `[x]` Restyle the countdown action menu with active display tokens.
+- `[x]` Apply the selected display font to the menu and its controls.
+- `[x]` Add distinct primary and secondary button styles.
+- `[x]` Add compact floating-clock and Picture-in-Picture styles.
+- `[x]` Keep the menu inside the viewport and above the floating clock layer.
+- `[x]` Prevent tooltip overlap while the menu is open.
+- `[x]` Add focused regression assertions.
+- `[x]` Run docs/lint/typecheck/tests/build checks.
+- `[x]` Browser verify dark/light templates and all display modes.

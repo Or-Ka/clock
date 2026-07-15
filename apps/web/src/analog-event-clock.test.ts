@@ -167,6 +167,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("syncCountdownLayer");
     expect(main).toContain("timer-action-menu");
     expect(main).toContain("timer-action-menu-color");
+    expect(main).toContain("timer-action-menu-header");
+    expect(main).toContain("timer-action-menu-button-primary");
+    expect(main).toContain("timer-action-menu-button-secondary");
+    expect(main).toContain("closeClockTooltip");
+    expect(main).toContain('hostWindow.document.documentElement.dataset.displayMode === "floatingClock"');
     expect(main).toContain("clock-event-tooltip");
     expect(main).toContain("countdownColor");
     expect(main).toContain("data-countdown-gradient");
@@ -200,6 +205,11 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain('[data-event-kind="sunrise"] line');
     expect(css).toContain(".event-symbol");
     expect(css).toContain(".timer-action-menu");
+    expect(css).toContain(".timer-action-menu-title");
+    expect(css).toContain(".timer-action-menu-button-primary");
+    expect(css).toContain("background: var(--display-accent-color)");
+    expect(css).toContain(':root[data-display-mode="floatingClock"] .timer-action-menu');
+    expect(css).toContain(':root[data-floating-clock-window="true"] .timer-action-menu');
   });
 
   it("adds a no-print developer stamp with a hover gif tooltip", () => {
