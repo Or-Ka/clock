@@ -232,16 +232,17 @@ describe("createStaticAnalogClock", () => {
     expect(Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))).toBeGreaterThan(100);
   });
 
-  it("renders the night weekday parenthetical on a second line", () => {
+  it("keeps the night weekday line clear of the Torah reading", () => {
     const container = document.createElement("div");
 
-    createStaticAnalogClock({
+    const clock = createStaticAnalogClock({
       container,
       time: {
         hour: 22,
         minute: 0,
         dateDisplay: {
           weekday: "חמישי (ליל שישי)",
+          torahReading: "פרשת דברים",
           hebrewDate: "אור לי״ח בתמוז תשפ״ו",
           gregorianDate: "2 ביולי 2026"
         }
@@ -249,6 +250,7 @@ describe("createStaticAnalogClock", () => {
     });
 
     const weekdayLabel = container.querySelector('[data-clock-part="weekday-label"]');
+    const torahReadingLabel = container.querySelector('[data-clock-part="torah-reading-label"]');
     const lines = Array.from(weekdayLabel?.querySelectorAll("tspan") ?? []);
 
     expect(lines).toHaveLength(2);
@@ -256,6 +258,22 @@ describe("createStaticAnalogClock", () => {
     expect(lines[1]?.textContent).toBe("(ליל שישי)");
     expect(lines[1]?.getAttribute("dy")).toBe("6.5");
     expect(lines[1]?.getAttribute("font-size")).toBe("4.4");
+    const nightLineY = Number(weekdayLabel?.getAttribute("y")) + Number(lines[1]?.getAttribute("dy"));
+    expect(Number(torahReadingLabel?.getAttribute("y")) - nightLineY).toBeGreaterThanOrEqual(8);
+
+    clock.setTime({
+      hour: 10,
+      minute: 0,
+      dateDisplay: {
+        weekday: "שישי",
+        torahReading: "פרשת דברים",
+        hebrewDate: "י״ח בתמוז תשפ״ו",
+        gregorianDate: "3 ביולי 2026"
+      }
+    });
+
+    expect(weekdayLabel?.getAttribute("y")).toBe("61");
+    expect(weekdayLabel?.querySelectorAll("tspan")).toHaveLength(0);
   });
 
   it("updates hands with setTime without replacing the SVG element", () => {

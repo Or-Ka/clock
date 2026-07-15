@@ -9,6 +9,8 @@ const CLOCK_COLORS = defaultClockColors;
 const OUTER_TIME_MARKER_RADIUS = 92;
 const INNER_TIME_MARKER_RADIUS = 74;
 const DATE_LABEL_FONT_FAMILY = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
+const WEEKDAY_LABEL_Y = 61;
+const MULTI_LINE_WEEKDAY_LABEL_Y = 54.5;
 
 export interface StaticAnalogClockOptions {
   readonly container: HTMLElement;
@@ -470,7 +472,7 @@ function createDateDisplay(): {
   group.dataset.clockPart = "date-display";
   group.setAttribute("direction", "rtl");
 
-  const weekdayLabel = createDateLine("weekday-label", 61, "5.25", "750", CLOCK_COLORS.dateMuted);
+  const weekdayLabel = createDateLine("weekday-label", WEEKDAY_LABEL_Y, "5.25", "750", CLOCK_COLORS.dateMuted);
   const torahReadingLabel = createDateLine("torah-reading-label", 69, "5.2", "750", CLOCK_COLORS.dateStrong);
   const hebrewDateLabel = createDateLine("hebrew-date-label", 79, "5.65", "700", CLOCK_COLORS.dateStrong);
   const observancesLabel = createDateLine("observances-label", 88, "4.55", "700", CLOCK_COLORS.dateMuted);
@@ -558,9 +560,12 @@ function applyDateDisplay(dom: ClockDom, time: StaticClockTime): void {
 function applyWeekdayLabel(label: SVGTextElement, weekday: string): void {
   const match = /^(.*?)\s*(\([^()]+\))$/.exec(weekday);
   if (match === null) {
+    label.setAttribute("y", String(WEEKDAY_LABEL_Y));
     label.textContent = weekday;
     return;
   }
+
+  label.setAttribute("y", String(MULTI_LINE_WEEKDAY_LABEL_Y));
 
   const weekdayLine = createSvgElement("tspan");
   const nightLine = createSvgElement("tspan");
