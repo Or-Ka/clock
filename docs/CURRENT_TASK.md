@@ -40,7 +40,7 @@ Browser verification must confirm the Friday event against loaded sunset data; S
 
 ## Result
 
-Completed on `codex/restore-shabbat-times`; commit and pull request remain.
+Completed on `codex/restore-shabbat-times` and opened as pull request #28. Merge remains pending explicit user approval.
 
 - Removed the disabled feature flag that prevented automatic Shabbat events from resolving.
 - Renamed the Friday event to `כניסת שבת` and set it to 20 minutes before sunset.

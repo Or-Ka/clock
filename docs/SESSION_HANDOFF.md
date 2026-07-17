@@ -17,7 +17,8 @@ T081 restores the automatic Shabbat events that remained in the application but 
 - The Friday event keeps the candles visual preset and the Saturday event keeps the stars preset.
 - Documentation, lint, typecheck, all `150` tests, the production build and the core-library build pass.
 - Browser verification on Friday 2026-07-17 loaded sunset at 19:48:57 and rendered `כניסת שבת` at 19:28:57 with no console errors or warnings.
-- Commit, push and pull-request creation remain.
+- Commit `e368281` was pushed and pull request #28 was opened against `main`.
+- Merge remains pending explicit user approval.
 
 ## T080 Progress
 

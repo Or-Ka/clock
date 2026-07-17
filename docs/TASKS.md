@@ -17,7 +17,7 @@ T081: Restore Weekend Shabbat Times
 - `[x]` Update focused regression assertions.
 - `[x]` Run the final docs/lint/typecheck/tests/build gate.
 - `[x]` Browser verify Friday entry against the loaded sunset time.
-- `[ ]` Commit, push and open the pull request.
+- `[x]` Commit, push and open pull request #28.
 
 ## T068 Checklist
 
