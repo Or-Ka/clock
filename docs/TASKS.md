@@ -1,10 +1,23 @@
 # Tasks
 
-Updated: 2026-07-15
+Updated: 2026-07-17
 
 ## Active Task
 
-T080: Unify Floating Panel Design
+T081: Restore Weekend Shabbat Times
+
+## T081 Checklist
+
+- `[x]` Confirm `main` is clean and create `codex/restore-shabbat-times`.
+- `[x]` Identify the disabled automatic Shabbat event path.
+- `[x]` Restore Friday `כניסת שבת` at sunset minus 20 minutes.
+- `[x]` Restore Saturday `יציאת שבת` at sunset plus 35 minutes.
+- `[x]` Route the automatic events through the enabled-by-default special-events layer.
+- `[x]` Keep automatic Shabbat events out of Sunday through Thursday.
+- `[x]` Update focused regression assertions.
+- `[x]` Run the final docs/lint/typecheck/tests/build gate.
+- `[x]` Browser verify Friday entry against the loaded sunset time.
+- `[x]` Commit, push and open pull request #28.
 
 ## T068 Checklist
 

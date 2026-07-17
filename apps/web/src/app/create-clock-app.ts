@@ -309,14 +309,13 @@ function startClockApp(deps: ClockAppDeps): () => void {
       fixedEvents: DEFAULT_FIXED_DAY_TIME_EVENTS
     }
   ];
-  const INCLUDE_AUTOMATIC_SHABBAT_EVENTS = false;
   const AUTOMATIC_SHABBAT_EVENTS: readonly (FixedDayTimeDefinition & { readonly weekdays: readonly number[] })[] = [
     {
-      id: "candle-lighting",
-      title: "הדלקת נרות",
+      id: "shabbat-entry",
+      title: "כניסת שבת",
       base: "sunset",
       direction: "before",
-      offsetValue: 18,
+      offsetValue: 20,
       offsetUnit: "minutes",
       weekdays: [5]
     },
@@ -325,7 +324,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       title: "יציאת שבת",
       base: "sunset",
       direction: "after",
-      offsetValue: 42,
+      offsetValue: 35,
       offsetUnit: "minutes",
       weekdays: [6]
     }
@@ -340,7 +339,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     "fixed-chatzot": { icon: "half-disc", tone: "sunrise" },
     "fixed-plag-hamincha": { icon: "half-disc", tone: "sunset" },
     "fixed-tzeit-hakochavim": { icon: "stars", tone: "sunset" },
-    "fixed-shabbat-candle-lighting": { icon: "candles", tone: "sunset" },
+    "fixed-shabbat-shabbat-entry": { icon: "candles", tone: "sunset" },
     "fixed-shabbat-shabbat-exit": { icon: "stars", tone: "sunset" }
   };
   const DISPLAY_FONT_STACKS: Record<DisplayFontFamily, string> = {
@@ -2333,12 +2332,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function resolveFixedDayTimeEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
-    const fixedEvents = resolveOffsetDefinitions(events, fixedDayTimeEvents, "fixed");
-    if (!INCLUDE_AUTOMATIC_SHABBAT_EVENTS) {
-      return fixedEvents;
-    }
-
-    return [...fixedEvents, ...resolveAutomaticShabbatEvents(events)];
+    return resolveOffsetDefinitions(events, fixedDayTimeEvents, "fixed");
   }
 
   function resolveAutomaticShabbatEvents(events: readonly InstantEventDefinition[]): InstantEventDefinition[] {
@@ -2468,7 +2462,8 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function refreshSpecialLayer(): void {
-    const specialEvents = resolveDerivedEvents();
+    const dayEvents = eventsForLayer(appState.getEventLayers(), DAY_TIMES_LAYER_ID);
+    const specialEvents = [...resolveDerivedEvents(), ...resolveAutomaticShabbatEvents(dayEvents)];
     appState.setEventLayers(setEventLayerEvents(appState.getEventLayers(), SPECIAL_LAYER_ID, specialEvents));
   }
 

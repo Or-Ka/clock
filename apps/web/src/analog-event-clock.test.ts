@@ -324,13 +324,16 @@ describe("Analog Event Clock Hebrew UI", () => {
   it("adds automatic Shabbat times only for Friday and Saturday", () => {
     const main = readAppFile("app/create-clock-app.ts");
 
-    expect(main).toContain("הדלקת נרות");
-    expect(main).toContain('id: "candle-lighting"');
-    expect(main).not.toContain('id: "shabbat-entry"');
+    expect(main).toContain("כניסת שבת");
+    expect(main).toContain('id: "shabbat-entry"');
     expect(main).toContain("יציאת שבת");
+    expect(main).toContain('direction: "before",\n      offsetValue: 20');
+    expect(main).toContain('direction: "after",\n      offsetValue: 35');
     expect(main).toContain("weekdays: [5]");
     expect(main).toContain("weekdays: [6]");
     expect(main).toContain("resolveAutomaticShabbatEvents");
+    expect(main).toContain("const specialEvents = [...resolveDerivedEvents(), ...resolveAutomaticShabbatEvents(dayEvents)]");
+    expect(main).not.toContain("INCLUDE_AUTOMATIC_SHABBAT_EVENTS");
   });
 
   it("keeps legacy export and storage compatibility while writing new product names", () => {

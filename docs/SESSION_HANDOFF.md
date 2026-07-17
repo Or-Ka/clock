@@ -1,10 +1,24 @@
 # Session Handoff
 
-Updated: 2026-07-15
+Updated: 2026-07-17
 
 ## Current Branch
 
-`codex/unify-floating-panels`
+`codex/restore-shabbat-times`
+
+## T081 Progress
+
+T081 restores the automatic Shabbat events that remained in the application but were disabled by `INCLUDE_AUTOMATIC_SHABBAT_EVENTS = false`.
+
+- Friday now resolves `כניסת שבת` 20 minutes before the loaded sunset.
+- Saturday now resolves `יציאת שבת` 35 minutes after the loaded sunset.
+- Sunday through Thursday resolve no automatic Shabbat event.
+- The events are placed in the enabled-by-default special-events layer.
+- The Friday event keeps the candles visual preset and the Saturday event keeps the stars preset.
+- Documentation, lint, typecheck, all `150` tests, the production build and the core-library build pass.
+- Browser verification on Friday 2026-07-17 loaded sunset at 19:48:57 and rendered `כניסת שבת` at 19:28:57 with no console errors or warnings.
+- Commit `e368281` was pushed and pull request #28 was opened against `main`.
+- Merge remains pending explicit user approval.
 
 ## T080 Progress
 
