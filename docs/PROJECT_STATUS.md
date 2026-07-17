@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-15
+Updated: 2026-07-17
 
 ## Current State
 
@@ -13,11 +13,26 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T080: Unify Floating Panel Design
+T081: Restore Weekend Shabbat Times
 
 ## Current Branch
 
-`codex/unify-floating-panels`
+`codex/restore-shabbat-times`
+
+## T081 Scope
+
+- Restore automatic Shabbat entry and exit events as first-run defaults.
+- Show Shabbat entry only on Friday, 20 minutes before sunset.
+- Show Shabbat exit only on Saturday, 35 minutes after sunset.
+- Keep both events in the enabled-by-default special-events layer.
+
+## T081 Gate
+
+- Friday resolves only `כניסת שבת` at sunset minus 20 minutes.
+- Saturday resolves only `יציאת שבת` at sunset plus 35 minutes.
+- Sunday through Thursday resolve neither automatic Shabbat event.
+- Documentation, lint, typecheck, tests and the production build pass.
+- Browser verification on Friday confirms entry exactly 20 minutes before the loaded sunset with no console errors or warnings.
 
 ## T080 Scope
 

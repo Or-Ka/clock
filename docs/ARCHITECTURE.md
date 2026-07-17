@@ -85,6 +85,8 @@ The settings controller owns settings listeners and cleanup while receiving expl
 
 `data/browser-state-storage.ts` is the narrow browser-storage boundary for safe JSON load/save. `create-clock-app.ts` owns snapshot assembly, validation, transactional restore and persistence triggers because those operations coordinate location, zmanit sets, events, display preferences, visuals, alerts, layer visibility and clock appearance. The automatic localStorage snapshot reuses the version-1 import/export shape and adds optional-compatible fields without breaking older JSON files.
 
+The application boundary also derives automatic Shabbat events from the loaded sunset and civil weekday. Friday entry and Saturday exit are injected into the special-events layer, which is enabled by default; no automatic Shabbat event is produced on other weekdays.
+
 ## Decisions In Force
 
 - The core library remains independent of the official web app.

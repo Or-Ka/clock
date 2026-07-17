@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Restored enabled-by-default automatic Shabbat times in the special-events layer: Friday entry 20 minutes before sunset and Saturday exit 35 minutes after sunset.
 - Unified the event tooltip, timer action menu, clock context menu and event visual editor under one theme-aware floating-panel design.
 - Replaced legacy raised menu controls with clean tab-like rows, fine dividers, active accent lines and the selected display font.
 - Added a current-mode context-menu header, compact floating-mode styling and regression coverage for overlay ordering.

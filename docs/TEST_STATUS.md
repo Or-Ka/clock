@@ -1,6 +1,25 @@
 # Test Status
 
-Updated: 2026-07-15
+Updated: 2026-07-17
+
+## T081 Shabbat Time Checks
+
+The focused application regression test now asserts that automatic Shabbat events are always included in the special-events layer and configured as follows:
+
+- Friday: `כניסת שבת`, 20 minutes before sunset.
+- Saturday: `יציאת שבת`, 35 minutes after sunset.
+- No disabled feature flag can suppress the default events.
+
+Final T081 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`150` tests across `21` files)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification passed on Friday 2026-07-17: Tel Aviv sunset loaded at 19:48:57 and the clock rendered `כניסת שבת` at 19:28:57. No console errors or warnings were recorded.
 
 ## T080 Floating Panel Design Checks
 
