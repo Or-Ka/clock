@@ -409,6 +409,15 @@ h2 {
   pointer-events: none;
 }
 
+.clock-mount [data-clock-part="event-marker"][data-event-status="past"] {
+  opacity: 0.46;
+  filter: grayscale(0.72) saturate(0.35);
+}
+
+.clock-mount [data-clock-part="event-marker"][data-event-status="past"] line {
+  opacity: 1;
+}
+
 .clock-mount [data-clock-part="countdown-arc"] {
   cursor: pointer;
   mix-blend-mode: screen;
@@ -1400,6 +1409,11 @@ a:focus-visible {
 
 .unified-event-table tr[data-event-status="next"] td {
   background: color-mix(in srgb, var(--display-accent-color) 7%, transparent);
+}
+
+.unified-event-table tr[data-event-status="past"] td {
+  opacity: 0.52;
+  filter: grayscale(0.72) saturate(0.35);
 }
 
 .event-title-cell {

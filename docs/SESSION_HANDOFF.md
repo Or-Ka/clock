@@ -1,10 +1,25 @@
 # Session Handoff
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 
 ## Current Branch
 
-`codex/restore-shabbat-times`
+`codex/halftone-past-events`
+
+## T082 Progress
+
+T082 adds a clear halftone state for every event whose resolved status is `past`:
+
+- The complete SVG marker group, including its application-supplied icon, renders at `0.46` opacity.
+- Past markers use `grayscale(0.72) saturate(0.35)` while `next` and `future` markers remain unchanged.
+- Past event-list cells render at `0.52` opacity with the same desaturation.
+- The core SVG renderer carries marker-level opacity for framework-independent consumers, and the web stylesheet applies the same state immediately during `npm.cmd run dev`.
+- Focused renderer and application tests cover the status attribute and halftone selectors.
+- The source-level application test normalizes CRLF to LF so multiline assertions remain stable on Windows.
+- Documentation, lint, typecheck, all `151` tests, the production build and the core-library build pass.
+- Browser verification on 2026-07-20 compared multiple past events with the next and future events on the live clock and event list; no console errors or warnings were recorded.
+- Commit `a8c65ec` was pushed and pull request #29 was opened against `main`.
+- Merge remains pending explicit user approval.
 
 ## T081 Progress
 

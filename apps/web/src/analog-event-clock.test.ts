@@ -210,6 +210,10 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain(".clock-context-menu");
     expect(css).toContain('[data-event-kind="sunrise"] line');
     expect(css).toContain(".event-symbol");
+    expect(css).toContain('[data-clock-part="event-marker"][data-event-status="past"]');
+    expect(css).toContain('.unified-event-table tr[data-event-status="past"] td');
+    expect(css).toContain("opacity: 0.46");
+    expect(css).toContain("grayscale(0.72) saturate(0.35)");
     expect(css).toContain(".timer-action-menu");
     expect(css).toContain(".timer-action-menu-title");
     expect(css).toContain(".timer-action-menu-button-primary");
@@ -435,5 +439,8 @@ describe("Analog Event Clock Hebrew UI", () => {
 });
 
 function readAppFile(name: string): string {
-  return readFileSync(name === "index.html" ? join(appRootDir, name) : join(appSrcDir, name), "utf8");
+  return readFileSync(name === "index.html" ? join(appRootDir, name) : join(appSrcDir, name), "utf8").replaceAll(
+    "\r\n",
+    "\n"
+  );
 }

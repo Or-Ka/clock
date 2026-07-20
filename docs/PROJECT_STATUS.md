@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 
 ## Current State
 
@@ -13,11 +13,25 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T081: Restore Weekend Shabbat Times
+T082: Halftone Past Events
 
 ## Current Branch
 
-`codex/restore-shabbat-times`
+`codex/halftone-past-events`
+
+## T082 Scope
+
+- Use the existing resolved `past` status to visually recede events that already occurred today.
+- Apply the treatment to the full clock marker, including its icon, and to the corresponding event-list row.
+- Keep `next` and `future` events at full visual strength.
+
+## T082 Gate
+
+- Past clock markers use reduced opacity and saturation while their internal line stays crisp.
+- Past event-list rows use the same visual hierarchy.
+- Focused renderer and application-style regression coverage passes.
+- Documentation, lint, typecheck, tests and both production builds pass.
+- Browser verification compares past, next and future events and records no console errors or warnings.
 
 ## T081 Scope
 

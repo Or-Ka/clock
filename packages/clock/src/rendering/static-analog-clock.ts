@@ -679,6 +679,7 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   marker.dataset.clockRing = event.ring;
   marker.dataset.eventAngle = String(event.angle);
   marker.dataset.eventDisplayAngle = String(displayAngle);
+  marker.setAttribute("opacity", event.status === "past" ? "0.46" : "1");
   marker.setAttribute("aria-label", `${event.title}, ${formatEventTime(event)}, ${displayStatus(event.status)}`);
   if (event.layerId !== undefined) {
     marker.dataset.eventLayerId = event.layerId;
@@ -700,7 +701,7 @@ function createEventMarker(event: ResolvedInstantEvent, layerIndex: number): SVG
   line.setAttribute("stroke", eventColor(event.kind));
   line.setAttribute("stroke-width", event.status === "next" ? "1.55" : "1.25");
   line.setAttribute("stroke-linecap", "butt");
-  line.setAttribute("opacity", event.status === "past" ? "0.58" : "1");
+  line.setAttribute("opacity", "1");
 
   marker.append(line);
 

@@ -1,6 +1,34 @@
 # Test Status
 
-Updated: 2026-07-17
+Updated: 2026-07-20
+
+## T082 Past-Event Halftone Checks
+
+Focused renderer and application-style tests assert:
+
+- A `past` SVG marker carries marker-level reduced opacity so its line and icon recede together.
+- A non-past marker remains at full opacity.
+- The web stylesheet targets past clock markers and past event-list rows.
+- Multiline source assertions are stable across LF and CRLF worktrees.
+
+Focused verification passed with `34` tests across the renderer and application source suites.
+
+Final T082 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`151` tests across `21` files)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification passed against the live development app on 2026-07-20:
+
+- Multiple past events rendered at `0.46` marker opacity with reduced saturation.
+- The next and future events rendered at full opacity and saturation.
+- Past event-list cells rendered at `0.52` opacity with reduced saturation.
+- Every inspected clock marker included its custom icon.
+- No console errors or warnings were recorded.
 
 ## T081 Shabbat Time Checks
 
