@@ -1,10 +1,23 @@
 # Tasks
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 
 ## Active Task
 
-T081: Restore Weekend Shabbat Times
+T082: Halftone Past Events
+
+## T082 Checklist
+
+- `[x]` Confirm `main` is clean and update it from `origin/main`.
+- `[x]` Create `codex/halftone-past-events` from the updated `main`.
+- `[x]` Reuse the resolved `past` status rather than adding time logic.
+- `[x]` Apply halftone styling to the full clock marker and custom icon.
+- `[x]` Apply halftone styling to past event-list rows.
+- `[x]` Keep `next` and `future` events visually unchanged.
+- `[x]` Add focused renderer and stylesheet regression coverage.
+- `[x]` Browser verify past, next and future states with no console errors or warnings.
+- `[x]` Run the final docs/lint/typecheck/tests/build gate.
+- `[ ]` Commit, push and open the pull request.
 
 ## T081 Checklist
 

@@ -15,6 +15,8 @@ The primary renderer is SVG.
 
 The official web application under `apps/web` uses the live analog clock and event-ring renderer from `packages/clock`.
 
+Resolved events with status `past` use marker-level reduced opacity so the complete SVG marker, including application-supplied symbols, recedes together. The official web app adds reduced saturation and mirrors the same hierarchy in its event list; `next` and `future` events remain at full emphasis.
+
 ## Historical Screens
 
 Earlier prototype screens and spike implementations are archived under `archive/legacy-app-screens` and are excluded from active builds.

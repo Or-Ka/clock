@@ -332,6 +332,24 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunset"] line')?.getAttribute("stroke")).toBe("#ff4fd8");
   });
 
+  it("renders the whole marker in halftone when an event has passed", () => {
+    const container = document.createElement("div");
+    const clock = createStaticAnalogClock({
+      container,
+      time: { hour: 12, minute: 0 },
+      events: [resolvedEvent("morning", "custom", "outer", 90, "past")]
+    });
+
+    const pastMarker = container.querySelector('[data-event-id="morning"]');
+    expect(pastMarker?.getAttribute("data-event-status")).toBe("past");
+    expect(pastMarker?.getAttribute("opacity")).toBe("0.46");
+    expect(pastMarker?.querySelector("line")?.getAttribute("opacity")).toBe("1");
+
+    clock.setEvents([resolvedEvent("afternoon", "custom", "outer", 270, "next")]);
+
+    expect(container.querySelector('[data-event-id="afternoon"]')?.getAttribute("opacity")).toBe("1");
+  });
+
   it("rejects invalid initial and update times", () => {
     const container = document.createElement("div");
 

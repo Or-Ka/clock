@@ -1,29 +1,30 @@
 # Current Task
 
-Updated: 2026-07-17
+Updated: 2026-07-20
 
 ## Active Task
 
-T081: Restore Weekend Shabbat Times
+T082: Halftone Past Events
 
 ## Goal
 
-Restore automatic Shabbat entry and exit times as default special events derived from the selected location's sunset.
+Make every event whose resolved status is `past` visibly recede while preserving full emphasis for the next and future events.
 
 ## Scope
 
-- Show `כניסת שבת` only on Friday at sunset minus 20 minutes.
-- Show `יציאת שבת` only on Saturday at sunset plus 35 minutes.
-- Resolve the events into the enabled-by-default special-events layer.
-- Keep Sunday through Thursday free of automatic Shabbat events.
-- Add focused regression coverage.
+- Render the complete past-event SVG marker, including its custom icon, at reduced opacity.
+- Desaturate past-event markers without changing their configured event color.
+- Apply the same halftone hierarchy to past-event rows in the event list.
+- Continue using the existing resolved `past` status and automatic live-clock refresh.
+- Keep `next` and `future` events at full opacity and saturation.
+- Add focused regression coverage and browser verification.
 
 ## Out Of Scope
 
-- No `packages/clock` API changes.
+- No event-time or status-resolution changes.
 - No storage or import/export schema changes.
-- No layout or styling redesign.
-- No automatic Shabbat events outside Friday and Saturday.
+- No user-configurable halftone setting.
+- No layout redesign.
 
 ## Gate
 
@@ -36,16 +37,16 @@ npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
-Browser verification must confirm the Friday event against loaded sunset data; Saturday remains covered by the explicit weekday/offset regression assertions.
+Browser verification must compare live `past`, `next` and `future` events on both the clock and event list, and confirm no console errors or warnings.
 
 ## Result
 
-Completed on `codex/restore-shabbat-times` and opened as pull request #28. Merge remains pending explicit user approval.
+Completed on `codex/halftone-past-events`. Merge remains pending explicit user approval.
 
-- Removed the disabled feature flag that prevented automatic Shabbat events from resolving.
-- Renamed the Friday event to `כניסת שבת` and set it to 20 minutes before sunset.
-- Set `יציאת שבת` to 35 minutes after Saturday sunset.
-- Routed both automatic events through the special-events layer.
-- Updated focused regression assertions.
-- Passed documentation, lint, typecheck, all `150` tests, the production build and the core-library build.
-- Browser verified Friday 2026-07-17: sunset loaded at 19:48:57 and `כניסת שבת` rendered at 19:28:57, with no console errors or warnings.
+- Past SVG marker groups render at `0.46` opacity with reduced saturation, so the event line and icon recede together.
+- Past event-list cells render at `0.52` opacity with the same reduced-saturation treatment.
+- `next` and `future` events remain at full visual strength.
+- Added focused renderer and application-style regression assertions.
+- Normalized source-test line endings so multiline assertions are stable on Windows.
+- Passed documentation, lint, typecheck, all `151` tests, the production build and the core-library build.
+- Browser verified the live clock and event list with multiple past events, one next event and future events; no console errors or warnings were recorded.
