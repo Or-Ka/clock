@@ -17,7 +17,7 @@ T082: Halftone Past Events
 - `[x]` Add focused renderer and stylesheet regression coverage.
 - `[x]` Browser verify past, next and future states with no console errors or warnings.
 - `[x]` Run the final docs/lint/typecheck/tests/build gate.
-- `[ ]` Commit, push and open the pull request.
+- `[x]` Commit, push and open pull request #29.
 
 ## T081 Checklist
 

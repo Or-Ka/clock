@@ -18,6 +18,8 @@ T082 adds a clear halftone state for every event whose resolved status is `past`
 - The source-level application test normalizes CRLF to LF so multiline assertions remain stable on Windows.
 - Documentation, lint, typecheck, all `151` tests, the production build and the core-library build pass.
 - Browser verification on 2026-07-20 compared multiple past events with the next and future events on the live clock and event list; no console errors or warnings were recorded.
+- Commit `a8c65ec` was pushed and pull request #29 was opened against `main`.
+- Merge remains pending explicit user approval.
 
 ## T081 Progress
 

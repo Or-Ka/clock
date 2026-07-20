@@ -41,7 +41,7 @@ Browser verification must compare live `past`, `next` and `future` events on bot
 
 ## Result
 
-Completed on `codex/halftone-past-events`. Merge remains pending explicit user approval.
+Completed on `codex/halftone-past-events` and opened as pull request #29. Merge remains pending explicit user approval.
 
 - Past SVG marker groups render at `0.46` opacity with reduced saturation, so the event line and icon recede together.
 - Past event-list cells render at `0.52` opacity with the same reduced-saturation treatment.
