@@ -32,6 +32,16 @@ Decision: the application keeps JSON export schema version `1` and reads the pre
 
 Rationale: existing user data and exported files from the previous web surface must keep working.
 
+## ADR: Streamlined Display Controls
+
+Status: accepted on 2026-08-11.
+
+Decision: the settings UI keeps clock theme, dial style, inner-ring visibility, display mode, font scale and clock scale. It does not expose display templates, font-family selection or direct display-color inputs.
+
+Rationale: the retained controls describe distinct user-visible behavior, while the removed controls made the panel unnecessarily dense. The annotated product screenshot is the acceptance reference.
+
+Consequences: display modes, the clock context menu, floating-clock behavior, Document Picture-in-Picture and persisted compatibility remain active. No replacement color picker is introduced. The retained clock theme owns the application surface and foreground CSS tokens so its contrast cannot be overridden by legacy inline display colors.
+
 ## ADR: Historical Screens
 
 Status: accepted on 2026-07-05.

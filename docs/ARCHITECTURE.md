@@ -39,7 +39,7 @@ Responsibilities:
 
 ## Application Structure
 
-After T076, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, a small internal state/domain API, a provider/data controller, and an import/export browser boundary:
+After T083, the application has a small entrypoint, a temporary application boundary around the existing state and orchestration, shallow UI controller boundaries, a small internal state/domain API, a provider/data controller, and an import/export browser boundary:
 
 ```text
 apps/web/
@@ -75,7 +75,7 @@ apps/web/
 
 `main.ts` imports styles, creates `createClockApp({ document, window })`, starts it and disposes it during HMR. `create-clock-app.ts` owns the current app state, startup orchestration and runtime cleanup.
 
-The settings controller owns settings listeners and cleanup while receiving explicit callbacks into the application boundary. The clock-shell controller owns live clock creation, marker visual sync, clock mount listener cleanup, the clock mutation observer and the visual timer while receiving explicit callbacks into app-owned state.
+The settings controller owns location, panel-toggle, display-mode and scale listeners and cleanup while receiving explicit callbacks into the application boundary. Template, font-family and direct color controls are no longer exposed. The clock-shell controller owns live clock creation, marker visual sync, clock mount listener cleanup, the clock mutation observer and the visual timer while receiving explicit callbacks into app-owned state.
 
 `app-state/app-state.ts` is an internal DOM-free state/domain API around the current state variables owned by `create-clock-app.ts`. It provides snapshot access, guarded getters/setters for location, timezone, display preferences, event layers, derived events and rendered events, plus pure event-layer helpers. It is not a state manager and does not change the state shape. The current boundary is intentionally temporary and large: modules receive explicit elements/callbacks where already extracted, while remaining orchestration stays inside the application boundary.
 
@@ -97,3 +97,6 @@ The application boundary also derives automatic Shabbat events from the loaded s
 - The state/domain API, provider controller, import/export controller and browser-state storage helper are internal to `apps/web`.
 - JSON import remains compatible with version-1 exports; additional version-1 fields must remain optional on read.
 - `packages/clock` contracts remain unchanged by application persistence.
+- The settings UI intentionally exposes clock appearance, display mode and scale controls without template, font-family or direct color controls.
+- Clock-theme CSS tokens are the source of truth for application surface and foreground colors; persisted legacy display colors must not override them inline.
+- Floating-clock and Picture-in-Picture behavior remain part of the application shell.

@@ -1,10 +1,26 @@
 # Session Handoff
 
-Updated: 2026-07-20
+Updated: 2026-08-11
 
 ## Current Branch
 
-`codex/halftone-past-events`
+`codex/feature/simplify-display-settings`
+
+## T083 Progress
+
+T083 simplifies the display panel according to the annotated product screenshot:
+
+- Clock theme, dial style, inner-ring visibility, display mode, font scale and clock scale remain available.
+- The display-template selector, font-family selector and five display-color inputs were removed.
+- No replacement clock-color picker was added.
+- The retained theme now owns the application palette; removing legacy inline color writes fixes white-on-white text in `Light`.
+- Clock-only and floating-clock modes, the clock context menu and Document Picture-in-Picture orchestration remain active.
+- Persisted display preferences and import/export compatibility remain unchanged outside the removed UI controls.
+- Documentation, lint, typecheck, all `151` tests across `21` files, the production build and the core-library build pass.
+- Browser verification confirmed retained appearance/mode/scale behavior, absence of every removed control, active floating/clock-only/full modes and an empty warning/error console.
+- A follow-up browser check measured `Light` as white `rgb(255, 255, 255)` with dark `rgb(23, 23, 23)` text and restored `Dark` afterward.
+
+T083 is complete and ready for commit/PR preparation. No commit, push or pull request has been created for T083.
 
 ## T082 Progress
 

@@ -49,6 +49,9 @@
   --display-text-color: #171717;
   --display-muted-color: #6e6d69;
   --display-accent-color: #252525;
+  --display-clock-face-color: #fbfbfa;
+  --display-clock-stroke-color: #5d5b56;
+  --display-clock-hand-color: #111111;
   --clock-page-background: #ffffff;
   --clock-face-fill: #fbfbfa;
   --clock-face-highlight: #ffffff;
@@ -72,6 +75,9 @@
   --display-text-color: #28241f;
   --display-muted-color: #716656;
   --display-accent-color: #5c472f;
+  --display-clock-face-color: #d7b47f;
+  --display-clock-stroke-color: #5f5040;
+  --display-clock-hand-color: #181714;
   --clock-page-background: #eee9df;
   --clock-face-fill: #d7b47f;
   --clock-face-highlight: #efd4a7;
@@ -913,29 +919,12 @@ input[type="color"] {
 
 #display-preferences-title,
 .display-preferences-panel > .clock-appearance-controls,
-.display-preferences-panel > .display-color-grid,
 .display-preferences-panel > .user-guide-menu {
   grid-column: 1 / -1;
 }
 
 #display-preferences-title {
   display: none;
-}
-
-.display-color-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.display-color-grid label {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.display-color-grid label {
-  font-size: 0.75rem;
 }
 
 .user-guide-menu {
@@ -1190,39 +1179,6 @@ input[type="color"] {
   aspect-ratio: 1;
   border-radius: 999px;
   background: var(--display-accent-color);
-}
-
-.guide-swatches {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.guide-swatches span {
-  display: block;
-  aspect-ratio: 1;
-  border: 1px solid color-mix(in srgb, var(--display-muted-color) 48%, transparent);
-  border-radius: 6px;
-}
-
-.guide-swatches span:nth-child(1) {
-  background: var(--display-background-color);
-}
-
-.guide-swatches span:nth-child(2) {
-  background: var(--display-panel-color);
-}
-
-.guide-swatches span:nth-child(3) {
-  background: var(--display-text-color);
-}
-
-.guide-swatches span:nth-child(4) {
-  background: var(--display-accent-color);
-}
-
-.guide-swatches span:nth-child(5) {
-  background: var(--display-clock-face-color);
 }
 
 .guide-mini-grid {
@@ -2206,7 +2162,6 @@ a:focus-visible {
   .add-event-actions,
   .time-fields,
   .clock-appearance-grid,
-  .display-color-grid,
   .guide-section,
   .event-alert-form-grid,
   .event-alert-controls,

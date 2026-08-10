@@ -21,9 +21,12 @@ The application consumes the reusable `packages/clock` library. The library rema
 - Location presets and timezone display.
 - Sunrise/sunset-based day-time events through existing providers.
 - Personal and derived events.
-- Display preferences.
+- Display preferences for clock appearance, display mode, font scale and clock scale.
+- Readable theme palettes: `Light` uses dark text on white surfaces, while `Dark` uses light text on dark surfaces.
 - Import/export of application state.
 - Compatibility with state exported by the previous web surface.
+
+Display templates, font-family selection and direct display-color inputs are intentionally not exposed. Floating-clock mode and Picture-in-Picture remain available through the display-mode control and clock context menu.
 
 ## Out Of Scope For Current Migration
 

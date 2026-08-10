@@ -6,6 +6,7 @@
 - Visible UI text is Hebrew-first, with technical timezone identifiers kept as IANA strings.
 - Buttons, inputs, selects and links use visible focus outlines.
 - Validation messages are shown in Hebrew.
+- Clock themes own the application foreground and surface palette: `Light` uses dark text on white surfaces, while `Dark` uses light text on dark surfaces.
 - The current marker interaction model is still application-managed and should be improved in `packages/clock` in a later phase.
 
 ## Required Future Work

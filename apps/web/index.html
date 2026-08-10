@@ -56,17 +56,6 @@
           </fieldset>
 
           <div class="control-group">
-            <label for="display-template">סגנון תצוגה</label>
-            <select id="display-template">
-              <option value="classic">קלאסי בהיר</option>
-              <option value="night">לילה שקט</option>
-              <option value="paper">לוח נייר</option>
-              <option value="focus">פוקוס חד</option>
-              <option value="festival">חגיגי</option>
-            </select>
-          </div>
-
-          <div class="control-group">
             <label for="display-mode">מצב תצוגה</label>
             <select id="display-mode">
               <option value="fullMode">מצב מלא</option>
@@ -77,16 +66,6 @@
 
           <div class="time-fields">
             <div class="control-group">
-              <label for="display-font-family">פונט</label>
-              <select id="display-font-family">
-                <option value="system">מערכת</option>
-                <option value="serif">ספרותי</option>
-                <option value="mono">טכני</option>
-                <option value="rounded">מעוגל</option>
-              </select>
-            </div>
-
-            <div class="control-group">
               <label for="display-font-scale">גודל</label>
               <input id="display-font-scale" type="range" min="90" max="118" step="2" value="100" />
             </div>
@@ -95,29 +74,6 @@
           <div class="control-group">
             <label for="display-clock-scale">גודל השעון</label>
             <input id="display-clock-scale" type="range" min="70" max="130" step="5" value="100" />
-          </div>
-
-          <div class="display-color-grid" aria-label="צבעי תצוגה">
-            <label>
-              רקע
-              <input id="display-background-color" type="color" />
-            </label>
-            <label>
-              פאנלים
-              <input id="display-panel-color" type="color" />
-            </label>
-            <label>
-              טקסט
-              <input id="display-text-color" type="color" />
-            </label>
-            <label>
-              הדגשה
-              <input id="display-accent-color" type="color" />
-            </label>
-            <label>
-              פני שעון
-              <input id="display-clock-face-color" type="color" />
-            </label>
           </div>
 
           <details class="user-guide-menu">
@@ -154,10 +110,9 @@
                 <div>
                   <h3 id="guide-display-title">אפשרויות תצוגה</h3>
                   <ul class="guide-list">
-                    <li>סגנונות: קלאסי בהיר, לילה שקט, לוח נייר, פוקוס חד וחגיגי.</li>
+                    <li>מראה השעון: גימור כהה, בהיר או עץ; ספרות רומיות, רגילות או קווים.</li>
                     <li>מצבים: מצב מלא, שעון בלבד, ושעון צף בגודל 200x200.</li>
-                    <li>פונטים: מערכת, ספרותי, טכני ומעוגל.</li>
-                    <li>גודל טקסט, גודל שעון, צבע רקע, פאנלים, טקסט, הדגשה ופני שעון.</li>
+                    <li>אפשר לשנות את גודל הטקסט, גודל השעון והצגת טבעת השעות הפנימית.</li>
                   </ul>
                 </div>
                 <figure
@@ -169,10 +124,7 @@
                   <span class="guide-field"></span>
                   <span class="guide-field"></span>
                   <span class="guide-range"></span>
-                  <span class="guide-swatches">
-                    <span></span><span></span><span></span><span></span><span></span>
-                  </span>
-                  <figcaption>סגנון, מצב, גודל וצבעים</figcaption>
+                  <figcaption>מראה, מצב וגדלים</figcaption>
                 </figure>
               </section>
 

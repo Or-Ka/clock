@@ -64,16 +64,9 @@ export type AppElements = {
   readonly clockThemeSelect: HTMLSelectElement;
   readonly clockDialStyleSelect: HTMLSelectElement;
   readonly clockInnerRingInput: HTMLInputElement;
-  readonly displayTemplateSelect: HTMLSelectElement;
   readonly displayModeSelect: HTMLSelectElement;
-  readonly displayFontFamilySelect: HTMLSelectElement;
   readonly displayFontScaleInput: HTMLInputElement;
   readonly displayClockScaleInput: HTMLInputElement;
-  readonly displayBackgroundColorInput: HTMLInputElement;
-  readonly displayPanelColorInput: HTMLInputElement;
-  readonly displayTextColorInput: HTMLInputElement;
-  readonly displayAccentColorInput: HTMLInputElement;
-  readonly displayClockFaceColorInput: HTMLInputElement;
 };
 
 export function bindAppElements(root: ParentNode): AppElements {
@@ -150,16 +143,9 @@ export function bindAppElements(root: ParentNode): AppElements {
     clockThemeSelect: getRequiredElement<HTMLSelectElement>(root, "#clock-theme"),
     clockDialStyleSelect: getRequiredElement<HTMLSelectElement>(root, "#clock-dial-style"),
     clockInnerRingInput: getRequiredElement<HTMLInputElement>(root, "#clock-inner-ring"),
-    displayTemplateSelect: getRequiredElement<HTMLSelectElement>(root, "#display-template"),
     displayModeSelect: getRequiredElement<HTMLSelectElement>(root, "#display-mode"),
-    displayFontFamilySelect: getRequiredElement<HTMLSelectElement>(root, "#display-font-family"),
     displayFontScaleInput: getRequiredElement<HTMLInputElement>(root, "#display-font-scale"),
-    displayClockScaleInput: getRequiredElement<HTMLInputElement>(root, "#display-clock-scale"),
-    displayBackgroundColorInput: getRequiredElement<HTMLInputElement>(root, "#display-background-color"),
-    displayPanelColorInput: getRequiredElement<HTMLInputElement>(root, "#display-panel-color"),
-    displayTextColorInput: getRequiredElement<HTMLInputElement>(root, "#display-text-color"),
-    displayAccentColorInput: getRequiredElement<HTMLInputElement>(root, "#display-accent-color"),
-    displayClockFaceColorInput: getRequiredElement<HTMLInputElement>(root, "#display-clock-face-color")
+    displayClockScaleInput: getRequiredElement<HTMLInputElement>(root, "#display-clock-scale")
   };
 }
 

@@ -1,6 +1,6 @@
 # App Migration
 
-עודכן: 2026-07-05
+עודכן: 2026-08-11
 
 ## Purpose
 
@@ -56,6 +56,7 @@ The version belongs to the web application only. `@clock/clock` remains unchange
 - New exports use the filename prefix `analog-event-clock`.
 - The previous display-mode localStorage key `dual-ring-events-display-mode` is read once and copied to the new key `analog-event-clock-display-mode`.
 - New writes use only the new localStorage key.
+- T083 removes only the template, font-family and color controls from the settings UI; persisted display modes and schema-version-1 compatibility remain unchanged.
 
 ## Archived
 
