@@ -1,6 +1,6 @@
 # Frontend Refactor Map
 
-Updated: 2026-07-13
+Updated: 2026-08-11
 
 ## Scope
 
@@ -10,9 +10,11 @@ T073 is a review and stabilization checkpoint after T069-T072. No product code w
 
 T074 introduced a small internal state/domain API around existing app state. It does not introduce a state manager and does not change the state shape. T075 introduced a small provider/data controller around sunrise/sunset and Hebcal refresh orchestration. T076 introduced a narrow import/export controller around stable browser file mechanics and UI listeners.
 
+T083 narrows the settings UI only: display templates, font-family selection and direct color inputs are removed, while appearance, display-mode, scale and floating-window behavior remain active.
+
 ## Current Branch
 
-`refactor/import-export-controller`
+`codex/feature/simplify-display-settings`
 
 ## Current Boundaries
 
@@ -203,27 +205,24 @@ The settings controller owns:
 
 - Location select change listener.
 - Display preferences panel toggle listener.
-- Display template select listener.
 - Display mode select listener for `fullMode`, `clockOnly` and `floatingClock`.
-- Display font family, font scale and clock scale listeners.
-- Basic display color input listeners.
+- Display font scale and clock scale listeners.
 - Settings listener cleanup.
-- Display preference control syncing and panel open/close helpers.
+- Retained display-preference control syncing and panel open/close helpers.
 
 Still intentionally kept in `create-clock-app.ts`:
 
 - The `displayPreferences` state object.
-- Display template definitions and validation helpers.
+- Display template definitions and validation helpers retained for persisted-state compatibility.
 - `loadDisplayPreferences()` and `persistDisplayMode()`.
 - `applyDisplayPreferences()` because it coordinates document CSS variables, floating clock styles, countdown layer refresh and tooltip refresh.
 - `syncFloatingClockMode()` and floating clock/Picture-in-Picture behavior.
 - Layer toggles, because they directly mutate event layer state.
 - The document `pointerdown` listener, because it closes settings, event visual editor, timer menu and clock context menu together.
 
-Current awkward dependencies after T074:
+Current awkward dependencies after T083:
 
 - Settings display mode changes still need callbacks for floating clock orchestration and menu cleanup.
-- Appearance changes still trigger app-owned rendering, clock visual sync and event list refresh callbacks.
 - Import state restore still needs to call back into settings control syncing after replacing display preferences.
 - The settings controller still owns listeners only; display preference side effects stay in `create-clock-app.ts`.
 
@@ -244,10 +243,10 @@ Still intentionally kept in `create-clock-app.ts`:
 - `eventLayers`, `renderedEventsById`, `activeTooltipTarget`, `activeCountdowns` and other app-owned state.
 - Tooltip rendering and state.
 - Timer action menu rendering and state.
-- Clock context menu rendering and display-mode actions.
 - Countdown arc rendering and state.
-- Floating clock/Picture-in-Picture window creation and mount restoration.
 - Provider result application, imported state restoration and storage.
+- Clock context menu rendering and display-mode actions.
+- Floating clock/Picture-in-Picture window creation and mount restoration.
 - The document `pointerdown` listener because it coordinates settings, event visual editor, timer menu and clock context menu closing.
 
 The clock-shell controller has not become a new monolith. It is still a narrow shell adapter around the live clock instance and shell-level DOM wiring. T074 reduced only the rendered-event lookup and event-layer handoff by routing them through `appState`; tooltip, timer, context and floating-window callback pressure remains.
@@ -273,7 +272,7 @@ This file is still the temporary monolith. T074 did not move ownership out of it
 ## Known Coupling Points
 
 - `clock-shell-controller.ts` still receives `getRenderedEvent`, `eventVisualForEvent`, tooltip callbacks, click/context-menu callbacks, a floating-document mousemove callback and a visual-timer callback. `getRenderedEvent` now routes through `appState`, but the surrounding tooltip/timer/context behavior is still app-owned.
-- `settings-controller.ts` receives callbacks for display state writes, display rendering, event list refresh, clock visual sync, floating clock mode and overlay cleanup.
+- `settings-controller.ts` receives callbacks for display state writes, display rendering, floating clock mode and overlay cleanup.
 - `applyDisplayPreferences()` changes document-level CSS variables, updates floating window styles, refreshes countdown arcs and refreshes the active tooltip.
 - `applyEventLayers()` updates the clock shell, event list and marker visuals as one operation. It now reads event layers through `appState`.
 - Provider refreshes still cause the app boundary to update day-time layers, fixed day-time status, zmanit ticks, special layers and rendered clock state in one flow.

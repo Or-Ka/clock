@@ -647,13 +647,9 @@ function startClockApp(deps: ClockAppDeps): () => void {
   });
   const settingsController = createSettingsController({
     elements: settingsElements,
-    displayTemplates: DISPLAY_TEMPLATES,
     getDisplayPreferences: () => appState.getDisplayPreferences(),
     setDisplayPreferences: (next) => appState.setDisplayPreferences(next),
-    cloneDisplayPreferences,
-    isDisplayTemplateId,
     isDisplayMode,
-    isDisplayFontFamily,
     persistDisplayMode,
     onLocationChange(locationId) {
       appState.setLocation(getLocationById(locationId));
@@ -664,8 +660,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
       void refreshHebcalDetails(true);
     },
     applyDisplayPreferences,
-    syncEventList,
-    syncClockEventVisuals: () => clockShellController.syncEventVisuals(),
     syncFloatingClockMode,
     closeClockContextMenu,
     closeEventVisualEditor,
@@ -1132,14 +1126,6 @@ function startClockApp(deps: ClockAppDeps): () => void {
     root.style.setProperty("--display-clock-only-size", `${round((760 * preferences.clockScale) / 100)}px`);
     root.style.setProperty("--floating-clock-size", `${floatingClockPixelSize()}px`);
     root.style.setProperty("--clock-font-boost", String(clockFontBoost()));
-    root.style.setProperty("--display-background-color", preferences.backgroundColor);
-    root.style.setProperty("--display-panel-color", preferences.panelColor);
-    root.style.setProperty("--display-text-color", preferences.textColor);
-    root.style.setProperty("--display-muted-color", preferences.mutedColor);
-    root.style.setProperty("--display-accent-color", preferences.accentColor);
-    root.style.setProperty("--display-clock-face-color", preferences.clockFaceColor);
-    root.style.setProperty("--display-clock-stroke-color", preferences.clockStrokeColor);
-    root.style.setProperty("--display-clock-hand-color", preferences.clockHandColor);
     root.style.setProperty("--event-sunrise-color", preferences.eventStyles.sunrise.color);
     root.style.setProperty("--event-sunset-color", preferences.eventStyles.sunset.color);
     root.style.setProperty("--event-custom-color", preferences.eventStyles.custom.color);

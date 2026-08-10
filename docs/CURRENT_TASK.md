@@ -1,30 +1,32 @@
 # Current Task
 
-Updated: 2026-07-20
+Updated: 2026-08-11
 
 ## Active Task
 
-T082: Halftone Past Events
+T083: Simplify Display Settings
 
 ## Goal
 
-Make every event whose resolved status is `past` visibly recede while preserving full emphasis for the next and future events.
+Simplify the display settings panel according to the annotated product screenshot without changing the retained display behavior.
 
 ## Scope
 
-- Render the complete past-event SVG marker, including its custom icon, at reduced opacity.
-- Desaturate past-event markers without changing their configured event color.
-- Apply the same halftone hierarchy to past-event rows in the event list.
-- Continue using the existing resolved `past` status and automatic live-clock refresh.
-- Keep `next` and `future` events at full opacity and saturation.
+- Keep the clock theme, dial style and inner-ring controls unchanged.
+- Keep full, clock-only and floating display modes, including the clock context menu and Picture-in-Picture behavior.
+- Keep the font-scale and clock-scale controls unchanged.
+- Remove the display-template selector, font-family selector and five display-color inputs.
+- Do not add a replacement clock-color picker.
+- Let each retained clock theme own a readable application palette; `Light` must use dark text on white surfaces.
+- Remove only the obsolete DOM bindings, listeners and CSS that belonged to the removed controls.
 - Add focused regression coverage and browser verification.
 
 ## Out Of Scope
 
-- No event-time or status-resolution changes.
-- No storage or import/export schema changes.
-- No user-configurable halftone setting.
-- No layout redesign.
+- No changes to `packages/clock` public contracts.
+- No changes to event timing, resolution, alerts or provider behavior.
+- No changes to persisted display preferences or compatibility behavior outside the removed controls.
+- Keep JSON export schema version `1`.
 
 ## Gate
 
@@ -37,16 +39,15 @@ npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
-Browser verification must compare live `past`, `next` and `future` events on both the clock and event list, and confirm no console errors or warnings.
+Browser verification must confirm that only the controls marked for removal are absent, all retained controls still work, display modes remain available and the console has no errors or warnings.
 
 ## Result
 
-Completed on `codex/halftone-past-events` and opened as pull request #29. Merge remains pending explicit user approval.
+Completed on `codex/feature/simplify-display-settings`.
 
-- Past SVG marker groups render at `0.46` opacity with reduced saturation, so the event line and icon recede together.
-- Past event-list cells render at `0.52` opacity with the same reduced-saturation treatment.
-- `next` and `future` events remain at full visual strength.
-- Added focused renderer and application-style regression assertions.
-- Normalized source-test line endings so multiline assertions are stable on Windows.
-- Passed documentation, lint, typecheck, all `151` tests, the production build and the core-library build.
-- Browser verified the live clock and event list with multiple past events, one next event and future events; no console errors or warnings were recorded.
+- The template selector, font-family selector and five color inputs were removed.
+- Clock appearance, display mode, font scale and clock scale remain wired to their existing behavior.
+- No replacement color picker was introduced.
+- Theme-owned CSS colors are no longer overridden by legacy inline display colors, so `Light` renders dark text on white surfaces and `Dark` remains light on dark.
+- Documentation, lint, typecheck, all `151` tests across `21` files, the production build and the core-library build pass.
+- Browser verification confirmed that the retained appearance, mode and scale controls work; the removed controls are absent; floating, clock-only and full modes remain active; and the warning/error console is empty.

@@ -1,10 +1,24 @@
 # Tasks
 
-Updated: 2026-07-20
+Updated: 2026-08-11
 
 ## Active Task
 
-T082: Halftone Past Events
+T083: Simplify Display Settings
+
+## T083 Checklist
+
+- `[x]` Continue from the existing `codex/feature/simplify-display-settings` working tree without discarding changes.
+- `[x]` Keep clock theme, dial style, inner ring, display modes, font scale and clock scale.
+- `[x]` Keep context-menu, floating-clock and Picture-in-Picture behavior.
+- `[x]` Remove the display-template selector, font-family selector and five color inputs.
+- `[x]` Do not add a replacement color picker.
+- `[x]` Fix `Light` contrast by making theme-owned CSS colors override no longer necessary; remove legacy inline palette writes.
+- `[x]` Remove only the DOM bindings, listeners and CSS owned by the removed controls.
+- `[x]` Add focused settings-controller and application-contract coverage.
+- `[x]` Update current product, architecture, compatibility and handoff documentation.
+- `[x]` Run the final docs/lint/typecheck/tests/build gate.
+- `[x]` Browser verify retained controls, removed controls, display modes and console state.
 
 ## T082 Checklist
 

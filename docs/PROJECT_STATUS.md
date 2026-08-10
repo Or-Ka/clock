@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-07-20
+Updated: 2026-08-11
 
 ## Current State
 
@@ -13,11 +13,36 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T082: Halftone Past Events
+T083: Simplify Display Settings
 
 ## Current Branch
 
-`codex/halftone-past-events`
+`codex/feature/simplify-display-settings`
+
+## T083 Scope
+
+- Keep clock theme, dial style, inner-ring visibility, display mode, font scale and clock scale.
+- Remove the display-template selector, font-family selector and five display-color inputs.
+- Keep clock-only/floating modes, the clock context menu and Picture-in-Picture behavior.
+- Do not introduce a replacement clock-color picker or change persisted display-state compatibility.
+- Make the retained clock theme authoritative for readable application surface and foreground colors.
+
+## T083 Gate
+
+- The settings panel contains every green-marked control from the product screenshot and none of the red-marked controls.
+- Retained clock-appearance, display-mode and scale controls still apply their existing behavior.
+- Floating-clock, context-menu and Picture-in-Picture paths remain active.
+- No replacement color input exists.
+- `Light` renders dark text on white surfaces without a legacy inline color override; `Dark` remains light on dark.
+- Documentation, lint, typecheck, tests and both production builds pass.
+
+## T083 Result
+
+- The unwanted template, font-family and color controls and their UI wiring were removed.
+- Retained clock appearance, display modes, size controls and floating-clock behavior remain unchanged.
+- Documentation, lint, typecheck, all `151` tests across `21` files, the production build and the core-library build passed.
+- Browser verification passed for retained-control behavior, removed-control absence, floating/clock-only/full modes and an empty warning/error console.
+- Browser verification measured `Light` as white `rgb(255, 255, 255)` with dark `rgb(23, 23, 23)` text, then restored and verified `Dark`.
 
 ## T082 Scope
 

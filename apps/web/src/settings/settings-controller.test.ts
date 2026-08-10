@@ -9,44 +9,10 @@ import {
 } from "./settings-controller.js";
 import type { SettingsElements } from "./settings-elements.js";
 
-type TestPreferences = SettingsDisplayPreferences & {
-  readonly templateId: "classic" | "night";
-  readonly fontFamily: "system" | "serif";
-};
-
-const templates: Record<TestPreferences["templateId"], TestPreferences> = {
-  classic: {
-    templateId: "classic",
-    displayMode: "fullMode",
-    fontFamily: "system",
-    fontScale: 100,
-    clockScale: 100,
-    backgroundColor: "#ffffff",
-    panelColor: "#eeeeee",
-    textColor: "#111111",
-    mutedColor: "#666666",
-    accentColor: "#007c89",
-    clockFaceColor: "#f8fbfc",
-    clockStrokeColor: "#6a8793",
-    clockHandColor: "#172a35",
-    eventStyles: {}
-  },
-  night: {
-    templateId: "night",
-    displayMode: "fullMode",
-    fontFamily: "serif",
-    fontScale: 110,
-    clockScale: 90,
-    backgroundColor: "#000000",
-    panelColor: "#101010",
-    textColor: "#ffffff",
-    mutedColor: "#999999",
-    accentColor: "#8edbd0",
-    clockFaceColor: "#101b26",
-    clockStrokeColor: "#6f879b",
-    clockHandColor: "#eef5fb",
-    eventStyles: {}
-  }
+const initialPreferences: SettingsDisplayPreferences = {
+  displayMode: "fullMode",
+  fontScale: 100,
+  clockScale: 100
 };
 
 describe("createSettingsController", () => {
@@ -88,7 +54,7 @@ describe("createSettingsController", () => {
     expect(harness.elements.displayPreferencesPanel.hidden).toBe(false);
   });
 
-  it("applies location, template and appearance changes through callbacks", () => {
+  it("applies location and size changes through callbacks", () => {
     const harness = createHarness();
     harness.controller.start();
 
@@ -97,26 +63,14 @@ describe("createSettingsController", () => {
     expect(harness.onLocationChange).toHaveBeenCalledWith("tel-aviv");
     expect(harness.elements.timezoneSelect.value).toBe("Asia/Jerusalem");
 
-    harness.elements.displayTemplateSelect.value = "night";
-    harness.elements.displayTemplateSelect.dispatchEvent(new harness.window.Event("change"));
-    expect(harness.preferences.templateId).toBe("night");
-    expect(harness.preferences.displayMode).toBe("fullMode");
-    expect(harness.syncEventList).toHaveBeenCalledTimes(1);
-
-    harness.elements.displayFontFamilySelect.value = "system";
-    harness.elements.displayFontFamilySelect.dispatchEvent(new harness.window.Event("change"));
     harness.elements.displayFontScaleInput.value = "120";
     harness.elements.displayFontScaleInput.dispatchEvent(new harness.window.Event("input"));
     harness.elements.displayClockScaleInput.value = "115";
     harness.elements.displayClockScaleInput.dispatchEvent(new harness.window.Event("input"));
-    harness.elements.displayBackgroundColorInput.value = "#123456";
-    harness.elements.displayBackgroundColorInput.dispatchEvent(new harness.window.Event("input"));
 
-    expect(harness.preferences.fontFamily).toBe("system");
     expect(harness.preferences.fontScale).toBe(120);
     expect(harness.preferences.clockScale).toBe(115);
-    expect(harness.preferences.backgroundColor).toBe("#123456");
-    expect(harness.syncClockEventVisuals).toHaveBeenCalled();
+    expect(harness.applyDisplayPreferences).toHaveBeenCalledTimes(2);
   });
 
   it("cleans up listeners and guards repeated start calls", () => {
@@ -143,11 +97,9 @@ describe("createSettingsController", () => {
 function createHarness(): {
   readonly window: Window & typeof globalThis;
   readonly elements: SettingsElements;
-  preferences: TestPreferences;
-  readonly controller: ReturnType<typeof createSettingsController<TestPreferences>>;
+  preferences: SettingsDisplayPreferences;
+  readonly controller: ReturnType<typeof createSettingsController<SettingsDisplayPreferences>>;
   readonly applyDisplayPreferences: ReturnType<typeof vi.fn>;
-  readonly syncEventList: ReturnType<typeof vi.fn>;
-  readonly syncClockEventVisuals: ReturnType<typeof vi.fn>;
   readonly persistDisplayMode: ReturnType<typeof vi.fn>;
   readonly closeEventVisualEditor: ReturnType<typeof vi.fn>;
   readonly closeTimerActionMenu: ReturnType<typeof vi.fn>;
@@ -155,11 +107,9 @@ function createHarness(): {
 } {
   const dom = new JSDOM("<!doctype html><html><body></body></html>");
   const document = dom.window.document;
-  let preferences: TestPreferences = { ...templates.classic };
+  let preferences: SettingsDisplayPreferences = { ...initialPreferences };
   const elements = createElements(document);
   const applyDisplayPreferences = vi.fn();
-  const syncEventList = vi.fn();
-  const syncClockEventVisuals = vi.fn();
   const persistDisplayMode = vi.fn();
   const closeEventVisualEditor = vi.fn();
   const closeTimerActionMenu = vi.fn();
@@ -173,40 +123,26 @@ function createHarness(): {
     get preferences() {
       return preferences;
     },
-    set preferences(next: TestPreferences) {
+    set preferences(next: SettingsDisplayPreferences) {
       preferences = next;
     },
     applyDisplayPreferences,
-    syncEventList,
-    syncClockEventVisuals,
     persistDisplayMode,
     closeEventVisualEditor,
     closeTimerActionMenu,
     onLocationChange,
-    controller: createSettingsController<TestPreferences>({
+    controller: createSettingsController<SettingsDisplayPreferences>({
       elements,
-      displayTemplates: templates,
       getDisplayPreferences: () => preferences,
       setDisplayPreferences(next) {
         preferences = next;
       },
-      cloneDisplayPreferences(next) {
-        return { ...next };
-      },
-      isDisplayTemplateId(value): value is TestPreferences["templateId"] {
-        return value === "classic" || value === "night";
-      },
       isDisplayMode(value): value is SettingsDisplayMode {
         return value === "fullMode" || value === "clockOnly" || value === "floatingClock";
-      },
-      isDisplayFontFamily(value) {
-        return value === "system" || value === "serif";
       },
       persistDisplayMode,
       onLocationChange,
       applyDisplayPreferences,
-      syncEventList,
-      syncClockEventVisuals,
       syncFloatingClockMode: vi.fn(),
       closeClockContextMenu: vi.fn(),
       closeEventVisualEditor,
@@ -224,16 +160,9 @@ function createElements(document: Document): SettingsElements {
     locationSelect: appendSelect(document, ["jerusalem", "tel-aviv"]),
     displayPreferencesToggle: appendButton(document),
     displayPreferencesPanel: appendPanel(document),
-    displayTemplateSelect: appendSelect(document, ["classic", "night"]),
     displayModeSelect: appendSelect(document, ["fullMode", "clockOnly", "floatingClock"]),
-    displayFontFamilySelect: appendSelect(document, ["system", "serif"]),
     displayFontScaleInput: appendInput(document, "100"),
-    displayClockScaleInput: appendInput(document, "100"),
-    displayBackgroundColorInput: appendInput(document, "#ffffff"),
-    displayPanelColorInput: appendInput(document, "#eeeeee"),
-    displayTextColorInput: appendInput(document, "#111111"),
-    displayAccentColorInput: appendInput(document, "#007c89"),
-    displayClockFaceColorInput: appendInput(document, "#f8fbfc")
+    displayClockScaleInput: appendInput(document, "100")
   };
 }
 

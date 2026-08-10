@@ -1,6 +1,38 @@
 # Test Status
 
-Updated: 2026-07-20
+Updated: 2026-08-11
+
+## T083 Display-Control Simplification Checks
+
+Focused tests cover:
+
+- Clock theme, dial style, inner-ring, display-mode, font-scale and clock-scale controls remain in the application markup.
+- Display-template, font-family and all five display-color inputs are absent.
+- The settings controller still applies display modes and both scale controls and cleans up its listeners.
+- Clock-only, floating-clock, context-menu and Picture-in-Picture wiring remain active.
+- No replacement `clock-color` input exists.
+- Theme-owned surface/foreground variables are not written inline by the application, and `Light` declares a dark foreground on white surfaces.
+
+Focused verification passed with `20` tests across the settings-controller, clock-shell and application source suites. Typecheck also passed.
+
+Final T083 CLI gate passed:
+
+- `npm.cmd run docs:check`
+- `npm.cmd run lint`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`151` tests across `21` files)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+Browser verification passed against the production preview:
+
+- Clock theme, dial style, inner-ring visibility, font scale and clock scale changed the active DOM/CSS state and were restored to their original values.
+- `floatingClock` was active on load; `clockOnly` and `fullMode` were selected and verified through the retained UI paths.
+- Display-template, font-family, five display-color inputs and a replacement `clock-color` input were absent.
+- No console warnings or errors were recorded.
+- A follow-up production-preview check measured `Light` at `rgb(255, 255, 255)` background with `rgb(23, 23, 23)` text; `Dark` was restored at `rgb(11, 17, 23)` with `rgb(232, 238, 245)` text.
+
+The T082 and earlier sections below remain historical records; T083 preserves their display-mode, context-menu and floating-clock behavior.
 
 ## T082 Past-Event Halftone Checks
 

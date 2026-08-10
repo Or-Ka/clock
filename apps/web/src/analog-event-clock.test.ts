@@ -113,34 +113,43 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("layer.id === DAY_TIMES_LAYER_ID");
   });
 
-  it("adds tabbed display preferences and in-list event visual editing", () => {
+  it("keeps the marked display controls and removes the unwanted selectors and color inputs", () => {
     const html = readAppFile("index.html");
     const main = readAppFile("app/create-clock-app.ts");
     const clockShell = readAppFile("clock-shell/clock-shell-controller.ts");
+    const settings = readAppFile("settings/settings-controller.ts");
     const css = readAppFile("styles.css");
 
     expect(html).toContain("העדפות תצוגה");
     expect(html).toContain('id="display-preferences-toggle"');
     expect(html).toContain('id="display-preferences-panel"');
     expect(html).toContain("hidden");
-    expect(html).toContain('id="display-template"');
+    expect(html).toContain('id="clock-theme"');
+    expect(html).toContain('id="clock-dial-style"');
+    expect(html).toContain('id="clock-inner-ring"');
     expect(html).toContain('id="display-mode"');
     expect(html).toContain('value="fullMode"');
     expect(html).toContain('value="clockOnly"');
     expect(html).toContain('value="floatingClock"');
-    expect(html).toContain('id="display-font-family"');
     expect(html).toContain('id="display-font-scale"');
     expect(html).toContain('id="display-clock-scale"');
-    expect(html).toContain('id="display-background-color"');
+    for (const removedControl of [
+      "display-template",
+      "display-font-family",
+      "display-background-color",
+      "display-panel-color",
+      "display-text-color",
+      "display-accent-color",
+      "display-clock-face-color",
+      "clock-color"
+    ]) {
+      expect(html).not.toContain(`id="${removedControl}"`);
+    }
     expect(html).not.toContain("data-event-symbol-control");
     expect(html).not.toContain("data-event-color-control");
-
-    for (const templateId of ["classic", "night", "paper", "focus", "festival"]) {
-      expect(main).toContain(`${templateId}: {`);
-      expect(html).toContain(`value="${templateId}"`);
-    }
-
-    expect(main).toContain("DISPLAY_TEMPLATES");
+    expect(settings).not.toContain("displayTemplateSelect");
+    expect(settings).not.toContain("displayFontFamilySelect");
+    expect(settings).not.toContain("displayBackgroundColorInput");
     expect(main).toContain("DisplayMode");
     expect(main).toContain("DISPLAY_MODE_STORAGE_KEY");
     expect(main).toContain("loadDisplayPreferences");
@@ -199,6 +208,23 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(css).toContain("tbody tr:nth-child(even)");
     expect(css).toContain("flex-wrap: nowrap");
     expect(css).toContain("--event-sunrise-color");
+    expect(css).not.toContain(".display-color-grid");
+    expect(css).not.toContain(".guide-swatches");
+    expect(css).toMatch(
+      /:root\[data-clock-theme="light"\][\s\S]*?--display-background-color: #ffffff;[\s\S]*?--display-text-color: #171717;/
+    );
+    for (const themeOwnedColor of [
+      "--display-background-color",
+      "--display-panel-color",
+      "--display-text-color",
+      "--display-muted-color",
+      "--display-accent-color",
+      "--display-clock-face-color",
+      "--display-clock-stroke-color",
+      "--display-clock-hand-color"
+    ]) {
+      expect(main).not.toContain(`root.style.setProperty("${themeOwnedColor}"`);
+    }
     expect(css).toContain(':root[data-display-mode="clockOnly"] .event-panel');
     expect(css).toContain(':root[data-display-mode="clockOnly"] .clock-toolbar');
     expect(css).toContain(':root[data-display-mode="floatingClock"] .clock-mount');
