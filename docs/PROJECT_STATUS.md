@@ -34,12 +34,19 @@ T084: Public Release Readiness
 - `main` is protected and GitHub security features are enabled.
 - The live site loads external time data without console errors and returns the configured security headers.
 
-## T084 Local Result
+## T084 Result
 
 - The full npm audit reports zero vulnerabilities.
 - Documentation, lint, formatting, typecheck, all `158` tests across `23` files and both builds pass.
 - The production animation payload was reduced from approximately `1.97 MB` to `83.15 kB`.
-- GitHub checks, repository-setting hardening and live post-deploy verification remain pending until the branch is pushed.
+- Pull request `#31` passed CI, CodeQL and Vercel checks and was merged to `main` as `68bc12e`.
+- Dependabot security updates, secret scanning, push protection and private vulnerability reporting are enabled.
+- `main` is protected with required pull requests, strict `verify`, admin enforcement, conversation resolution and
+  force-push/deletion prevention.
+- Vercel Production serves the expected CSP and defensive headers. Browser verification confirmed Hebrew/RTL,
+  one clock SVG, nine event markers, loaded Tel Aviv day-time data and no console warnings or errors.
+- The public repository now exposes an MIT license, description, topics, Discussions and clear contribution,
+  security and privacy guidance.
 
 ## T083 Scope
 

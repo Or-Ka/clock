@@ -23,8 +23,16 @@ The complete local gate passed:
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-The web build contains an `83.15 kB` animated WebP instead of the previous `1.97 MB` GIF. GitHub CI,
-CodeQL, repository settings and the deployed-site browser/header gate remain pending until the branch is pushed.
+The web build contains an `83.15 kB` animated WebP instead of the previous `1.97 MB` GIF.
+
+Post-push verification passed:
+
+- Pull request `#31`: CI, CodeQL and Vercel checks passed.
+- Merge commit `68bc12e`: CI and CodeQL passed on `main`.
+- GitHub security settings and protected-branch rules were read back successfully after enabling them.
+- Production returns CSP, Permissions-Policy, Referrer-Policy, `nosniff`, framing denial and HSTS headers.
+- Production browser verification found one clock SVG, nine event markers, loaded Tel Aviv day-time data, the
+  optimized WebP and no console warnings or errors.
 
 ## T083 Display-Control Simplification Checks
 

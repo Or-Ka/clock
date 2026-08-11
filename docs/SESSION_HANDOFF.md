@@ -20,8 +20,16 @@ T084 prepares the already-public repository and deployed Beta for sharing with d
 - npm publication remains explicitly out of scope.
 
 The complete local gate passed with zero npm vulnerabilities, `23` required docs, clean lint/format/typecheck,
-all `158` tests across `23` files and both builds. PR/merge, repository-setting hardening and live post-deploy
-verification remain before completion.
+all `158` tests across `23` files and both builds.
+
+Pull request `#31` passed CI, CodeQL and Vercel and was merged to `main` as `68bc12e`. The merge commit's CI and
+CodeQL runs also passed. GitHub security features and private vulnerability reporting are enabled, and protected
+`main` now requires an up-to-date `verify` check and pull request even for administrators while blocking force pushes
+and deletion.
+
+Production verification confirmed the CSP and defensive headers, the optimized WebP, one rendered clock SVG, nine
+event markers, loaded Tel Aviv data, Hebrew/RTL metadata and an empty warning/error console. Repository metadata,
+topics and Discussions are ready for developer-community sharing. T084 is complete; npm publication remains deferred.
 
 ## T083 Progress
 

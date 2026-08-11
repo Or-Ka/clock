@@ -44,3 +44,17 @@ npm.cmd run build --workspace @clock/clock
 
 The final gate also requires successful GitHub CI and CodeQL checks, protected `main`, enabled repository security
 features, and browser verification of the deployed site with the expected security headers.
+
+## Result
+
+Completed and merged through pull request `#31`.
+
+- The full local gate and the post-merge CI and CodeQL runs passed.
+- Vercel Production serves the configured security headers and optimized WebP asset.
+- Browser verification confirmed Hebrew/RTL rendering, one clock SVG, loaded Tel Aviv day-time data, nine event
+  markers and an empty warning/error console.
+- Dependabot security updates, secret scanning, push protection and private vulnerability reporting are enabled.
+- `main` requires an up-to-date `verify` check and pull-request flow, including for administrators; force pushes and
+  branch deletion are disabled.
+- The repository has an MIT license, description, topics, Discussions and contribution/security/privacy guidance.
+- npm publication remains deferred to a separate task.
