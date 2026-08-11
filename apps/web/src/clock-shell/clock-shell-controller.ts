@@ -48,9 +48,7 @@ export type ClockShellController = {
   destroy(): void;
 };
 
-export function createClockShellController<TEvent>(
-  deps: ClockShellControllerDeps<TEvent>
-): ClockShellController {
+export function createClockShellController<TEvent>(deps: ClockShellControllerDeps<TEvent>): ClockShellController {
   const mount = deps.elements.mount;
   const cleanup: Array<() => void> = [];
   let started = false;

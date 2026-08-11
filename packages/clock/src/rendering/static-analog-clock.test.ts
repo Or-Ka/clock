@@ -69,7 +69,9 @@ describe("createStaticAnalogClock", () => {
     const outerSix = getRingLabel(container, "outer", "06");
     const innerZero = getRingLabel(container, "inner", "00");
     const innerEighteen = getRingLabel(container, "inner", "18");
-    const romanTwelve = container.querySelector<SVGTextElement>('[data-clock-dial-label="roman"][data-clock-hour="12"]');
+    const romanTwelve = container.querySelector<SVGTextElement>(
+      '[data-clock-dial-label="roman"][data-clock-hour="12"]'
+    );
 
     expect(Number(outerTwelve.getAttribute("y"))).toBeLessThan(100);
     expect(Number(outerSix.getAttribute("y"))).toBeGreaterThan(100);
@@ -110,7 +112,9 @@ describe("createStaticAnalogClock", () => {
     expect(Number(nineTick.getAttribute("x2"))).toBeLessThan(Number(nineTick.getAttribute("x1")));
     expect(twelveTick.getAttribute("stroke-linecap")).toBe("butt");
     expect(Number(twelveTick.getAttribute("stroke-width"))).toBeLessThan(2);
-    expect(distanceFromCenter(twelveTick, "x2", "y2")).toBeGreaterThan(distanceFromCenter(eventMarker, "data-event-angle"));
+    expect(distanceFromCenter(twelveTick, "x2", "y2")).toBeGreaterThan(
+      distanceFromCenter(eventMarker, "data-event-angle")
+    );
   });
 
   it("renders thin hands and a second hand", () => {
@@ -169,7 +173,9 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(2);
     expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-time")).toBe("06:45:25");
     expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("data-zmanit-title")).toBe("שעה זמנית 1");
-    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("aria-label")).toBe("שעה זמנית 1, 06:45:25");
+    expect(container.querySelector('[data-zmanit-index="1"]')?.getAttribute("aria-label")).toBe(
+      "שעה זמנית 1, 06:45:25"
+    );
     expect(container.querySelector('[data-zmanit-index="1"] title')).toBeNull();
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke")).toBe("#ff1f1f");
     expect(container.querySelector('[data-zmanit-index="1"] line')?.getAttribute("stroke-width")).toBe("0.85");
@@ -177,7 +183,9 @@ describe("createStaticAnalogClock", () => {
     clock.setZmanitTicks([{ index: 12, hour: 18, minute: 22, second: 10 }]);
 
     expect(container.querySelectorAll('[data-clock-part="zmanit-tick"]')).toHaveLength(1);
-    expect(container.querySelector('[data-zmanit-index="12"]')?.getAttribute("aria-label")).toBe("שעה זמנית 12, 18:22:10");
+    expect(container.querySelector('[data-zmanit-index="12"]')?.getAttribute("aria-label")).toBe(
+      "שעה זמנית 12, 18:22:10"
+    );
   });
 
   it("moves night-range zmanit ticks inward without changing their clock angle", () => {
@@ -221,15 +229,29 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.textContent).toBe("י״ז בתמוז תשפ״ו");
     expect(container.querySelector('[data-clock-part="observances-label"]')?.textContent).toBe("צום תמוזג׳ בעומר");
     expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.textContent).toBe("2 ביולי 2026");
-    expect(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
-    expect(container.querySelector('[data-clock-part="torah-reading-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
-    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
-    expect(container.querySelector('[data-clock-part="observances-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
-    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-family")).toContain("Segoe UI");
+    expect(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("font-family")).toContain(
+      "Segoe UI"
+    );
+    expect(container.querySelector('[data-clock-part="torah-reading-label"]')?.getAttribute("font-family")).toContain(
+      "Segoe UI"
+    );
+    expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-family")).toContain(
+      "Segoe UI"
+    );
+    expect(container.querySelector('[data-clock-part="observances-label"]')?.getAttribute("font-family")).toContain(
+      "Segoe UI"
+    );
+    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-family")).toContain(
+      "Segoe UI"
+    );
     expect(container.querySelector('[data-clock-part="hebrew-date-label"]')?.getAttribute("font-weight")).toBe("700");
-    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-weight")).toBe("700");
+    expect(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("font-weight")).toBe(
+      "700"
+    );
     expect(Number(container.querySelector('[data-clock-part="weekday-label"]')?.getAttribute("y"))).toBeLessThan(100);
-    expect(Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))).toBeGreaterThan(100);
+    expect(
+      Number(container.querySelector('[data-clock-part="gregorian-date-label"]')?.getAttribute("y"))
+    ).toBeGreaterThan(100);
   });
 
   it("keeps the night weekday line clear of the Torah reading", () => {
@@ -308,10 +330,14 @@ describe("createStaticAnalogClock", () => {
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-angle")).toBe("20");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-display-angle")).toBe("200");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-id")).toBe("day-times");
-    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-kind")).toBe("day-times");
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-kind")).toBe(
+      "day-times"
+    );
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-title")).toBe("sunrise");
     expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-time")).toBe("06:00");
-    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-title")).toBe("זמני היום");
+    expect(container.querySelector('[data-event-id="sunrise"]')?.getAttribute("data-event-layer-title")).toBe(
+      "זמני היום"
+    );
     expect(container.querySelector('[data-event-id="sunrise"] title')).toBeNull();
     expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke")).toBe("#ffd400");
     expect(container.querySelector('[data-event-id="sunrise"] line')?.getAttribute("stroke-width")).toBe("1.55");
@@ -539,11 +565,7 @@ function getTick(container: HTMLElement, minute: number): SVGLineElement {
   return tick;
 }
 
-function distanceFromCenter(
-  element: Element | null,
-  xAttribute: "x2" | "data-event-angle",
-  yAttribute?: "y2"
-): number {
+function distanceFromCenter(element: Element | null, xAttribute: "x2" | "data-event-angle", yAttribute?: "y2"): number {
   if (!element) {
     throw new Error("Missing element.");
   }

@@ -262,7 +262,7 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(html).toContain("dev-stamp no-print");
     expect(html).toContain("dev by Orka");
     expect(html).toContain("https://github.com/Or-Ka");
-    expect(html).toContain('src="./src/dev.gif"');
+    expect(html).toContain('src="./src/dev.webp"');
     expect(css).toContain(".dev-stamp");
     expect(css).toContain("position: fixed");
     expect(css).toContain("z-index: 1300");
@@ -362,7 +362,9 @@ describe("Analog Event Clock Hebrew UI", () => {
     expect(main).toContain("weekdays: [5]");
     expect(main).toContain("weekdays: [6]");
     expect(main).toContain("resolveAutomaticShabbatEvents");
-    expect(main).toContain("const specialEvents = [...resolveDerivedEvents(), ...resolveAutomaticShabbatEvents(dayEvents)]");
+    expect(main).toContain(
+      "const specialEvents = [...resolveDerivedEvents(), ...resolveAutomaticShabbatEvents(dayEvents)]"
+    );
     expect(main).not.toContain("INCLUDE_AUTOMATIC_SHABBAT_EVENTS");
   });
 

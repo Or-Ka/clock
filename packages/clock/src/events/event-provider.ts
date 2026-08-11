@@ -24,7 +24,10 @@ export interface ApiEventLayerPayload {
   readonly events: readonly ApiInstantEventPayload[];
 }
 
-export type FetchLike = (input: string, init?: { readonly signal?: AbortSignal }) => Promise<{
+export type FetchLike = (
+  input: string,
+  init?: { readonly signal?: AbortSignal }
+) => Promise<{
   readonly ok: boolean;
   readonly status: number;
   json(): Promise<unknown>;

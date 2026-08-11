@@ -1,5 +1,9 @@
 export type { ClockContext } from "./core/clock-context.js";
-export { type ClockScheduler, MinuteBoundaryClockScheduler, millisecondsUntilNextMinute } from "./time/clock-scheduler.js";
+export {
+  type ClockScheduler,
+  MinuteBoundaryClockScheduler,
+  millisecondsUntilNextMinute
+} from "./time/clock-scheduler.js";
 export {
   FixedTimeSource,
   SimulatedTimeSource,

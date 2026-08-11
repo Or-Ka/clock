@@ -26,7 +26,7 @@ apps/web/
     main.ts
     styles.css
     analog-event-clock.test.ts
-    dev.gif
+    dev.webp
 
 archive/
   legacy-app-screens/

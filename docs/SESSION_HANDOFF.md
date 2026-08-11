@@ -4,7 +4,24 @@ Updated: 2026-08-11
 
 ## Current Branch
 
-`codex/feature/simplify-display-settings`
+`codex/chore/public-release-readiness`
+
+## T084 Progress
+
+T084 prepares the already-public repository and deployed Beta for sharing with developer communities:
+
+- The dependency lockfile was refreshed and the full npm audit is clean.
+- CI now uses least-privilege permissions, pinned official Actions and dependency/format gates.
+- CodeQL and Dependabot configuration were added.
+- Vercel security headers now include a CSP tailored to the two external data providers.
+- JSON imports are bounded by file size, shape complexity and semantic value validation before state mutation.
+- MIT licensing, security reporting, privacy disclosure, contribution guidance and community templates were added.
+- The animated developer stamp was converted from a 1.97MB GIF to an 83KB WebP at its rendered dimensions.
+- npm publication remains explicitly out of scope.
+
+The complete local gate passed with zero npm vulnerabilities, `23` required docs, clean lint/format/typecheck,
+all `158` tests across `23` files and both builds. PR/merge, repository-setting hardening and live post-deploy
+verification remain before completion.
 
 ## T083 Progress
 
@@ -220,7 +237,7 @@ Browser gate was completed manually outside Codex in a regular browser:
 - Opening display preferences works.
 - No console errors were observed.
 
-Codex browser tooling was blocked by environment constraints only, not by an application failure. Vite failed from Codex with `EPERM` on `D:\Oriya\Projects`, the in-app browser blocked localhost with `ERR_BLOCKED_BY_CLIENT`, and `file://` is blocked by browser-tool policy.
+Codex browser tooling was blocked by environment constraints only, not by an application failure. Vite failed from the sandboxed workspace with `EPERM`, the in-app browser blocked localhost with `ERR_BLOCKED_BY_CLIENT`, and `file://` is blocked by browser-tool policy.
 
 ## T071 Progress
 

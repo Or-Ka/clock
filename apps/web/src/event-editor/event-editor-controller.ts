@@ -116,10 +116,7 @@ export function createEventEditorController(options: EventEditorControllerOption
           hour,
           minute
         };
-        options.onRegularEventSubmit(
-          nextEvent,
-          options.readAlertFormSettings(options.elements.eventAlertControls)
-        );
+        options.onRegularEventSubmit(nextEvent, options.readAlertFormSettings(options.elements.eventAlertControls));
       };
 
       options.elements.eventForm.addEventListener("submit", handleEventSubmit);

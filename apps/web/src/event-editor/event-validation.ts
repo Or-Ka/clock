@@ -1,10 +1,7 @@
 export type EventTimeValidationResult =
-  | { readonly valid: true }
-  | { readonly valid: false; readonly field: "hour" | "minute"; readonly message: string };
+  { readonly valid: true } | { readonly valid: false; readonly field: "hour" | "minute"; readonly message: string };
 
-export type OffsetValidationResult =
-  | { readonly valid: true }
-  | { readonly valid: false; readonly message: string };
+export type OffsetValidationResult = { readonly valid: true } | { readonly valid: false; readonly message: string };
 
 export function validateEventTime(hour: number, minute: number): EventTimeValidationResult {
   if (!Number.isInteger(hour) || hour < 0 || hour > 23) {

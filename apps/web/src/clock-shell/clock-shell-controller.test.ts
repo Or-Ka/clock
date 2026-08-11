@@ -102,7 +102,7 @@ function createHarness(): {
   readonly onClockTargetClick: ReturnType<typeof vi.fn>;
   readonly onVisualTimerTick: ReturnType<typeof vi.fn>;
 } {
-  const dom = new JSDOM("<!doctype html><html><body><div id=\"clock\"></div></body></html>");
+  const dom = new JSDOM('<!doctype html><html><body><div id="clock"></div></body></html>');
   const window = dom.window as unknown as Window & typeof globalThis;
   const document = window.document;
   vi.stubGlobal("document", document);

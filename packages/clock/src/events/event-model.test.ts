@@ -85,10 +85,11 @@ describe("resolveInstantEvents", () => {
   });
 
   it("preserves second precision for API-backed instant events", () => {
-    const resolved = resolveInstantEvents(
-      [{ ...event("sunrise", "sunrise", 5, 42), second: 25 }],
-      { hour: 5, minute: 0, second: 0 }
-    );
+    const resolved = resolveInstantEvents([{ ...event("sunrise", "sunrise", 5, 42), second: 25 }], {
+      hour: 5,
+      minute: 0,
+      second: 0
+    });
 
     expect(resolved[0]).toMatchObject({
       id: "sunrise",
@@ -136,10 +137,10 @@ describe("resolveEventLayers", () => {
 
   it("rejects duplicate layer ids and duplicate event ids across layers", () => {
     expect(() =>
-      resolveEventLayers(
-        [layer("same", "day-times", true, []), layer("same", "personal", true, [])],
-        { hour: 8, minute: 0 }
-      )
+      resolveEventLayers([layer("same", "day-times", true, []), layer("same", "personal", true, [])], {
+        hour: 8,
+        minute: 0
+      })
     ).toThrow("Duplicate event layer id");
 
     expect(() =>
@@ -154,12 +155,7 @@ describe("resolveEventLayers", () => {
   });
 });
 
-function event(
-  id: string,
-  kind: InstantEventDefinition["kind"],
-  hour: number,
-  minute: number
-): InstantEventDefinition {
+function event(id: string, kind: InstantEventDefinition["kind"], hour: number, minute: number): InstantEventDefinition {
   return {
     id,
     type: "instant",

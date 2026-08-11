@@ -119,9 +119,7 @@ function resolveEvent(
     ring: ringForTime(event.hour, event.minute, event.second ?? 0),
     angle: dualRingAngle(event.hour, event.minute, event.second ?? 0),
     status,
-    ...(layer === undefined
-      ? {}
-      : { layerId: layer.id, layerTitle: layer.title, layerKind: layer.kind ?? "custom" }),
+    ...(layer === undefined ? {} : { layerId: layer.id, layerTitle: layer.title, layerKind: layer.kind ?? "custom" }),
     ...(event.description === undefined ? {} : { description: event.description })
   };
 }

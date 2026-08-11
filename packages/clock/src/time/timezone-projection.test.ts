@@ -8,9 +8,21 @@ describe("projectInstantToStaticClockTime", () => {
     const instant = Temporal.Instant.from("2026-06-30T12:34:00Z");
 
     expect(projectInstantToStaticClockTime(instant, "UTC")).toMatchObject({ hour: 12, minute: 34, second: 0 });
-    expect(projectInstantToStaticClockTime(instant, "Asia/Jerusalem")).toMatchObject({ hour: 15, minute: 34, second: 0 });
-    expect(projectInstantToStaticClockTime(instant, "America/New_York")).toMatchObject({ hour: 8, minute: 34, second: 0 });
-    expect(projectInstantToStaticClockTime(instant, "Europe/London")).toMatchObject({ hour: 13, minute: 34, second: 0 });
+    expect(projectInstantToStaticClockTime(instant, "Asia/Jerusalem")).toMatchObject({
+      hour: 15,
+      minute: 34,
+      second: 0
+    });
+    expect(projectInstantToStaticClockTime(instant, "America/New_York")).toMatchObject({
+      hour: 8,
+      minute: 34,
+      second: 0
+    });
+    expect(projectInstantToStaticClockTime(instant, "Europe/London")).toMatchObject({
+      hour: 13,
+      minute: 34,
+      second: 0
+    });
   });
 
   it("adds Hebrew and Gregorian date display text for the selected time zone", () => {
@@ -103,7 +115,15 @@ describe("projectInstantToStaticClockTime", () => {
   it("handles crossing midnight and another calendar day", () => {
     const instant = Temporal.Instant.from("2026-07-01T02:15:00Z");
 
-    expect(projectInstantToStaticClockTime(instant, "America/New_York")).toMatchObject({ hour: 22, minute: 15, second: 0 });
-    expect(projectInstantToStaticClockTime(instant, "Asia/Jerusalem")).toMatchObject({ hour: 5, minute: 15, second: 0 });
+    expect(projectInstantToStaticClockTime(instant, "America/New_York")).toMatchObject({
+      hour: 22,
+      minute: 15,
+      second: 0
+    });
+    expect(projectInstantToStaticClockTime(instant, "Asia/Jerusalem")).toMatchObject({
+      hour: 5,
+      minute: 15,
+      second: 0
+    });
   });
 });

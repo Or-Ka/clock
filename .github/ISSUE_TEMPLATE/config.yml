@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: דיווח אבטחה פרטי
+    url: https://github.com/Or-Ka/clock/security/advisories/new
+    about: אין לפרסם חולשה שטרם תוקנה ב־Issue ציבורי.

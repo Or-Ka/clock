@@ -4,7 +4,22 @@ Updated: 2026-08-11
 
 ## Active Task
 
-T083: Simplify Display Settings
+T084: Public Release Readiness
+
+## T084 Checklist
+
+- `[x]` Audit the public repository, Git history, live deployment, dependencies and GitHub security posture.
+- `[x]` Create a release-readiness branch from the current remote `main`.
+- `[x]` Refresh the lockfile until the full dependency audit is clean.
+- `[x]` Add least-privilege CI, pinned actions, dependency and formatting gates, CodeQL and Dependabot.
+- `[x]` Add production CSP and defensive HTTP headers for Vercel.
+- `[x]` Bound and validate imported JSON before mutating application state.
+- `[x]` Add MIT licensing, security, privacy, contribution and issue/PR guidance.
+- `[x]` Optimize the developer-stamp animation for its rendered dimensions.
+- `[x]` Run the final local gate.
+- `[ ]` Open and merge the Pull Request into `main`.
+- `[ ]` Enable GitHub security features and branch protection.
+- `[ ]` Verify GitHub checks and the live deployment.
 
 ## T083 Checklist
 

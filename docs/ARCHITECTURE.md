@@ -60,6 +60,7 @@ apps/web/
       hebcal-service.ts
       browser-state-storage.ts
       import-export-controller.ts
+      import-validation.ts
       locations.ts
       provider-controller.ts
     event-editor/
@@ -70,7 +71,7 @@ apps/web/
     main.ts
     styles.css
     analog-event-clock.test.ts
-    dev.gif
+    dev.webp
 ```
 
 `main.ts` imports styles, creates `createClockApp({ document, window })`, starts it and disposes it during HMR. `create-clock-app.ts` owns the current app state, startup orchestration and runtime cleanup.
@@ -82,6 +83,8 @@ The settings controller owns location, panel-toggle, display-mode and scale list
 `data/provider-controller.ts` owns provider refresh mechanics for sunrise/sunset and Hebcal details: cache keys, abort controllers, provider construction, `loadLayer()` calls, Hebcal date/window calculation and parsed date-display details. `create-clock-app.ts` still applies provider results to app state and UI.
 
 `data/import-export-controller.ts` owns import/export button listeners, JSON download creation, file reading, JSON parsing, status messages, input reset and listener cleanup. `create-clock-app.ts` still assembles schema-version-1 export state and applies imported state because restoration coordinates most state slices and UI surfaces.
+
+`data/import-validation.ts` owns defensive limits and reusable primitive validation for imported JSON. File size is rejected by the import/export boundary before reading; payload depth, collection size, identifiers, text, numeric ranges and colors are validated before `create-clock-app.ts` mutates application state.
 
 `data/browser-state-storage.ts` is the narrow browser-storage boundary for safe JSON load/save. `create-clock-app.ts` owns snapshot assembly, validation, transactional restore and persistence triggers because those operations coordinate location, zmanit sets, events, display preferences, visuals, alerts, layer visibility and clock appearance. The automatic localStorage snapshot reuses the version-1 import/export shape and adds optional-compatible fields without breaking older JSON files.
 
@@ -100,3 +103,5 @@ The application boundary also derives automatic Shabbat events from the loaded s
 - The settings UI intentionally exposes clock appearance, display mode and scale controls without template, font-family or direct color controls.
 - Clock-theme CSS tokens are the source of truth for application surface and foreground colors; persisted legacy display colors must not override them inline.
 - Floating-clock and Picture-in-Picture behavior remain part of the application shell.
+- Production HTTP headers are owned by `vercel.json`; the CSP permits only same-origin assets and the two documented calendar/time API origins.
+- Public collaboration guidance lives at the repository root and under `.github`; npm publication is a separate future decision.

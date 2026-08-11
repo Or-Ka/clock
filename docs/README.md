@@ -1,6 +1,6 @@
 # Documentation
 
-עודכן: 2026-07-05
+עודכן: 2026-08-11
 
 ## Source Of Truth
 
@@ -19,6 +19,7 @@ The web application is the primary product consumer of the library. Historical p
 - [Event Model](EVENT_MODEL.md)
 - [Rendering Strategy](RENDERING_STRATEGY.md)
 - [Accessibility](ACCESSIBILITY.md)
+- [Privacy](PRIVACY.md)
 - [Migration](APP_MIGRATION.md)
 - [Project Status](PROJECT_STATUS.md)
 - [Current Task](CURRENT_TASK.md)
@@ -44,6 +45,8 @@ No environment variables are currently required for deployment.
 
 ```powershell
 npm.cmd run docs:check
+npm.cmd run lint
+npm.cmd run format:check
 npm.cmd run typecheck
 npm.cmd test
 npm.cmd run build
