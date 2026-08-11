@@ -12,6 +12,6 @@
     "@clock/clock": "0.0.0"
   },
   "devDependencies": {
-    "vite": "^7.3.6"
+    "vite": "^8.2.1"
   }
 }
