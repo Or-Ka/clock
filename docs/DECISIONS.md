@@ -1,5 +1,20 @@
 # Decisions
 
+## ADR: Public Repository Collaboration Baseline
+
+Status: accepted on 2026-08-11.
+
+Decision: the repository is published under the MIT license and uses least-privilege CI, pinned GitHub Actions,
+CodeQL, Dependabot, private vulnerability reporting, protected `main`, documented privacy behavior and bounded JSON imports.
+
+Rationale: the project is being shared with developer communities for collaboration. A public repository needs an
+explicit reuse license, a predictable contribution path, automated security feedback and a deployment boundary that
+does not rely only on application code being free of known XSS sinks.
+
+Consequences: all pull requests must pass the release gate. The production CSP keeps same-origin scripts while
+allowing requests only to the documented Sunrise-Sunset and Hebcal providers. npm publication remains independent
+and is not authorized by this decision.
+
 ## ADR: Official Web Application Path
 
 Status: accepted on 2026-07-05.

@@ -1,0 +1,25 @@
+name: הצעת שיפור
+description: הצעה ממוקדת ליכולת, UX או שיתוף פעולה
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: הבעיה או הצורך
+      description: איזו בעיה ההצעה פותרת ולמי?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: הפתרון המוצע
+      description: תארו התנהגות רצויה, לא רק מימוש טכני.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: חלופות שנשקלו
+      description: אם יש, ציינו חלופות או מגבלות חשובות.

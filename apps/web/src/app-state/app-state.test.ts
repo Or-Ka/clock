@@ -146,12 +146,11 @@ function createTestState() {
   let location: TestLocation = { id: "jerusalem", timeZone: "Asia/Jerusalem" };
   let timeZone = "Asia/Jerusalem";
   let displayPreferences: TestPreferences = { mode: "full", nested: { value: "night" } };
-  let eventLayers: TestLayer[] = [
-    layer("personal", [{ id: "standup", title: "Standup" }]),
-    layer("special", [])
-  ];
+  let eventLayers: TestLayer[] = [layer("personal", [{ id: "standup", title: "Standup" }]), layer("special", [])];
   let derivedEvents: TestEvent[] = [{ id: "derived-sunrise", title: "Derived sunrise" }];
-  let renderedEventsById = new Map<string, TestRenderedEvent>([["rendered-1", { id: "rendered-1", title: "Rendered" }]]);
+  let renderedEventsById = new Map<string, TestRenderedEvent>([
+    ["rendered-1", { id: "rendered-1", title: "Rendered" }]
+  ]);
 
   const state = {
     get location() {

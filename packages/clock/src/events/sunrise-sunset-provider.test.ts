@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { SunriseSunsetEventLayerProvider, type SunriseSunsetEventLayerProviderOptions } from "./sunrise-sunset-provider.js";
+import {
+  SunriseSunsetEventLayerProvider,
+  type SunriseSunsetEventLayerProviderOptions
+} from "./sunrise-sunset-provider.js";
 
 describe("SunriseSunsetEventLayerProvider", () => {
   it("requests sunrise and sunset for the selected location, date and time zone", async () => {

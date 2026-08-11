@@ -79,7 +79,9 @@ function appendIconPaths(parent: SVGElement, icon: EventIconId): void {
   }
 }
 
-function iconParts(icon: EventIconId): readonly (
+function iconParts(
+  icon: EventIconId
+): readonly (
   | { readonly tag: "path"; readonly d: string; readonly fill?: string }
   | { readonly tag: "circle"; readonly cx: string; readonly cy: string; readonly r: string; readonly fill?: string }
 )[] {

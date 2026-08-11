@@ -1,52 +1,88 @@
-# Clock
+# Analog Event Clock
 
-TypeScript workspace for an embeddable analog event clock library and the official Analog Event Clock web application.
+[![CI](https://github.com/Or-Ka/clock/actions/workflows/ci.yml/badge.svg)](https://github.com/Or-Ka/clock/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Or-Ka/clock/actions/workflows/codeql.yml/badge.svg)](https://github.com/Or-Ka/clock/actions/workflows/codeql.yml)
 
-## What Is Included
+שעון אירועים אנלוגי, Hebrew-first ו־RTL, שמציג את כל 24 שעות היממה בשתי טבעות: יום ולילה. לצד השעה
+הנוכחית הוא מציג זמני זריחה ושקיעה, שעות זמניות, אירועים אישיים, זמני שבת, טיימרים והתראות.
 
-- `packages/clock`: reusable core library for time projection, event resolution, and SVG analog clock rendering.
-- `apps/web`: official Beta web application, package `@clock/web`, version `0.1.0-beta.1`.
-- `archive/legacy-app-screens`: historical prototype screens kept outside the active app build.
-- `docs`: product, architecture, testing, migration, and session handoff documentation.
+**[פתיחת הדמו החי](https://heb-clock.vercel.app)**
 
-## Local Development
+הפרויקט נמצא ב־Beta ומחפש שיתופי פעולה בתחומי נגישות, מודל זמן, UX, SVG וארכיטקטורת frontend.
 
-Install dependencies:
+## מה יש במאגר
 
-```powershell
-npm.cmd install
+- `packages/clock` — ספריית TypeScript עצמאית מ־framework עבור זמן, resolver ורינדור SVG.
+- `apps/web` — אפליקציית Vite הרשמית שצורכת את הספרייה.
+- `docs` — מפרט המוצר, ארכיטקטורה, החלטות, בדיקות ומצב העבודה.
+- `archive/legacy-app-screens` — מסכי אב־טיפוס היסטוריים שאינם נכנסים ל־build.
+
+זרימת הנתונים נשמרת בכיוון אחד:
+
+```text
+TimeSource → timezone projection → event resolver → resolved items → SVG renderer
 ```
 
-Run the official web application:
+## יכולות מרכזיות
+
+- תצוגת 24 שעות בשתי טבעות קבועות.
+- חישוב והצגת זריחה, שקיעה ושעות זמניות לפי ערים מוגדרות.
+- אירועים קבועים, אישיים ונגזרים.
+- זמני כניסת שבת ויציאתה לפי השקיעה המקומית.
+- מצב שעון מלא, שעון בלבד ושעון צף, כולל Document Picture-in-Picture בדפדפנים תומכים.
+- שמירה מקומית אוטומטית וייבוא/ייצוא JSON תואם schema version 1.
+- ערכות שעון Dark, Light ו־Wood עם ממשק עברי ו־RTL.
+
+## הרצה מקומית
+
+נדרשים Node.js 24 ו־npm 11.
 
 ```powershell
+npm.cmd ci
 npm.cmd run dev
 ```
 
-The app is served by Vite on `127.0.0.1`.
+Vite מאזין מקומית על `127.0.0.1`.
 
-## Checks
+## בדיקות
 
 ```powershell
+npm.cmd audit --audit-level=high
 npm.cmd run docs:check
+npm.cmd run lint
+npm.cmd run format:check
 npm.cmd run typecheck
 npm.cmd test
 npm.cmd run build
-npm.cmd run build --workspace @clock/clock
 ```
 
-## Deploying To Vercel
+אותם שערים נאכפים ב־CI. CodeQL ו־Dependabot משלימים את בדיקות שרשרת האספקה והקוד.
 
-Import the repository into Vercel and keep the project Root Directory at the repository root. The committed `vercel.json` configures:
+## פרטיות ואבטחה
 
-- Node.js `24.x`.
-- `npm ci` for dependency installation.
-- `npm run build` for the workspace build.
-- `apps/web/dist` as the deployment output.
-- An `index.html` fallback for direct SPA navigation.
+- אין חשבונות משתמש, analytics או cookies של האפליקציה.
+- ההגדרות והאירועים נשמרים ב־`localStorage` של הדפדפן בלבד.
+- זמני היום נטענים מ־Sunrise-Sunset API ופרטי הלוח העברי מ־Hebcal.
+- קובצי ייבוא מוגבלים בגודל ונבדקים לפני שינוי מצב האפליקציה.
 
-No Vercel environment variables are currently required. After importing the repository, click **Deploy**; later pushes to the production branch will deploy automatically.
+הפירוט המלא נמצא ב־[docs/PRIVACY.md](docs/PRIVACY.md). חולשות יש לדווח באופן פרטי לפי
+[SECURITY.md](SECURITY.md).
 
-## Documentation
+## תרומה ושיתוף פעולה
 
-Start with [docs/README.md](docs/README.md). The app migration is documented in [docs/APP_MIGRATION.md](docs/APP_MIGRATION.md).
+הצעות ממוקדות, דיווחי באגים ו־Pull Requests מתקבלים בברכה. לפני שינוי רחב, מומלץ לפתוח Issue ולתאם
+את החוזה הרצוי. ראו [CONTRIBUTING.md](CONTRIBUTING.md) ואת [מסמכי הארכיטקטורה](docs/ARCHITECTURE.md).
+
+## פריסה
+
+האתר נפרס מ־root המאגר באמצעות `vercel.json`: התקנה עם `npm ci`, build של ה־workspace ופרסום
+`apps/web/dist`. אין צורך במשתני סביבה.
+
+## רישיון
+
+הקוד מופץ תחת [MIT License](LICENSE).
+
+---
+
+English summary: an open-source, Hebrew-first analog event clock built with TypeScript, Temporal and SVG.
+The live Beta is available at [heb-clock.vercel.app](https://heb-clock.vercel.app), and contributions are welcome.

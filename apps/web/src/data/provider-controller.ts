@@ -85,10 +85,12 @@ export function createProviderController<TLocation extends ProviderLocation>(
     return dateKeyForLocation(options.timeSource.now().epochMilliseconds, options.state.getLocation().timeZone);
   }
 
-  async function refreshDayTimesLayer(refreshOptions: {
-    readonly force?: boolean;
-    readonly onStart?: (context: { readonly date: string; readonly location: TLocation }) => void;
-  } = {}): Promise<DayTimesRefreshResult<TLocation>> {
+  async function refreshDayTimesLayer(
+    refreshOptions: {
+      readonly force?: boolean;
+      readonly onStart?: (context: { readonly date: string; readonly location: TLocation }) => void;
+    } = {}
+  ): Promise<DayTimesRefreshResult<TLocation>> {
     const date = currentDateKey();
     const location = options.state.getLocation();
     const nextCacheKey = `${location.id}:${date}`;
@@ -141,9 +143,12 @@ export function createProviderController<TLocation extends ProviderLocation>(
     hebcalAbortController = createAbortController();
 
     try {
-      const response = await fetcher(hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7), location.timeZone), {
-        signal: hebcalAbortController.signal
-      });
+      const response = await fetcher(
+        hebcalUrlForDate(parshaStartDate, addDaysToDateKey(parshaStartDate, 7), location.timeZone),
+        {
+          signal: hebcalAbortController.signal
+        }
+      );
       if (!response.ok) {
         throw new Error(`Hebcal request failed with status ${response.status}.`);
       }

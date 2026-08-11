@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added an MIT license, privacy and security guidance, contribution instructions and GitHub issue/PR templates.
+- Hardened CI with least-privilege permissions, immutable Action SHAs, dependency and formatting gates, CodeQL and Dependabot.
+- Added Vercel CSP, framing, MIME-sniffing, referrer and permissions-policy headers.
+- Added size, complexity and semantic validation for imported JSON before application state changes.
+- Refreshed the dependency lockfile to remove all currently reported npm advisories.
+- Reduced the animated developer-stamp asset from approximately 1.97MB to 83KB by serving an appropriately sized animated WebP.
+- Added LF normalization and ignores for environment, Vercel, coverage and log artifacts.
 - Removed the display-template selector, font-family selector and five direct color controls while retaining clock appearance, display modes, size controls and floating-clock behavior.
 - Fixed the `Light` clock theme to apply dark application text and markings on its white surfaces instead of retaining the legacy white inline foreground.
 - Added a halftone state for events that already passed today across complete clock markers, custom icons and event-list rows while keeping next and future events at full emphasis.

@@ -23,6 +23,16 @@ import {
 } from "../app-state/app-state.js";
 import { createProviderController, dateKeyForLocation } from "../data/provider-controller.js";
 import { createImportExportController } from "../data/import-export-controller.js";
+import {
+  assertImportPayloadWithinLimits,
+  hasUniqueIds,
+  isFiniteNumberInRange,
+  isHexColor,
+  isIntegerInRange,
+  isOptionalSafeDisplayText,
+  isSafeDisplayText,
+  isSafeIdentifier
+} from "../data/import-validation.js";
 import { loadStoredJson, saveStoredJson } from "../data/browser-state-storage.js";
 import { LOCATION_OPTIONS, getLocationById, type AppLocation } from "../data/locations.js";
 import { createEventEditorController } from "../event-editor/event-editor-controller.js";
@@ -2645,6 +2655,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function importAppState(payload: unknown): void {
+    assertImportPayloadWithinLimits(payload);
     if (!isRecord(payload)) {
       throw new Error("קובץ הייבוא לא נראה תקין.");
     }
@@ -2652,6 +2663,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
     const previousPersistenceState = automaticPersistencePaused;
     automaticPersistencePaused = true;
     const state = payload as Partial<AppExportState>;
+    assertValidImportedAppState(state);
     try {
       if (
         typeof state.selectedLocationId === "string" &&
@@ -3063,7 +3075,69 @@ function startClockApp(deps: ClockAppDeps): () => void {
   }
 
   function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null;
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  function assertValidImportedAppState(state: Partial<AppExportState>): void {
+    const validPersonalEvents = isValidUniqueArray(state.personalEvents, isInstantEventDefinition);
+    const validDerivedEvents = isValidUniqueArray(state.derivedEvents, isDerivedEventDefinition);
+    const validFixedEvents = isValidUniqueArray(state.fixedDayTimeEvents, isFixedDayTimeDefinition);
+    const validZmanitSets = isValidUniqueArray(state.zmanitTimeSets, isZmanitTimeSetDefinition);
+    const importedResolvedIds = [
+      ...(validPersonalEvents ? (state.personalEvents?.map((event) => event.id) ?? []) : []),
+      ...(validDerivedEvents ? (state.derivedEvents?.map((event) => event.id) ?? []) : []),
+      ...(validFixedEvents ? (state.fixedDayTimeEvents?.map((event) => `fixed-${event.id}`) ?? []) : [])
+    ];
+
+    const isValid =
+      (state.version === undefined || state.version === 1) &&
+      (state.exportedAt === undefined ||
+        (isSafeDisplayText(state.exportedAt, 100) && Number.isFinite(Date.parse(state.exportedAt)))) &&
+      (state.selectedLocationId === undefined ||
+        (isSafeIdentifier(state.selectedLocationId) &&
+          LOCATION_OPTIONS.some((location) => location.id === state.selectedLocationId))) &&
+      (state.selectedDefaultZmanitSetId === undefined || isSafeIdentifier(state.selectedDefaultZmanitSetId)) &&
+      (state.zmanitTimeSets === undefined || validZmanitSets) &&
+      (state.personalEvents === undefined || validPersonalEvents) &&
+      (state.derivedEvents === undefined || validDerivedEvents) &&
+      (state.fixedDayTimeEvents === undefined || validFixedEvents) &&
+      new Set(importedResolvedIds).size === importedResolvedIds.length &&
+      (state.displayPreferences === undefined || isDisplayPreferences(state.displayPreferences)) &&
+      (state.eventVisualOverrides === undefined ||
+        isValidRecordValues(state.eventVisualOverrides, isEventVisualStyle)) &&
+      (state.alertSettings === undefined || isEventAlertGlobalSettings(state.alertSettings)) &&
+      (state.eventAlertOverrides === undefined ||
+        isValidRecordValues(state.eventAlertOverrides, isEventAlertSettings)) &&
+      (state.layerVisibility === undefined || isLayerVisibilitySettings(state.layerVisibility)) &&
+      (state.clockAppearance === undefined || isClockAppearance(state.clockAppearance));
+
+    if (!isValid) {
+      throw new Error("קובץ הייבוא לא נראה תקין או מכיל ערכים שאינם נתמכים.");
+    }
+  }
+
+  function isValidUniqueArray<T extends { readonly id: string }>(
+    value: unknown,
+    guard: (candidate: unknown) => candidate is T
+  ): value is readonly T[] {
+    return Array.isArray(value) && value.every(guard) && hasUniqueIds(value);
+  }
+
+  function isValidRecordValues<T>(
+    value: unknown,
+    guard: (candidate: unknown) => candidate is T
+  ): value is Record<string, T> {
+    return (
+      isRecord(value) && Object.entries(value).every(([key, candidate]) => isSafeIdentifier(key) && guard(candidate))
+    );
+  }
+
+  function isDerivedBase(value: unknown): value is DerivedBase {
+    return (
+      value === "sunrise" ||
+      value === "sunset" ||
+      (typeof value === "string" && /^zmanit-(?:[1-9]|1[0-2])$/u.test(value))
+    );
   }
 
   function isInstantEventDefinition(value: unknown): value is InstantEventDefinition {
@@ -3073,11 +3147,13 @@ function startClockApp(deps: ClockAppDeps): () => void {
 
     return (
       value.type === "instant" &&
-      typeof value.id === "string" &&
+      isSafeIdentifier(value.id) &&
       isInstantEventKind(typeof value.kind === "string" ? value.kind : undefined) &&
-      typeof value.title === "string" &&
-      typeof value.hour === "number" &&
-      typeof value.minute === "number"
+      isSafeDisplayText(value.title, 120) &&
+      isIntegerInRange(value.hour, 0, 23) &&
+      isIntegerInRange(value.minute, 0, 59) &&
+      (value.second === undefined || isIntegerInRange(value.second, 0, 59)) &&
+      isOptionalSafeDisplayText(value.description)
     );
   }
 
@@ -3087,11 +3163,11 @@ function startClockApp(deps: ClockAppDeps): () => void {
     }
 
     return (
-      typeof value.id === "string" &&
-      typeof value.title === "string" &&
-      typeof value.base === "string" &&
+      isSafeIdentifier(value.id) &&
+      isSafeDisplayText(value.title, 120) &&
+      isDerivedBase(value.base) &&
       isDerivedDirection(typeof value.direction === "string" ? value.direction : "") &&
-      typeof value.offsetValue === "number" &&
+      isFiniteNumberInRange(value.offsetValue, 0, 10_000) &&
       isEventOffsetUnit(typeof value.offsetUnit === "string" ? value.offsetUnit : "")
     );
   }
@@ -3102,13 +3178,13 @@ function startClockApp(deps: ClockAppDeps): () => void {
     }
 
     return (
-      typeof value.id === "string" &&
-      typeof value.title === "string" &&
+      isSafeIdentifier(value.id) &&
+      isSafeDisplayText(value.title, 120) &&
       isFixedDayTimeBase(typeof value.base === "string" ? value.base : "") &&
       isDerivedDirection(typeof value.direction === "string" ? value.direction : "") &&
-      typeof value.offsetValue === "number" &&
+      isFiniteNumberInRange(value.offsetValue, 0, 10_000) &&
       isEventOffsetUnit(typeof value.offsetUnit === "string" ? value.offsetUnit : "") &&
-      (value.zmanitSetId === undefined || typeof value.zmanitSetId === "string")
+      (value.zmanitSetId === undefined || isSafeIdentifier(value.zmanitSetId))
     );
   }
 
@@ -3119,7 +3195,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       isFixedDayTimeAnchorBase(value.base) &&
       typeof value.direction === "string" &&
       isDerivedDirection(value.direction) &&
-      typeof value.offsetValue === "number" &&
+      isFiniteNumberInRange(value.offsetValue, 0, 10_000) &&
       typeof value.offsetUnit === "string" &&
       isEventOffsetUnit(value.offsetUnit)
     );
@@ -3128,19 +3204,16 @@ function startClockApp(deps: ClockAppDeps): () => void {
   function isZmanitTimeSetDefinition(value: unknown): value is ZmanitTimeSetDefinition {
     return (
       isRecord(value) &&
-      typeof value.id === "string" &&
-      value.id.trim() !== "" &&
-      typeof value.title === "string" &&
-      value.title.trim() !== "" &&
+      isSafeIdentifier(value.id) &&
+      isSafeDisplayText(value.title, 120) &&
       isZmanitSetBoundary(value.startTime) &&
-      isZmanitSetBoundary(value.endTime)
+      isZmanitSetBoundary(value.endTime) &&
+      isValidUniqueArray(value.fixedEvents, isFixedDayTimeDefinition)
     );
   }
 
   function isEventVisualStyle(value: unknown): value is EventVisualStyle {
-    return (
-      isRecord(value) && typeof value.icon === "string" && isEventIconId(value.icon) && typeof value.color === "string"
-    );
+    return isRecord(value) && typeof value.icon === "string" && isEventIconId(value.icon) && isHexColor(value.color);
   }
 
   function isEventAlertSettings(value: unknown): value is EventAlertSettings {
@@ -3151,7 +3224,7 @@ function startClockApp(deps: ClockAppDeps): () => void {
       typeof value.desktop === "boolean" &&
       typeof value.direction === "string" &&
       isEventAlertDirection(value.direction) &&
-      typeof value.offsetValue === "number" &&
+      isFiniteNumberInRange(value.offsetValue, 0, 10_000) &&
       typeof value.offsetUnit === "string" &&
       isEventAlertOffsetUnit(value.offsetUnit)
     );
@@ -3183,16 +3256,16 @@ function startClockApp(deps: ClockAppDeps): () => void {
       isDisplayMode(value.displayMode) &&
       typeof value.fontFamily === "string" &&
       isDisplayFontFamily(value.fontFamily) &&
-      typeof value.fontScale === "number" &&
-      (typeof value.clockScale === "number" || value.clockScale === undefined) &&
-      typeof value.backgroundColor === "string" &&
-      typeof value.panelColor === "string" &&
-      typeof value.textColor === "string" &&
-      typeof value.mutedColor === "string" &&
-      typeof value.accentColor === "string" &&
-      typeof value.clockFaceColor === "string" &&
-      typeof value.clockStrokeColor === "string" &&
-      typeof value.clockHandColor === "string" &&
+      isFiniteNumberInRange(value.fontScale, 50, 200) &&
+      (value.clockScale === undefined || isFiniteNumberInRange(value.clockScale, 50, 200)) &&
+      isHexColor(value.backgroundColor) &&
+      isHexColor(value.panelColor) &&
+      isHexColor(value.textColor) &&
+      isHexColor(value.mutedColor) &&
+      isHexColor(value.accentColor) &&
+      isHexColor(value.clockFaceColor) &&
+      isHexColor(value.clockStrokeColor) &&
+      isHexColor(value.clockHandColor) &&
       isEventVisualStyle(value.eventStyles.sunrise) &&
       isEventVisualStyle(value.eventStyles.sunset) &&
       isEventVisualStyle(value.eventStyles.custom)

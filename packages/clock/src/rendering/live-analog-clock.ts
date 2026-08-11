@@ -152,16 +152,14 @@ function projectCurrentTime(
   dateDisplayDetails: (() => ClockDateDisplayDetails | undefined) | undefined
 ): StaticClockTime {
   const dateBoundary = dateBoundaryFromEventLayers(eventLayers);
-  const time = dateBoundary === undefined
-    ? projectInstantToStaticClockTime(timeSource.now(), timeZone)
-    : projectInstantToStaticClockTime(timeSource.now(), timeZone, { dateBoundary });
+  const time =
+    dateBoundary === undefined
+      ? projectInstantToStaticClockTime(timeSource.now(), timeZone)
+      : projectInstantToStaticClockTime(timeSource.now(), timeZone, { dateBoundary });
   return applyDateDisplayDetails(time, dateDisplayDetails?.());
 }
 
-function applyDateDisplayDetails(
-  time: StaticClockTime,
-  details: ClockDateDisplayDetails | undefined
-): StaticClockTime {
+function applyDateDisplayDetails(time: StaticClockTime, details: ClockDateDisplayDetails | undefined): StaticClockTime {
   if (details === undefined || time.dateDisplay === undefined) {
     return time;
   }

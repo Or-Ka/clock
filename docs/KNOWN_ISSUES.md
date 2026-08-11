@@ -1,6 +1,6 @@
 # Known Issues
 
-Updated: 2026-07-13
+Updated: 2026-08-11
 
 ## Open
 
@@ -8,7 +8,7 @@ Updated: 2026-07-13
 - `apps/web/src/app-state/app-state.ts`, `apps/web/src/data/provider-controller.ts` and `apps/web/src/data/import-export-controller.ts` are intentionally internal APIs. They are not a general state manager or broad UI controller boundary.
 - `apps/web/src/styles.css` remains a single stylesheet. CSS splitting is deferred.
 - The current app layout still exposes many management controls on the main page. UX redesign is deferred.
-- The developer stamp still ships with the active app pending a separate production cleanup decision.
+- `@clock/clock` npm publication is deferred. Package versioning, package metadata and the exact tarball contents must be reviewed in a separate task before any `npm publish` operation.
 
 ## Not Regressions
 

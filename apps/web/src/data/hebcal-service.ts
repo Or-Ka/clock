@@ -42,12 +42,10 @@ export function hebcalUrlForDate(start: string, end: string, timeZone: string): 
 }
 
 export function parseHebcalDetails(payload: unknown, date: string): ClockDateDisplayDetails {
-  const items = isHebcalCalendarPayload(payload) ? payload.items ?? [] : [];
+  const items = isHebcalCalendarPayload(payload) ? (payload.items ?? []) : [];
   const torahReading = items.find((item) => item.category === "parashat");
   const observances = uniqueStrings(
-    items
-      .filter((item) => hebcalItemDateKey(item) === date)
-      .flatMap(hebcalObservanceTitle)
+    items.filter((item) => hebcalItemDateKey(item) === date).flatMap(hebcalObservanceTitle)
   );
 
   return {

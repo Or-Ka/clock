@@ -4,50 +4,43 @@ Updated: 2026-08-11
 
 ## Active Task
 
-T083: Simplify Display Settings
+T084: Public Release Readiness
 
 ## Goal
 
-Simplify the display settings panel according to the annotated product screenshot without changing the retained display behavior.
+Prepare the public repository and deployed Beta for sharing in developer communities and for potential collaboration.
 
 ## Scope
 
-- Keep the clock theme, dial style and inner-ring controls unchanged.
-- Keep full, clock-only and floating display modes, including the clock context menu and Picture-in-Picture behavior.
-- Keep the font-scale and clock-scale controls unchanged.
-- Remove the display-template selector, font-family selector and five display-color inputs.
-- Do not add a replacement clock-color picker.
-- Let each retained clock theme own a readable application palette; `Light` must use dark text on white surfaces.
-- Remove only the obsolete DOM bindings, listeners and CSS that belonged to the removed controls.
-- Add focused regression coverage and browser verification.
+- Eliminate known dependency advisories from the committed lockfile.
+- Harden CI with least-privilege permissions, formatting and dependency-audit gates, pinned actions and CodeQL.
+- Add Dependabot, repository security guidance and contribution templates.
+- Add production HTTP security headers without breaking external day-time and Hebcal requests.
+- Bound and validate imported JSON before applying application state.
+- Document local persistence, third-party API requests and browser permissions.
+- Add an explicit MIT license and collaboration-focused repository documentation.
+- Reduce the production developer-stamp media payload while preserving its design.
+- Normalize Git text handling and remove local-path references from public documentation.
 
 ## Out Of Scope
 
-- No changes to `packages/clock` public contracts.
-- No changes to event timing, resolution, alerts or provider behavior.
-- No changes to persisted display preferences or compatibility behavior outside the removed controls.
-- Keep JSON export schema version `1`.
+- No npm publication of `@clock/clock`.
+- No change to the library public API or clock/event behavior.
+- No redesign of the product UI.
+- No change to JSON export schema version `1`.
 
 ## Gate
 
 ```powershell
+npm.cmd audit --audit-level=high
 npm.cmd run docs:check
 npm.cmd run lint
+npm.cmd run format:check
 npm.cmd run typecheck
 npm.cmd test
 npm.cmd run build
 npm.cmd run build --workspace @clock/clock
 ```
 
-Browser verification must confirm that only the controls marked for removal are absent, all retained controls still work, display modes remain available and the console has no errors or warnings.
-
-## Result
-
-Completed on `codex/feature/simplify-display-settings`.
-
-- The template selector, font-family selector and five color inputs were removed.
-- Clock appearance, display mode, font scale and clock scale remain wired to their existing behavior.
-- No replacement color picker was introduced.
-- Theme-owned CSS colors are no longer overridden by legacy inline display colors, so `Light` renders dark text on white surfaces and `Dark` remains light on dark.
-- Documentation, lint, typecheck, all `151` tests across `21` files, the production build and the core-library build pass.
-- Browser verification confirmed that the retained appearance, mode and scale controls work; the removed controls are absent; floating, clock-only and full modes remain active; and the warning/error console is empty.
+The final gate also requires successful GitHub CI and CodeQL checks, protected `main`, enabled repository security
+features, and browser verification of the deployed site with the expected security headers.

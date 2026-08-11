@@ -45,7 +45,9 @@ function formatDateDisplay(
   const nightPhase = resolveNightDisplayPhase(zonedDateTime, dateBoundary);
   const hebrewDateTime = nightPhase === "after-sunset" ? zonedDateTime.add({ days: 1 }) : zonedDateTime;
   const weekday =
-    nightPhase === undefined ? formatWeekday(zonedDateTime, timeZone) : formatNightWeekday(zonedDateTime, timeZone, nightPhase);
+    nightPhase === undefined
+      ? formatWeekday(zonedDateTime, timeZone)
+      : formatNightWeekday(zonedDateTime, timeZone, nightPhase);
   const hebrewParts = partsByType(
     new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
       day: "numeric",
@@ -156,8 +158,8 @@ function formatHebrewDate(parts: Partial<Record<Intl.DateTimeFormatPartTypes, st
   const day = Number(parts.day);
   const year = Number(parts.year);
   const month = withHebrewMonthPrefix(parts.month ?? "");
-  const dayText = Number.isFinite(day) ? toHebrewNumeral(day) : parts.day ?? "";
-  const yearText = Number.isFinite(year) ? toHebrewYear(year) : parts.year ?? "";
+  const dayText = Number.isFinite(day) ? toHebrewNumeral(day) : (parts.day ?? "");
+  const yearText = Number.isFinite(year) ? toHebrewYear(year) : (parts.year ?? "");
   return `${dayText} ${month} ${yearText}`.trim();
 }
 

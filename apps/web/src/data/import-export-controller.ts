@@ -1,3 +1,5 @@
+import { MAX_IMPORT_FILE_BYTES } from "./import-validation.js";
+
 export type ImportExportElements = {
   readonly exportButton: HTMLButtonElement;
   readonly importButton: HTMLButtonElement;
@@ -53,6 +55,9 @@ export function createImportExportController<TExportState>(
     }
 
     try {
+      if (file.size > MAX_IMPORT_FILE_BYTES) {
+        throw new Error("קובץ הייבוא גדול מדי. ניתן לייבא קובץ JSON עד 1MB.");
+      }
       deps.applyImportedState(JSON.parse(await file.text()));
       deps.elements.status.textContent = "הייבוא הושלם.";
     } catch (error) {

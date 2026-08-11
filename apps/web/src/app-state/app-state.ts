@@ -15,7 +15,13 @@ export type AppStateSnapshot<TLocation, TDisplayPreferences, TEventLayer, TDeriv
 };
 
 export type AppStateApi<TLocation, TDisplayPreferences, TEventLayer, TDerivedEvent, TRenderedEvent> = {
-  readonly getSnapshot: () => AppStateSnapshot<TLocation, TDisplayPreferences, TEventLayer, TDerivedEvent, TRenderedEvent>;
+  readonly getSnapshot: () => AppStateSnapshot<
+    TLocation,
+    TDisplayPreferences,
+    TEventLayer,
+    TDerivedEvent,
+    TRenderedEvent
+  >;
   readonly getLocation: () => TLocation;
   readonly setLocation: (next: TLocation) => void;
   readonly getTimeZone: () => string;
@@ -145,11 +151,9 @@ export function eventsForLayer<TEventLayer extends EventLayerWithEvents<unknown>
   return layers.find((layer) => layer.id === layerId)?.events ?? ([] as unknown as TEventLayer["events"]);
 }
 
-export function setEventLayerEnabled<TEventLayer extends EventLayerWithEvents<unknown> & { readonly enabled?: boolean }>(
-  layers: readonly TEventLayer[],
-  layerId: string,
-  enabled: boolean
-): TEventLayer[] {
+export function setEventLayerEnabled<
+  TEventLayer extends EventLayerWithEvents<unknown> & { readonly enabled?: boolean }
+>(layers: readonly TEventLayer[], layerId: string, enabled: boolean): TEventLayer[] {
   return layers.map((layer) => (layer.id === layerId ? ({ ...layer, enabled } as TEventLayer) : layer));
 }
 
@@ -175,7 +179,9 @@ export function removeEventFromLayers<TEventLayer extends EventLayerWithEvents<{
   layers: readonly TEventLayer[],
   eventId: string
 ): TEventLayer[] {
-  return layers.map((layer) => ({ ...layer, events: layer.events.filter((event) => event.id !== eventId) }) as TEventLayer);
+  return layers.map(
+    (layer) => ({ ...layer, events: layer.events.filter((event) => event.id !== eventId) }) as TEventLayer
+  );
 }
 
 function cloneEventLayer<TEvent, TEventLayer extends EventLayerWithEvents<TEvent>>(layer: TEventLayer): TEventLayer {

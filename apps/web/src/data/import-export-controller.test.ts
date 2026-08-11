@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it, vi } from "vitest";
 
 import { createImportExportController, serializeExportState } from "./import-export-controller.js";
+import { MAX_IMPORT_FILE_BYTES } from "./import-validation.js";
 
 describe("createImportExportController", () => {
   it("downloads the current version 1 state as formatted JSON", () => {
@@ -67,6 +68,20 @@ describe("createImportExportController", () => {
     harness.fileInput.dispatchEvent(new harness.window.Event("change"));
     await vi.waitFor(() => expect(harness.status.textContent).toBe("קובץ הייבוא לא נראה תקין."));
 
+    expect(harness.fileInput.value).toBe("");
+  });
+
+  it("rejects files larger than the import limit before reading them", async () => {
+    const harness = createHarness();
+    const file = new harness.window.File(["{}"], "large-clock.json", { type: "application/json" });
+    Object.defineProperty(file, "size", { configurable: true, value: MAX_IMPORT_FILE_BYTES + 1 });
+    Object.defineProperty(harness.fileInput, "files", { configurable: true, value: [file] });
+
+    harness.controller.start();
+    harness.fileInput.dispatchEvent(new harness.window.Event("change"));
+    await vi.waitFor(() => expect(harness.status.textContent).toContain("עד 1MB"));
+
+    expect(harness.applyImportedState).not.toHaveBeenCalled();
     expect(harness.fileInput.value).toBe("");
   });
 

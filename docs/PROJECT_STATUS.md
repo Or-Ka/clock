@@ -13,11 +13,33 @@ The previous web surface under `apps/demo` was promoted rather than rewritten. H
 
 ## Active Task
 
-T083: Simplify Display Settings
+T084: Public Release Readiness
 
 ## Current Branch
 
-`codex/feature/simplify-display-settings`
+`codex/chore/public-release-readiness`
+
+## T084 Scope
+
+- Prepare the public repository and deployed Beta for developer-community sharing and collaboration.
+- Harden dependencies, CI, repository controls, production headers and JSON import handling.
+- Add licensing, privacy, security and contribution guidance.
+- Keep npm publication, public library contracts and product behavior out of scope.
+
+## T084 Gate
+
+- Full dependency audit reports zero vulnerabilities.
+- Documentation, lint, formatting, typecheck, tests and both production builds pass.
+- CI and CodeQL pass on the release commit.
+- `main` is protected and GitHub security features are enabled.
+- The live site loads external time data without console errors and returns the configured security headers.
+
+## T084 Local Result
+
+- The full npm audit reports zero vulnerabilities.
+- Documentation, lint, formatting, typecheck, all `158` tests across `23` files and both builds pass.
+- The production animation payload was reduced from approximately `1.97 MB` to `83.15 kB`.
+- GitHub checks, repository-setting hardening and live post-deploy verification remain pending until the branch is pushed.
 
 ## T083 Scope
 

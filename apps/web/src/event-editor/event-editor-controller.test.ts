@@ -138,9 +138,9 @@ function readAlertFormSettings(controls: AlertFormControls) {
     enabled: controls.enabled.checked,
     sound: controls.sound.checked,
     desktop: controls.desktop.checked,
-    direction: controls.direction.value === "after" ? "after" as const : "before" as const,
+    direction: controls.direction.value === "after" ? ("after" as const) : ("before" as const),
     offsetValue: Number(controls.offset.value),
-    offsetUnit: controls.unit.value === "hours" ? "hours" as const : "minutes" as const
+    offsetUnit: controls.unit.value === "hours" ? ("hours" as const) : ("minutes" as const)
   };
 }
 

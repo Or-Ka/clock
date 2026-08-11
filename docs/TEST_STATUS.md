@@ -2,6 +2,30 @@
 
 Updated: 2026-08-11
 
+## T084 Public Release Readiness Checks
+
+Focused coverage verifies:
+
+- Imported files larger than 1MB are rejected before reading.
+- Imported payload depth, collection size, dangerous keys, identifiers, text, numbers, colors and duplicate IDs are bounded.
+- The production CSP permits only same-origin scripts and the documented Sunrise-Sunset and Hebcal connections.
+- CI uses pinned Action SHAs, read-only contents permission, dependency audit and formatting gates.
+- The optimized WebP asset, MIT license, security guidance and contribution guidance are present.
+
+The complete local gate passed:
+
+- `npm.cmd audit --audit-level=high` (`0` vulnerabilities)
+- `npm.cmd run docs:check` (`23` required docs)
+- `npm.cmd run lint`
+- `npm.cmd run format:check`
+- `npm.cmd run typecheck`
+- `npm.cmd test` (`158` tests across `23` files)
+- `npm.cmd run build`
+- `npm.cmd run build --workspace @clock/clock`
+
+The web build contains an `83.15 kB` animated WebP instead of the previous `1.97 MB` GIF. GitHub CI,
+CodeQL, repository settings and the deployed-site browser/header gate remain pending until the branch is pushed.
+
 ## T083 Display-Control Simplification Checks
 
 Focused tests cover:
@@ -213,7 +237,7 @@ T070 browser gate was verified manually outside Codex in a regular browser:
 
 Codex browser tooling could not complete this browser gate because of environment constraints, not because of an application failure:
 
-- Vite dev server startup from Codex failed with `EPERM` on `D:\Oriya\Projects`.
+- Vite dev server startup from Codex failed with `EPERM` in the sandboxed workspace.
 - The in-app browser blocked `localhost` / `127.0.0.1` with `ERR_BLOCKED_BY_CLIENT`.
 - `file://` verification is blocked by browser-tool policy.
 
@@ -314,7 +338,7 @@ Final T074 CLI gate passed:
 - `npm.cmd run build`
 - `npm.cmd run build --workspace @clock/clock`
 
-Browser verification was attempted against a locally served app on `127.0.0.1:4174`. Vite could not start inside the sandbox because of the known `EPERM` issue on `D:\Oriya\Projects`, then started successfully outside the sandbox. Edge headless crashed before CDP verification could complete, so no browser result was recorded. This is an environment/tooling blocker, not an observed application failure.
+Browser verification was attempted against a locally served app on `127.0.0.1:4174`. Vite could not start inside the sandbox because of the known workspace `EPERM` issue, then started successfully outside the sandbox. Edge headless crashed before CDP verification could complete, so no browser result was recorded. This is an environment/tooling blocker, not an observed application failure.
 
 ## T075 Provider Controller Checks
 
