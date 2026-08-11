@@ -17,9 +17,9 @@ T084: Public Release Readiness
 - `[x]` Add MIT licensing, security, privacy, contribution and issue/PR guidance.
 - `[x]` Optimize the developer-stamp animation for its rendered dimensions.
 - `[x]` Run the final local gate.
-- `[ ]` Open and merge the Pull Request into `main`.
-- `[ ]` Enable GitHub security features and branch protection.
-- `[ ]` Verify GitHub checks and the live deployment.
+- `[x]` Open and merge the Pull Request into `main`.
+- `[x]` Enable GitHub security features and branch protection.
+- `[x]` Verify GitHub checks and the live deployment.
 
 ## T083 Checklist
 
